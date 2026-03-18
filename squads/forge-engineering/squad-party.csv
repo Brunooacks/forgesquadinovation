@@ -1,0 +1,10 @@
+id,name,icon,role,path,execution,skills
+architect,Arq. Sofia Sistemas,🏗️,Projeta arquitetura do sistema e toma decisões técnicas estruturais. Participa de todas as fases como guardiã da qualidade arquitetural.,./agents/architect.agent.md,inline,"web_search,web_fetch"
+tech-lead,TL Rafael Review,📋,Coordena tecnicamente o time. Define padrões de código e conduz code reviews. Planeja sprints e desbloqueia desenvolvedores.,./agents/tech-lead.agent.md,inline,"copilot,devin"
+business-analyst,BA Clara Requisitos,📊,Engenharia de requisitos. Escreve user stories com critérios de aceite. Faz análise reversa de sistemas legados. Mapeia processos de negócio.,./agents/business-analyst.agent.md,inline,"kiro,web_search"
+dev-backend,Dev Bruno Backend,🔧,Implementa APIs e serviços backend. Modela banco de dados. Cria integrações e migrações. Segue padrões do arquiteto.,./agents/dev-backend.agent.md,subagent,"devin,copilot,stackspot"
+dev-frontend,Dev Fernanda Front,🎨,Implementa componentes UI e páginas. Garante responsividade e acessibilidade. Integra com APIs do backend.,./agents/dev-frontend.agent.md,subagent,"devin,copilot"
+qa-engineer,QA Quésia Quality,🔍,Define estratégia de testes. Cria testes automatizados (unit/integration/e2e). Executa testes de regressão e performance.,./agents/qa-engineer.agent.md,inline,"devin,copilot"
+tech-writer,TW Daniela Docs,📝,Produz documentação técnica — API docs e runbooks e ADRs e user guides e release notes. Mantém docs atualizados.,./agents/tech-writer.agent.md,subagent,"web_search"
+finance-advisor,FIN Ricardo Regulação,🏦,Consultor de negócios do setor financeiro. Valida compliance regulatório (Bacen/BIAN/PCI DSS/LGPD/Open Finance/Pix). Analisa viabilidade de negócio para bancos e fintechs. Emite parecer de conformidade.,./agents/finance-advisor.agent.md,inline,"web_search,web_fetch"
+project-manager,PM Pedro Progress,📈,Gera relatórios de status. Acompanha progresso e velocidade. Identifica riscos e bloqueios. Atualiza stakeholders.,./agents/project-manager.agent.md,inline,"jira-sync"

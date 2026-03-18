@@ -1,0 +1,87 @@
+name: "TokenOps Engineering Squad"
+code: "tokenops"
+description: >
+  Squad de engenharia dedicada ao TokenOps — plataforma SaaS de AI FinOps
+  para monitoramento, otimização e redução de custos de LLMs. Cobre todo
+  o ciclo de vida: requisitos, arquitetura, implementação, qualidade,
+  documentação, deploy e sustentação.
+icon: "🪙"
+version: "1.0.0"
+created: "2026-03-16"
+project_type: "fullstack"
+delivery_model: "greenfield"
+
+tech_stack:
+  backend: "Node.js + NestJS (TypeScript)"
+  frontend: "Next.js + React + Tailwind CSS"
+  database: "PostgreSQL + ClickHouse + Redis"
+  infra: "Cloud (a definir)"
+  ci_cd: "GitHub Actions"
+  observability: "OpenTelemetry + Prometheus + Grafana"
+
+company: "_forgesquad/_memory/company.md"
+preferences: "_forgesquad/_memory/preferences.md"
+memory: "_memory/memories.md"
+
+target_audience: "Empresas que usam LLMs em produção, startups AI-first, fintechs"
+platform: "SaaS — AI FinOps"
+performance_mode: "quality-first"
+
+skills:
+  - web_search
+  - web_fetch
+
+data:
+  - pipeline/data/coding-standards.md
+  - pipeline/data/architecture-guidelines.md
+  - pipeline/data/testing-strategy.md
+  - pipeline/data/definition-of-done.md
+  - pipeline/data/definition-of-ready.md
+  - pipeline/data/deployment-checklist.md
+
+agents:
+  - id: architect
+    name: "Arq. Sofia Sistemas"
+    icon: "🏗️"
+    custom: agents/architect.agent.md
+
+  - id: tech-lead
+    name: "TL Rafael Review"
+    icon: "📋"
+    custom: agents/tech-lead.agent.md
+
+  - id: business-analyst
+    name: "BA Clara Requisitos"
+    icon: "📊"
+    custom: agents/business-analyst.agent.md
+
+  - id: dev-backend
+    name: "Dev Bruno Backend"
+    icon: "🔧"
+    custom: agents/dev-backend.agent.md
+
+  - id: dev-frontend
+    name: "Dev Fernanda Front"
+    icon: "🎨"
+    custom: agents/dev-frontend.agent.md
+
+  - id: qa-engineer
+    name: "QA Quésia Quality"
+    icon: "🔍"
+    custom: agents/qa-engineer.agent.md
+
+  - id: tech-writer
+    name: "TW Daniela Docs"
+    icon: "📝"
+    custom: agents/tech-writer.agent.md
+
+  - id: project-manager
+    name: "PM Pedro Progress"
+    icon: "📈"
+    custom: agents/project-manager.agent.md
+
+pipeline:
+  entry: pipeline/pipeline.yaml
+
+output_dir: output/
+reports_dir: reports/

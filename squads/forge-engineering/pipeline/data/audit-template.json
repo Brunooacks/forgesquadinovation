@@ -1,0 +1,423 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ForgeSquad Audit Trail",
+  "description": "Schema and template for the pipeline audit trail. Each pipeline run produces a single audit-trail.json file containing an ordered array of audit entries that record every significant action from start to completion.",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/AuditEntry"
+  },
+  "definitions": {
+    "AuditEntry": {
+      "type": "object",
+      "required": [
+        "entry_id",
+        "sequence_number",
+        "timestamp",
+        "run_id",
+        "squad",
+        "phase",
+        "step_id",
+        "step_name",
+        "agent_id",
+        "agent_name",
+        "action_type",
+        "status"
+      ],
+      "properties": {
+        "entry_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this audit entry (UUID v4)"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Monotonically increasing counter starting at 1. Used to detect gaps or tampering."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of when the action occurred"
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}-\\d{6}$",
+          "description": "Pipeline run identifier in format YYYY-MM-DD-HHmmss"
+        },
+        "squad": {
+          "type": "string",
+          "description": "Squad code name (e.g., forge-engineering)"
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "estimation",
+            "requirements",
+            "architecture",
+            "planning",
+            "implementation",
+            "quality",
+            "review",
+            "documentation",
+            "deployment",
+            "sustaining"
+          ],
+          "description": "Pipeline phase in which the action occurred"
+        },
+        "step_id": {
+          "type": "string",
+          "description": "Pipeline step identifier (e.g., step-02, step-14)"
+        },
+        "step_name": {
+          "type": "string",
+          "description": "Human-readable step name"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Identifier of the agent performing the action (or 'pipeline-runner' / 'user')"
+        },
+        "agent_name": {
+          "type": "string",
+          "description": "Display name of the agent (persona name)"
+        },
+        "action_type": {
+          "type": "string",
+          "enum": [
+            "artifact_created",
+            "artifact_reviewed",
+            "artifact_approved",
+            "artifact_rejected",
+            "checkpoint_reached",
+            "checkpoint_approved",
+            "checkpoint_rejected",
+            "handoff_initiated",
+            "handoff_approved",
+            "handoff_completed",
+            "veto_triggered",
+            "veto_resolved",
+            "pipeline_started",
+            "pipeline_completed"
+          ],
+          "description": "Type of action being recorded"
+        },
+        "artifact_path": {
+          "type": ["string", "null"],
+          "description": "Relative path to the artifact file within the run output folder. Required for artifact_* action types."
+        },
+        "artifact_hash_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hex digest of the artifact content. Required for artifact_created and artifact_approved."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "failure", "pending", "skipped"],
+          "description": "Outcome of the action"
+        },
+        "reviewer": {
+          "type": ["string", "null"],
+          "description": "Agent ID or 'user' who performed the review. Required for review/approval/rejection actions."
+        },
+        "approval_timestamp": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of when approval was granted. Required for *_approved actions."
+        },
+        "related_entry_id": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "description": "UUID of a related audit entry (e.g., linking an approval to its creation entry)"
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "description": "Free-text field for additional context about the action"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    [
+      {
+        "entry_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "sequence_number": 1,
+        "timestamp": "2026-03-17T14:30:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "estimation",
+        "step_id": "step-00",
+        "step_name": "Pipeline Initialization",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "pipeline_started",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Pipeline started: mode=quality-first, steps=22, squad=forge-engineering"
+      },
+      {
+        "entry_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+        "sequence_number": 2,
+        "timestamp": "2026-03-17T14:30:01.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "estimation",
+        "step_id": "step-00",
+        "step_name": "Estimativa de Projeto",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "checkpoint_reached",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Checkpoint: project estimation — awaiting user choice (Option A/B)"
+      },
+      {
+        "entry_id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+        "sequence_number": 3,
+        "timestamp": "2026-03-17T14:35:22.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "estimation",
+        "step_id": "step-00",
+        "step_name": "Estimativa de Projeto",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "checkpoint_approved",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": "user",
+        "approval_timestamp": "2026-03-17T14:35:22.000Z",
+        "related_entry_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+        "notes": "User selected Option A (Quality-First)"
+      },
+      {
+        "entry_id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80",
+        "sequence_number": 4,
+        "timestamp": "2026-03-17T14:35:30.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "estimation",
+        "step_id": "step-00",
+        "step_name": "Estimativa de Projeto",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "artifact_created",
+        "artifact_path": "output/estimation/project-estimation.md",
+        "artifact_hash_sha256": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Project estimation document generated"
+      },
+      {
+        "entry_id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091",
+        "sequence_number": 5,
+        "timestamp": "2026-03-17T14:36:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "requirements",
+        "step_id": "step-01",
+        "step_name": "Briefing do Projeto",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "handoff_initiated",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Handoff from pipeline-runner to business-analyst for project briefing"
+      },
+      {
+        "entry_id": "f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f809102",
+        "sequence_number": 6,
+        "timestamp": "2026-03-17T14:36:02.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "requirements",
+        "step_id": "step-01",
+        "step_name": "Briefing do Projeto",
+        "agent_id": "business-analyst",
+        "agent_name": "Ana Historias",
+        "action_type": "handoff_completed",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091",
+        "notes": "Business analyst received handoff and began project briefing"
+      },
+      {
+        "entry_id": "07a8b9c0-d1e2-4f3a-4b5c-6d7e8f901213",
+        "sequence_number": 7,
+        "timestamp": "2026-03-17T14:50:15.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "requirements",
+        "step_id": "step-02",
+        "step_name": "Elicitacao de Requisitos",
+        "agent_id": "business-analyst",
+        "agent_name": "Ana Historias",
+        "action_type": "artifact_created",
+        "artifact_path": "output/requirements/user-stories.md",
+        "artifact_hash_sha256": "b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4",
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "User stories document generated with 12 stories and acceptance criteria"
+      },
+      {
+        "entry_id": "18b9c0d1-e2f3-4a4b-5c6d-7e8f90121324",
+        "sequence_number": 8,
+        "timestamp": "2026-03-17T14:55:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "requirements",
+        "step_id": "step-03",
+        "step_name": "Aprovacao dos Requisitos",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "checkpoint_reached",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Checkpoint: requirements approval — presenting user stories for review"
+      },
+      {
+        "entry_id": "29c0d1e2-f3a4-4b5c-6d7e-8f9012132435",
+        "sequence_number": 9,
+        "timestamp": "2026-03-17T15:02:30.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "requirements",
+        "step_id": "step-03",
+        "step_name": "Aprovacao dos Requisitos",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "artifact_approved",
+        "artifact_path": "output/requirements/user-stories.md",
+        "artifact_hash_sha256": "b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4",
+        "status": "success",
+        "reviewer": "user",
+        "approval_timestamp": "2026-03-17T15:02:30.000Z",
+        "related_entry_id": "07a8b9c0-d1e2-4f3a-4b5c-6d7e8f901213",
+        "notes": "User approved requirements with minor adjustments noted"
+      },
+      {
+        "entry_id": "3ad1e2f3-a4b5-4c6d-7e8f-901213243546",
+        "sequence_number": 10,
+        "timestamp": "2026-03-17T15:10:45.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "review",
+        "step_id": "step-14",
+        "step_name": "Code Review",
+        "agent_id": "tech-lead",
+        "agent_name": "Carlos Codigo",
+        "action_type": "artifact_reviewed",
+        "artifact_path": "output/implementation/backend/",
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": "tech-lead",
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Code review initiated — reviewing backend implementation against coding standards"
+      },
+      {
+        "entry_id": "4be2f3a4-b5c6-4d7e-8f90-121324354657",
+        "sequence_number": 11,
+        "timestamp": "2026-03-17T15:15:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "review",
+        "step_id": "step-14",
+        "step_name": "Code Review",
+        "agent_id": "tech-lead",
+        "agent_name": "Carlos Codigo",
+        "action_type": "artifact_rejected",
+        "artifact_path": "output/implementation/backend/",
+        "artifact_hash_sha256": null,
+        "status": "failure",
+        "reviewer": "tech-lead",
+        "approval_timestamp": null,
+        "related_entry_id": "3ad1e2f3-a4b5-4c6d-7e8f-901213243546",
+        "notes": "Code review failed: missing error handling in payment service, insufficient test coverage (62% < 80% threshold)"
+      },
+      {
+        "entry_id": "5cf3a4b5-c6d7-4e8f-9012-132435465768",
+        "sequence_number": 12,
+        "timestamp": "2026-03-17T15:20:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "implementation",
+        "step_id": "step-09",
+        "step_name": "Implementacao Backend (revision)",
+        "agent_id": "dev-backend",
+        "agent_name": "Diego Backend",
+        "action_type": "veto_triggered",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "pending",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": null,
+        "notes": "Veto condition: test coverage below 80% threshold (current: 62%). Agent must increase coverage before proceeding."
+      },
+      {
+        "entry_id": "6da4b5c6-d7e8-4f90-1213-243546576879",
+        "sequence_number": 13,
+        "timestamp": "2026-03-17T15:35:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "implementation",
+        "step_id": "step-09",
+        "step_name": "Implementacao Backend (revision)",
+        "agent_id": "dev-backend",
+        "agent_name": "Diego Backend",
+        "action_type": "veto_resolved",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": "5cf3a4b5-c6d7-4e8f-9012-132435465768",
+        "notes": "Test coverage increased to 87%. Error handling added to payment service. Veto condition resolved."
+      },
+      {
+        "entry_id": "7eb5c6d7-e8f9-4012-1324-35465768798a",
+        "sequence_number": 14,
+        "timestamp": "2026-03-17T16:45:00.000Z",
+        "run_id": "2026-03-17-143000",
+        "squad": "forge-engineering",
+        "phase": "sustaining",
+        "step_id": "step-20",
+        "step_name": "Encerramento",
+        "agent_id": "pipeline-runner",
+        "agent_name": "Pipeline Runner",
+        "action_type": "pipeline_completed",
+        "artifact_path": null,
+        "artifact_hash_sha256": null,
+        "status": "success",
+        "reviewer": null,
+        "approval_timestamp": null,
+        "related_entry_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "notes": "Pipeline completed successfully. Steps: 22/22, Artifacts: 18, Checkpoints: 8/8 passed, Review cycles: 2, Vetos: 1 triggered / 1 resolved."
+      }
+    ]
+  ]
+}

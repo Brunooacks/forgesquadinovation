@@ -1,0 +1,32 @@
+# ForgeSquad Framework Configuration
+version: "1.1.0"
+release_date: "2026-03-17"
+codename: "Ricardo"
+
+# ForgeSquad Model Tier Configuration
+#
+# Tier meanings per environment:
+#   powerful — strongest available model
+#              Claude Code: claude-opus  |  Cursor: claude-opus  |  Copilot: gpt-4o
+#   fast     — fastest/lightest available model
+#              Claude Code: claude-haiku  |  Cursor: claude-haiku  |  Copilot: gpt-4o-mini
+#
+# Rules:
+#   - orchestrator (Architect, Pipeline Runner): always powerful — design decisions need deep reasoning
+#   - architect: always powerful — system design is non-negotiable quality
+#   - developer: powerful for implementation, fast for boilerplate generation
+#   - qa: powerful for test strategy, fast for test generation
+#   - analyst: powerful for requirements, fast for documentation formatting
+#   - techwriter: fast — documentation follows established patterns
+#   - projectmanager: fast — report generation from structured data
+models:
+  orchestrator: powerful
+  architect: powerful
+  tech_lead: powerful
+  business_analyst: powerful
+  developer_backend: powerful
+  developer_frontend: powerful
+  qa_engineer: powerful
+  tech_writer: fast
+  finance_advisor: powerful
+  project_manager: fast

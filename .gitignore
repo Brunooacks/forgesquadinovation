@@ -1,0 +1,39 @@
+# ForgeSquad - Memory (company-specific, not shared)
+_forgesquad/_memory/company.md
+_forgesquad/_memory/tech-stack.md
+_forgesquad/_memory/preferences.md
+_forgesquad/_browser_profile/
+_forgesquad/_investigations/
+
+# Squad runtime data
+squads/*/state.json
+squads/*/output/
+squads/*/reports/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code (local session data)
+.claude/
+
+# External repos (submodules)
+zynta/

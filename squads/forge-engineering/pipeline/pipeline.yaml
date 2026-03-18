@@ -1,0 +1,335 @@
+name: "Pipeline — Forge Engineering Squad"
+version: "1.0.0"
+created: "2026-03-16"
+squad: "forge-engineering"
+
+description: >
+  Pipeline completo de engenharia de software cobrindo todo o ciclo de vida —
+  da estimativa de complexidade até a publicação em produção e sustentação.
+  Checkpoints garantem aprovação humana em decisões críticas. Todas as
+  transições entre agentes diferentes requerem aprovação humana (Human
+  Approval Gates). O Arquiteto participa em todas as fases como guardião
+  da qualidade arquitetural. Trilha de auditoria completa para rastreabilidade.
+
+mode: "quality-first"
+
+steps:
+  # === FASE 0: ESTIMATIVA ===
+  - id: step-00
+    name: "Estimativa de Projeto — Análise de Complexidade"
+    type: checkpoint
+    file: steps/step-00-estimation.md
+    phase: estimation
+
+  # === FASE 1: REQUISITOS ===
+  - id: step-01
+    name: "Briefing do Projeto"
+    type: checkpoint
+    file: steps/step-01-project-briefing.md
+    depends_on: step-00
+    phase: requirements
+
+  - id: step-02
+    name: "Elicitação de Requisitos"
+    type: agent
+    agent: business-analyst
+    tasks:
+      - elicit-requirements
+      - write-user-stories
+    file: steps/step-02-requirements.md
+    depends_on: step-01
+    phase: requirements
+
+  - id: step-03
+    name: "Aprovação dos Requisitos"
+    type: checkpoint
+    file: steps/step-03-approve-requirements.md
+    depends_on: step-02
+    phase: requirements
+
+  - id: step-03b
+    name: "Parecer de Negócios — Setor Financeiro"
+    type: agent
+    agent: finance-advisor
+    tasks:
+      - validate-business-compliance
+      - regulatory-impact-analysis
+    file: steps/step-03b-financial-business-review.md
+    depends_on: step-03
+    phase: requirements
+
+  # === FASE 2: ARQUITETURA ===
+  - id: step-04
+    name: "Design de Arquitetura"
+    type: agent
+    agent: architect
+    tasks:
+      - design-architecture
+      - create-adr
+    file: steps/step-04-architecture-design.md
+    depends_on: step-03b
+    phase: architecture
+
+  - id: step-05
+    name: "Revisão Arquitetural"
+    type: architectural_review
+    file: steps/step-05-architecture-review.md
+    depends_on: step-04
+    phase: architecture
+
+  - id: step-05b
+    name: "Validação Regulatória da Arquitetura"
+    type: agent
+    agent: finance-advisor
+    tasks:
+      - financial-architecture-review
+    file: steps/step-05b-financial-architecture-review.md
+    depends_on: step-05
+    phase: architecture
+
+  # === FASE 3: PLANEJAMENTO ===
+  - id: step-06
+    name: "Sprint Planning"
+    type: agent
+    agent: tech-lead
+    tasks:
+      - plan-sprint
+    file: steps/step-06-sprint-planning.md
+    depends_on: step-05b
+    phase: planning
+
+  - id: step-07
+    name: "Definição de Estratégia de Testes"
+    type: agent
+    agent: qa-engineer
+    tasks:
+      - define-test-strategy
+    file: steps/step-07-test-strategy.md
+    depends_on: step-06
+    phase: planning
+
+  - id: step-08
+    name: "Aprovação do Plano de Sprint"
+    type: checkpoint
+    file: steps/step-08-approve-plan.md
+    depends_on: step-07
+    phase: planning
+
+  # === FASE 4: IMPLEMENTAÇÃO ===
+  - id: step-09
+    name: "Implementação Backend"
+    type: agent
+    agent: dev-backend
+    tasks:
+      - implement-api
+      - model-database
+      - write-unit-tests
+    file: steps/step-09-backend-impl.md
+    depends_on: step-08
+    phase: implementation
+
+  - id: step-10
+    name: "Implementação Frontend"
+    type: agent
+    agent: dev-frontend
+    tasks:
+      - implement-ui
+      - integrate-api
+      - write-component-tests
+    file: steps/step-10-frontend-impl.md
+    depends_on: step-09
+    phase: implementation
+
+  - id: step-11
+    name: "Checkpoint de Implementação"
+    type: checkpoint
+    file: steps/step-11-impl-checkpoint.md
+    depends_on: step-10
+    phase: implementation
+
+  # === FASE 5: QUALIDADE ===
+  - id: step-12
+    name: "Testes Automatizados"
+    type: agent
+    agent: qa-engineer
+    tasks:
+      - write-test-cases
+      - automate-tests
+      - run-regression
+    file: steps/step-12-automated-tests.md
+    depends_on: step-11
+    phase: quality
+
+  - id: step-13
+    name: "Testes de Performance"
+    type: agent
+    agent: qa-engineer
+    tasks:
+      - performance-test
+    file: steps/step-13-performance-tests.md
+    depends_on: step-12
+    phase: quality
+    optional: true
+
+  # === FASE 6: CODE REVIEW ===
+  - id: step-14
+    name: "Code Review"
+    type: code_review
+    agent: tech-lead
+    tasks:
+      - review-code
+    file: steps/step-14-code-review.md
+    depends_on: step-13
+    on_reject: step-09
+    max_review_cycles: 3
+    phase: review
+
+  - id: step-15
+    name: "Revisão Arquitetural do Código"
+    type: agent
+    agent: architect
+    tasks:
+      - review-architecture
+    file: steps/step-15-arch-code-review.md
+    depends_on: step-14
+    phase: review
+
+  # === FASE 7: DOCUMENTAÇÃO ===
+  - id: step-16
+    name: "Documentação Técnica"
+    type: agent
+    agent: tech-writer
+    tasks:
+      - write-api-docs
+      - write-runbook
+      - write-release-notes
+    file: steps/step-16-documentation.md
+    depends_on: step-15
+    phase: documentation
+
+  # === FASE 8: DEPLOY ===
+  - id: step-17
+    name: "Go/No-Go para Produção"
+    type: checkpoint
+    file: steps/step-17-go-nogo.md
+    depends_on: step-16
+    phase: deployment
+
+  - id: step-17b
+    name: "Sign-off Regulatório para Produção"
+    type: agent
+    agent: finance-advisor
+    tasks:
+      - validate-business-compliance
+      - regulatory-impact-analysis
+    file: steps/step-17b-financial-go-nogo.md
+    depends_on: step-17
+    phase: deployment
+
+  - id: step-18
+    name: "Deploy em Produção"
+    type: agent
+    agent: dev-backend
+    tasks:
+      - create-integration
+    file: steps/step-18-deploy.md
+    depends_on: step-17b
+    phase: deployment
+
+  # === FASE 9: SUSTENTAÇÃO ===
+  - id: step-19
+    name: "Relatório Final e Handover para Sustentação"
+    type: agent
+    agent: project-manager
+    tasks:
+      - generate-status-report
+    file: steps/step-19-final-report.md
+    depends_on: step-18
+    phase: sustaining
+
+  - id: step-19b
+    name: "Relatório de Auditoria"
+    type: agent
+    agent: project-manager
+    tasks:
+      - generate-audit-report
+    file: steps/step-19b-audit-report.md
+    depends_on: step-19
+    phase: sustaining
+
+  - id: step-20
+    name: "Encerramento"
+    type: checkpoint
+    file: steps/step-20-closure.md
+    depends_on: step-19b
+    phase: sustaining
+
+checkpoints:
+  - step-00  # Estimativa de projeto (escolha de opção A/B)
+  - step-01  # Briefing do projeto
+  - step-03  # Aprovação requisitos
+  - step-05  # Revisão arquitetural
+  - step-08  # Aprovação plano de sprint
+  - step-11  # Checkpoint implementação
+  - step-17  # Go/No-Go produção
+  - step-20  # Encerramento
+
+phases:
+  - name: estimation
+    label: "Estimativa"
+    icon: "📊"
+  - name: requirements
+    label: "Requisitos"
+    icon: "📋"
+  - name: architecture
+    label: "Arquitetura"
+    icon: "🏗️"
+  - name: planning
+    label: "Planejamento"
+    icon: "📅"
+  - name: implementation
+    label: "Implementação"
+    icon: "⚙️"
+  - name: quality
+    label: "Qualidade"
+    icon: "🔍"
+  - name: review
+    label: "Code Review"
+    icon: "👀"
+  - name: documentation
+    label: "Documentação"
+    icon: "📝"
+  - name: deployment
+    label: "Deploy"
+    icon: "🚀"
+  - name: sustaining
+    label: "Sustentação"
+    icon: "🔧"
+
+output:
+  artifacts:
+    - output/estimation/project-estimation.md
+    - output/estimation/config-override.yaml
+    - output/requirements/user-stories.md
+    - output/requirements/acceptance-criteria.md
+    - output/requirements/financial-business-review.md
+    - output/requirements/regulatory-requirements.md
+    - output/architecture/architecture-design.md
+    - output/architecture/adrs/
+    - output/architecture/financial-architecture-review.md
+    - output/architecture/compliance-matrix.md
+    - output/planning/sprint-backlog.md
+    - output/planning/test-strategy.md
+    - output/implementation/backend/
+    - output/implementation/frontend/
+    - output/quality/test-report.md
+    - output/quality/performance-report.md
+    - output/review/code-review-report.md
+    - output/documentation/api-docs.md
+    - output/documentation/runbook.md
+    - output/documentation/release-notes.md
+    - output/deployment/regulatory-signoff.md
+    - output/deployment/compliance-checklist-final.md
+    - output/deployment/deploy-report.md
+    - output/reports/final-report.md
+    - output/reports/audit-report.md

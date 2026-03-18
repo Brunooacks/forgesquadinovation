@@ -1,0 +1,34 @@
+# ForgeSquad Best Practices Catalog
+practices:
+  - id: api-design
+    name: "API Design Best Practices"
+    file: api-design.md
+    agents: [dev-backend, architect]
+  - id: code-review
+    name: "Code Review Guidelines"
+    file: code-review.md
+    agents: [tech-lead, architect]
+  - id: testing
+    name: "Testing Best Practices"
+    file: testing.md
+    agents: [qa-engineer]
+  - id: documentation
+    name: "Technical Documentation Standards"
+    file: documentation.md
+    agents: [tech-writer]
+  - id: requirements
+    name: "Requirements Engineering"
+    file: requirements.md
+    agents: [business-analyst]
+  - id: deployment
+    name: "Deployment & CI/CD"
+    file: deployment.md
+    agents: [dev-backend, architect]
+  - id: security
+    name: "Security Best Practices"
+    file: security.md
+    agents: [architect, qa-engineer]
+  - id: observability
+    name: "Observability & Monitoring"
+    file: observability.md
+    agents: [architect, dev-backend]

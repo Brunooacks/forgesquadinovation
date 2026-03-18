@@ -1,0 +1,98 @@
+name: "Forge Engineering Squad"
+code: "forge-engineering"
+description: >
+  Squad completo de engenharia de software que cobre todo o ciclo de vida —
+  desde a engenharia de requisitos e análise reversa até a publicação em
+  produção e sustentação. Inclui arquiteto, tech lead, analistas de negócio,
+  consultor financeiro (Bacen/BIAN/compliance), desenvolvedores, QAs, tech
+  writer e gerente de projeto com reports automatizados em cada checkpoint.
+icon: "🏗️"
+version: "1.0.0"
+created: "2026-03-16"
+project_type: "fullstack"
+delivery_model: "greenfield"
+
+tech_stack:
+  backend: "Node.js / Python / Java (configurable)"
+  frontend: "React / Angular / Vue (configurable)"
+  database: "PostgreSQL / MongoDB (configurable)"
+  infra: "AWS / Azure / GCP (configurable)"
+  ci_cd: "GitHub Actions / GitLab CI / Jenkins"
+
+company: "_forgesquad/_memory/company.md"
+preferences: "_forgesquad/_memory/preferences.md"
+memory: "_memory/memories.md"
+
+target_audience: "Engineering teams building enterprise software"
+platform: "Software Delivery"
+performance_mode: "quality-first"
+
+skills:
+  - web_search
+  - web_fetch
+  - devin
+  - copilot
+  - stackspot
+  - kiro
+  - jira-sync
+  - sonarqube
+
+data:
+  - pipeline/data/coding-standards.md
+  - pipeline/data/architecture-guidelines.md
+  - pipeline/data/testing-strategy.md
+  - pipeline/data/definition-of-done.md
+  - pipeline/data/definition-of-ready.md
+  - pipeline/data/deployment-checklist.md
+
+agents:
+  - id: architect
+    name: "Arq. Sofia Sistemas"
+    icon: "🏗️"
+    custom: agents/architect.agent.md
+
+  - id: tech-lead
+    name: "TL Rafael Review"
+    icon: "📋"
+    custom: agents/tech-lead.agent.md
+
+  - id: business-analyst
+    name: "BA Clara Requisitos"
+    icon: "📊"
+    custom: agents/business-analyst.agent.md
+
+  - id: dev-backend
+    name: "Dev Bruno Backend"
+    icon: "🔧"
+    custom: agents/dev-backend.agent.md
+
+  - id: dev-frontend
+    name: "Dev Fernanda Front"
+    icon: "🎨"
+    custom: agents/dev-frontend.agent.md
+
+  - id: qa-engineer
+    name: "QA Quésia Quality"
+    icon: "🔍"
+    custom: agents/qa-engineer.agent.md
+
+  - id: tech-writer
+    name: "TW Daniela Docs"
+    icon: "📝"
+    custom: agents/tech-writer.agent.md
+
+  - id: finance-advisor
+    name: "FIN Ricardo Regulação"
+    icon: "🏦"
+    custom: agents/finance-advisor.agent.md
+
+  - id: project-manager
+    name: "PM Pedro Progress"
+    icon: "📈"
+    custom: agents/project-manager.agent.md
+
+pipeline:
+  entry: pipeline/pipeline.yaml
+
+output_dir: output/
+reports_dir: reports/
