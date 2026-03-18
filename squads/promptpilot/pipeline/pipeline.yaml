@@ -1,0 +1,191 @@
+name: "PromptPilot — MVP Pipeline"
+description: >
+  Pipeline completa para construcao do MVP do PromptPilot.
+  9 fases com 4 checkpoints para aprovacao do stakeholder.
+
+phases:
+  # ═══════════════════════════════════════
+  # FASE 1 — REQUIREMENTS
+  # ═══════════════════════════════════════
+  - id: requirements
+    name: "Levantamento de Requisitos"
+    type: agent
+    file: steps/01-requirements.md
+    agent: business-analyst
+    execution: subagent
+    tasks:
+      - Mapear categorias de prompts (modernizacao, refactoring, cloud, testing, docs, architecture)
+      - Definir user stories para CLI, Web Dashboard e Robo Gerador
+      - Especificar formato do prompt (frontmatter YAML + body Markdown)
+      - Definir criterios de aceitacao para cada modulo
+      - Mapear personas de usuario (dev senior, dev junior, tech lead, architect)
+    depends_on: []
+
+  - id: checkpoint-requirements
+    name: "Aprovacao de Requisitos"
+    type: checkpoint
+    file: steps/checkpoint-requirements.md
+    description: "Bruno revisa e aprova os requisitos antes de prosseguir"
+    depends_on: [requirements]
+
+  # ═══════════════════════════════════════
+  # FASE 2 — ARCHITECTURE DESIGN
+  # ═══════════════════════════════════════
+  - id: architecture
+    name: "Design de Arquitetura"
+    type: agent
+    file: steps/02-architecture.md
+    agent: architect
+    execution: inline
+    tasks:
+      - Definir arquitetura do sistema (CLI + API + Web + Core Engine)
+      - Desenhar modelo de dados (prompts, templates, usuarios, metricas)
+      - Definir API contracts (REST endpoints)
+      - Definir estrutura do repositorio Git de prompts
+      - Definir integracao com LLMs (Claude API + OpenAI fallback)
+      - Criar ADR para decisoes arquiteturais chave
+    depends_on: [checkpoint-requirements]
+
+  - id: checkpoint-architecture
+    name: "Aprovacao de Arquitetura"
+    type: checkpoint
+    file: steps/checkpoint-architecture.md
+    description: "Bruno revisa e aprova a arquitetura antes da implementacao"
+    depends_on: [architecture]
+
+  # ═══════════════════════════════════════
+  # FASE 3 — SPRINT PLANNING
+  # ═══════════════════════════════════════
+  - id: sprint-planning
+    name: "Planejamento de Sprint"
+    type: agent
+    file: steps/03-sprint-planning.md
+    agent: tech-lead
+    execution: inline
+    tasks:
+      - Quebrar user stories em tasks tecnicas
+      - Priorizar tasks por valor e dependencia
+      - Atribuir tasks aos agentes desenvolvedores
+      - Definir Definition of Done para o MVP
+    depends_on: [checkpoint-architecture]
+
+  # ═══════════════════════════════════════
+  # FASE 4 — CORE ENGINE + BACKEND
+  # ═══════════════════════════════════════
+  - id: core-backend
+    name: "Core Engine + Backend API"
+    type: agent
+    file: steps/04-core-backend.md
+    agent: dev-backend
+    execution: subagent
+    tasks:
+      - Implementar Prompt Registry (CRUD de prompts, busca, categorias, tags)
+      - Implementar Template Engine (parsing YAML, renderizacao Handlebars)
+      - Implementar LLM Adapter (Claude API integration, fallback OpenAI)
+      - Implementar API REST (NestJS controllers, services, DTOs)
+      - Implementar persistencia (PostgreSQL + Git-based storage)
+      - Implementar autenticacao basica (JWT)
+    depends_on: [sprint-planning]
+
+  # ═══════════════════════════════════════
+  # FASE 5 — CLI TOOL
+  # ═══════════════════════════════════════
+  - id: cli-tool
+    name: "CLI Tool"
+    type: agent
+    file: steps/05-cli-tool.md
+    agent: dev-cli
+    execution: subagent
+    tasks:
+      - Implementar comando `promptpilot search` (busca por texto, categoria, tag)
+      - Implementar comando `promptpilot use <id>` (copiar prompt para clipboard)
+      - Implementar comando `promptpilot generate` (gerar agente/script via template+LLM)
+      - Implementar comando `promptpilot list` (listar prompts por categoria)
+      - Implementar comando `promptpilot add` (adicionar novo prompt ao repositorio)
+      - Implementar output formatado (cores, tabelas, spinners)
+    depends_on: [core-backend]
+
+  # ═══════════════════════════════════════
+  # FASE 6 — WEB DASHBOARD
+  # ═══════════════════════════════════════
+  - id: web-dashboard
+    name: "Web Dashboard"
+    type: agent
+    file: steps/06-web-dashboard.md
+    agent: dev-frontend
+    execution: subagent
+    tasks:
+      - Implementar layout base (sidebar, header, content area)
+      - Implementar pagina de busca de prompts (filtros, categorias, tags)
+      - Implementar pagina de detalhe do prompt (preview, copiar, favoritar)
+      - Implementar CRUD de prompts (criar, editar, deletar)
+      - Implementar dashboard de metricas (top prompts, uso por categoria, tendencias)
+      - Implementar pagina do Robo Gerador (formulario, preview, download)
+    depends_on: [core-backend]
+
+  - id: checkpoint-implementation
+    name: "Revisao de Implementacao"
+    type: checkpoint
+    file: steps/checkpoint-implementation.md
+    description: "Bruno revisa CLI, Web e Core Engine antes de QA"
+    depends_on: [cli-tool, web-dashboard]
+
+  # ═══════════════════════════════════════
+  # FASE 7 — MODERNIZATION KIT
+  # ═══════════════════════════════════════
+  - id: modernization-kit
+    name: "Kit de Modernizacao"
+    type: agent
+    file: steps/07-modernization-kit.md
+    agent: dev-backend
+    execution: subagent
+    tasks:
+      - Criar templates de agente para migracao de legado (Java 8→17, AngularJS→Angular, jQuery→React)
+      - Criar templates de agente para refactoring (SOLID, Clean Architecture, DDD)
+      - Criar templates de agente para cloud migration (Docker, Terraform, Kubernetes)
+      - Criar prompts curados para cada cenario de modernizacao
+      - Validar geracao via LLM com contexto de projeto
+    depends_on: [checkpoint-implementation]
+
+  # ═══════════════════════════════════════
+  # FASE 8 — TESTING & QA
+  # ═══════════════════════════════════════
+  - id: testing
+    name: "Testing & QA"
+    type: agent
+    file: steps/08-testing.md
+    agent: qa-engineer
+    execution: subagent
+    tasks:
+      - Testes unitarios para Core Engine (Registry, Template Engine, LLM Adapter)
+      - Testes de integracao para API REST
+      - Testes E2E para CLI (comandos principais)
+      - Testes E2E para Web Dashboard (fluxos criticos)
+      - Testes de geracao de agentes (output valido, templates corretos)
+      - Cobertura minima de 80%
+    depends_on: [modernization-kit]
+
+  # ═══════════════════════════════════════
+  # FASE 9 — DOCUMENTATION
+  # ═══════════════════════════════════════
+  - id: documentation
+    name: "Documentacao"
+    type: agent
+    file: steps/09-documentation.md
+    agent: tech-writer
+    execution: inline
+    tasks:
+      - README.md completo (instalacao, uso, exemplos)
+      - Guia de uso da CLI (todos os comandos com exemplos)
+      - Guia de uso do Web Dashboard
+      - Guia de criacao de prompts (formato, frontmatter, boas praticas)
+      - Guia de criacao de templates de modernizacao
+      - API documentation (OpenAPI/Swagger)
+    depends_on: [testing]
+
+  - id: checkpoint-final
+    name: "Aprovacao Final"
+    type: checkpoint
+    file: steps/checkpoint-final.md
+    description: "Bruno aprova o MVP para deploy"
+    depends_on: [documentation]
