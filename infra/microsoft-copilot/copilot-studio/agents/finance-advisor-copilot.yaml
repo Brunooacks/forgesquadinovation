@@ -1,0 +1,458 @@
+# ForgeSquad - Finance Advisor Copilot
+# Copilot Studio Configuration
+# This YAML defines the Finance Advisor agent for Microsoft Copilot Studio
+
+copilot:
+  name: "ForgeSquad-FinanceAdvisor"
+  display_name: "ForgeSquad Finance Advisor"
+  description: >
+    Agente especializado em compliance financeiro, regulatorio e governanca.
+    Valida conformidade com Bacen, BIAN, Basel III/IV, LGPD, SOX e outras
+    regulamentacoes aplicaveis ao setor financeiro.
+  language: "pt-BR"
+  fallback_language: "en-US"
+
+  # Azure OpenAI Configuration
+  generative_ai:
+    model: "gpt-4o"
+    deployment: "forgesquad-gpt4o"
+    endpoint: "${AZURE_OPENAI_ENDPOINT}"
+    temperature: 0.2
+    max_tokens: 4096
+    top_p: 0.85
+
+  # System Instructions
+  instructions: |
+    Voce e o **Finance Advisor** do ForgeSquad, especialista em compliance
+    financeiro e regulatorio para projetos de tecnologia no setor financeiro.
+
+    ## Seu Papel
+    Voce atua como consultor regulatorio, garantindo que todas as decisoes
+    tecnicas e arquiteturais estejam em conformidade com as regulamentacoes
+    aplicaveis. Voce participa principalmente nas fases de Architecture,
+    Planning e Deployment.
+
+    ## Responsabilidades
+    1. **Compliance Regulatorio**: Validar aderencia a Bacen, CVM, Susep
+    2. **Framework BIAN**: Garantir alinhamento com Banking Industry Architecture Network
+    3. **Basel III/IV**: Validar requisitos de capital e risco
+    4. **LGPD/GDPR**: Garantir protecao de dados pessoais
+    5. **SOX**: Controles internos para empresas listadas
+    6. **PCI-DSS**: Seguranca de dados de cartao
+    7. **Open Finance**: Conformidade com padroes do Banco Central
+
+    ## Regulamentacoes Chave
+
+    ### Banco Central do Brasil (Bacen)
+    - **Resolucao 4.893/2021**: Politica de seguranca cibernetica
+    - **Resolucao 4.658/2018**: Cloud computing em instituicoes financeiras
+    - **Circular 3.909/2018**: Instituicoes de pagamento
+    - **Resolucao BCB 85/2021**: Open Finance
+    - **Resolucao CMN 4.557/2017**: Gestao de riscos
+
+    ### BIAN (Banking Industry Architecture Network)
+    - Service Domains mapeados para o projeto
+    - Service Operations padronizadas
+    - Business Object Model alinhado
+
+    ### Basel III/IV
+    - Requisitos de capital minimo
+    - Liquidity Coverage Ratio (LCR)
+    - Net Stable Funding Ratio (NSFR)
+    - Risco operacional e de credito
+
+    ## Formato de Validacao
+    Para cada validacao de compliance, use este formato:
+
+    ### Resultado da Validacao
+    | Regulacao | Status | Risco | Acao Necessaria |
+    |-----------|--------|-------|-----------------|
+    | Bacen 4893 | Conforme / Nao-Conforme / Parcial | Alto/Medio/Baixo | Descricao |
+
+    ## Interacao com Outros Agentes
+    - Com **Architect**: Valide decisoes arquiteturais contra regulacoes
+    - Com **Tech Lead**: Oriente sobre controles tecnicos necessarios
+    - Com **QA**: Defina testes de compliance obrigatorios
+    - Com **Dev Backend**: Valide implementacao de controles
+
+  # Knowledge Sources
+  knowledge:
+    sources:
+      - type: "sharepoint"
+        name: "Regulamentacoes Bacen"
+        description: "Biblioteca de resolucoes e circulares do Banco Central"
+        url: "${SHAREPOINT_REGULATORY_LIBRARY_URL}"
+
+      - type: "sharepoint"
+        name: "BIAN Service Landscape"
+        description: "Mapeamento BIAN da instituicao"
+        url: "${SHAREPOINT_BIAN_URL}"
+
+      - type: "web"
+        name: "Bacen Normas"
+        url: "https://www.bcb.gov.br/estabilidadefinanceira/buscanormas"
+
+      - type: "web"
+        name: "BIAN Standards"
+        url: "https://bian.org/servicelandscape-12-0-0/"
+
+      - type: "file"
+        name: "Compliance Checklist"
+        path: "_forgesquad/_memory/compliance-checklist.md"
+
+      - type: "dataverse"
+        name: "Compliance History"
+        description: "Historico de validacoes de compliance"
+        table: "forgesquad_compliance_history"
+
+  # Actions (Plugins / Connectors)
+  actions:
+    - name: "ValidateCompliance"
+      description: "Valida conformidade de artefato contra regulacao especifica"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_COMPLIANCE_VALIDATOR_ID}"
+      inputs:
+        - name: "artifact_content"
+          type: "string"
+          description: "Conteudo do artefato a validar"
+        - name: "regulation"
+          type: "string"
+          enum:
+            - "bacen_4893"
+            - "bacen_4658"
+            - "lgpd"
+            - "sox"
+            - "pci_dss"
+            - "basel_iii"
+            - "open_finance"
+            - "bian"
+            - "all"
+          description: "Regulacao contra a qual validar"
+        - name: "artifact_type"
+          type: "string"
+          enum: ["architecture", "code", "api", "database", "infrastructure", "process"]
+      outputs:
+        - name: "compliant"
+          type: "boolean"
+        - name: "score"
+          type: "number"
+          description: "Score de conformidade 0-100"
+        - name: "findings"
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              regulation: { type: "string" }
+              requirement: { type: "string" }
+              status: { type: "string", enum: ["compliant", "non_compliant", "partial", "not_applicable"] }
+              risk_level: { type: "string", enum: ["critical", "high", "medium", "low"] }
+              remediation: { type: "string" }
+
+    - name: "CheckBIANAlignment"
+      description: "Verifica alinhamento com Service Domains do BIAN"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_BIAN_CHECKER_ID}"
+      inputs:
+        - name: "service_description"
+          type: "string"
+          description: "Descricao do servico/API"
+        - name: "domain_area"
+          type: "string"
+          enum:
+            - "sales_and_service"
+            - "operations_and_execution"
+            - "risk_and_compliance"
+            - "business_support"
+            - "reference_data"
+      outputs:
+        - name: "matched_service_domain"
+          type: "string"
+        - name: "service_operations"
+          type: "array"
+        - name: "alignment_score"
+          type: "number"
+        - name: "recommendations"
+          type: "array"
+
+    - name: "GenerateComplianceReport"
+      description: "Gera relatorio de compliance consolidado"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_COMPLIANCE_REPORT_ID}"
+      inputs:
+        - name: "project_name"
+          type: "string"
+        - name: "run_id"
+          type: "string"
+        - name: "regulations"
+          type: "array"
+          items: { type: "string" }
+      outputs:
+        - name: "report_url"
+          type: "string"
+        - name: "overall_score"
+          type: "number"
+        - name: "critical_findings"
+          type: "integer"
+        - name: "high_findings"
+          type: "integer"
+
+    - name: "CheckDataClassification"
+      description: "Classifica dados e verifica requisitos LGPD"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_DATA_CLASSIFICATION_ID}"
+      inputs:
+        - name: "data_description"
+          type: "string"
+          description: "Descricao dos dados tratados"
+        - name: "processing_purpose"
+          type: "string"
+          description: "Finalidade do tratamento"
+        - name: "data_subjects"
+          type: "string"
+          description: "Titulares dos dados"
+      outputs:
+        - name: "classification"
+          type: "string"
+          enum: ["public", "internal", "confidential", "restricted"]
+        - name: "contains_personal_data"
+          type: "boolean"
+        - name: "contains_sensitive_data"
+          type: "boolean"
+        - name: "legal_basis"
+          type: "string"
+        - name: "required_controls"
+          type: "array"
+
+    - name: "SaveComplianceFinding"
+      description: "Registra finding de compliance no Dataverse"
+      type: "dataverse_create"
+      table: "forgesquad_compliance_history"
+      inputs:
+        - name: "run_id"
+          type: "string"
+        - name: "regulation"
+          type: "string"
+        - name: "finding_type"
+          type: "string"
+        - name: "risk_level"
+          type: "string"
+        - name: "description"
+          type: "string"
+        - name: "remediation"
+          type: "string"
+        - name: "status"
+          type: "string"
+          enum: ["open", "in_progress", "resolved", "accepted"]
+
+  # Topics
+  topics:
+    - name: "ComplianceCheck"
+      display_name: "Validacao de Compliance"
+      description: "Valida conformidade de artefato ou decisao contra regulamentacoes"
+      trigger_phrases:
+        - "validar compliance"
+        - "verificar conformidade"
+        - "compliance check"
+        - "esta em conformidade?"
+        - "valida regulatorio"
+      nodes:
+        - type: "message"
+          text: "Vou realizar a validacao de compliance. Preciso entender o que sera validado."
+        - type: "question"
+          variable: "artifact_description"
+          text: "Descreva o artefato, decisao ou implementacao a ser validada:"
+        - type: "question"
+          variable: "artifact_type"
+          text: |
+            Qual o tipo do artefato?
+            1. Arquitetura de sistema
+            2. Codigo/API
+            3. Modelo de dados
+            4. Infraestrutura
+            5. Processo de negocio
+        - type: "question"
+          variable: "applicable_regulations"
+          text: |
+            Quais regulamentacoes aplicar? (selecione todas relevantes)
+            1. Bacen (4893 - Seguranca Cibernetica)
+            2. Bacen (4658 - Cloud Computing)
+            3. LGPD (Protecao de Dados)
+            4. SOX (Controles Internos)
+            5. PCI-DSS (Dados de Cartao)
+            6. Basel III/IV (Capital e Risco)
+            7. Open Finance (Bacen)
+            8. BIAN (Arquitetura Bancaria)
+            9. Todas as aplicaveis
+        - type: "action"
+          action: "ValidateCompliance"
+        - type: "generative_answer"
+          prompt: |
+            Com base na validacao automatizada e seu conhecimento regulatorio,
+            forneca uma analise completa de compliance:
+
+            Artefato: {artifact_description}
+            Tipo: {artifact_type}
+            Regulacoes: {applicable_regulations}
+
+            Estruture em:
+            1. **Resumo Executivo**: Status geral de compliance
+            2. **Matriz de Conformidade**:
+               | Regulacao | Status | Risco | Detalhe |
+            3. **Findings Criticos**: Nao-conformidades que bloqueiam
+            4. **Findings de Atencao**: Pontos que requerem melhoria
+            5. **Recomendacoes**: Acoes corretivas priorizadas
+            6. **Impacto no Cronograma**: Estimativa de esforco adicional
+            7. **Decisao**: COMPLIANT / PARTIALLY_COMPLIANT / NON_COMPLIANT
+        - type: "action"
+          action: "SaveComplianceFinding"
+
+    - name: "RegulatoryReview"
+      display_name: "Revisao Regulatoria"
+      description: "Analise profunda de impacto regulatorio em decisoes do projeto"
+      trigger_phrases:
+        - "revisar regulatorio"
+        - "impacto regulatorio"
+        - "regulatory review"
+        - "analise de regulacao"
+      nodes:
+        - type: "message"
+          text: "Iniciando revisao regulatoria. Vou analisar o impacto das regulamentacoes no projeto."
+        - type: "question"
+          variable: "project_context"
+          text: "Descreva o contexto do projeto e o setor de atuacao:"
+        - type: "question"
+          variable: "decision_or_change"
+          text: "Qual decisao ou mudanca precisa ser avaliada?"
+        - type: "question"
+          variable: "data_involved"
+          text: "Que tipos de dados estao envolvidos? (pessoais, financeiros, transacionais, etc.)"
+        - type: "action"
+          action: "CheckDataClassification"
+        - type: "action"
+          action: "CheckBIANAlignment"
+        - type: "generative_answer"
+          prompt: |
+            Faca uma revisao regulatoria completa:
+
+            Contexto: {project_context}
+            Decisao/Mudanca: {decision_or_change}
+            Dados: {data_involved}
+
+            Analise:
+            1. **Regulamentacoes Aplicaveis**: Lista completa com justificativa
+            2. **Analise LGPD**:
+               - Dados pessoais identificados
+               - Base legal sugerida
+               - Controles necessarios (criptografia, anonimizacao, etc.)
+               - Necessidade de DPIA (Data Protection Impact Assessment)
+            3. **Analise Bacen**:
+               - Resolucoes aplicaveis
+               - Requisitos de seguranca cibernetica
+               - Requisitos de cloud computing (se aplicavel)
+            4. **Alinhamento BIAN**:
+               - Service Domains relevantes
+               - Service Operations sugeridas
+               - Gap analysis
+            5. **Analise Basel**:
+               - Impacto em risco operacional
+               - Requisitos de capital (se aplicavel)
+            6. **Recomendacoes Tecnicas**:
+               - Controles a implementar
+               - Padroes de seguranca
+               - Requisitos de auditoria
+            7. **Cronograma Regulatorio**:
+               - Prazos de conformidade
+               - Mudancas regulatorias previstas
+
+    - name: "LGPDAssessment"
+      display_name: "Assessment LGPD"
+      description: "Avaliacao especifica de conformidade com LGPD"
+      trigger_phrases:
+        - "assessment LGPD"
+        - "avaliar LGPD"
+        - "protecao de dados"
+        - "dados pessoais"
+        - "DPIA"
+      nodes:
+        - type: "message"
+          text: "Vou realizar o assessment de LGPD. Preciso mapear o tratamento de dados."
+        - type: "question"
+          variable: "data_types"
+          text: |
+            Quais tipos de dados serao tratados?
+            1. Dados cadastrais (nome, CPF, endereco)
+            2. Dados financeiros (conta, transacoes)
+            3. Dados biometricos
+            4. Dados de saude
+            5. Dados de localizacao
+            6. Dados de comportamento/navegacao
+            7. Outros (descreva)
+        - type: "question"
+          variable: "processing_operations"
+          text: "Quais operacoes de tratamento? (coleta, armazenamento, compartilhamento, etc.)"
+        - type: "question"
+          variable: "data_flow"
+          text: "Descreva o fluxo dos dados (origem, processamento, destino, retencao):"
+        - type: "action"
+          action: "CheckDataClassification"
+        - type: "generative_answer"
+          prompt: |
+            Realize um assessment LGPD completo:
+
+            Dados: {data_types}
+            Operacoes: {processing_operations}
+            Fluxo: {data_flow}
+
+            Estruture em:
+            1. **Mapeamento de Dados Pessoais**
+               | Dado | Categoria | Sensivel | Base Legal |
+            2. **Analise de Riscos ao Titular**
+            3. **Controles Necessarios**
+               - Criptografia (em transito e em repouso)
+               - Anonimizacao/Pseudonimizacao
+               - Controle de acesso
+               - Logs de auditoria
+               - Retencao e exclusao
+            4. **Necessidade de DPIA**: Sim/Nao com justificativa
+            5. **Direitos do Titular**: Como serao atendidos
+            6. **Requisitos de Consentimento**
+            7. **Plano de Resposta a Incidentes**
+            8. **Recomendacoes Arquiteturais**
+
+  # Channel Configuration
+  channels:
+    - type: "microsoft_teams"
+      enabled: true
+      app_name: "ForgeSquad Finance Advisor"
+      description: "Consultor regulatorio e compliance do ForgeSquad"
+
+    - type: "power_automate"
+      enabled: true
+
+  # Security & Governance
+  security:
+    authentication:
+      type: "azure_ad"
+      required: true
+      allowed_groups:
+        - "ForgeSquad-Users"
+        - "ForgeSquad-Admins"
+        - "Compliance-Team"
+        - "Risk-Team"
+
+    data_loss_prevention:
+      sensitive_topics_blocked: true
+      external_sharing: false
+
+    rate_limits:
+      messages_per_minute: 20
+      messages_per_day: 1000
+
+  analytics:
+    enabled: true
+    track_topics: true
+    custom_dimensions:
+      - "regulation"
+      - "risk_level"
+      - "compliance_status"
+      - "project_name"

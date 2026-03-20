@@ -1,0 +1,924 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "ForgeSquad — ARM Template for multi-agent orchestration framework on Azure",
+    "author": "ForgeSquad Team — NTT DATA",
+    "version": "1.0.0",
+    "date": "2026-03-20"
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": { "description": "Azure region for all resources" }
+    },
+    "environment": {
+      "type": "string",
+      "defaultValue": "dev",
+      "allowedValues": ["dev", "staging", "prod"],
+      "metadata": { "description": "Deployment environment" }
+    },
+    "projectName": {
+      "type": "string",
+      "defaultValue": "forgesquad",
+      "metadata": { "description": "Project name prefix" }
+    },
+    "agentContainerImage": {
+      "type": "string",
+      "defaultValue": "ghcr.io/forgesquad/agent-runtime:latest",
+      "metadata": { "description": "Container image for agent runtime" }
+    },
+    "apimSku": {
+      "type": "string",
+      "defaultValue": "Developer",
+      "allowedValues": ["Developer", "Standard", "Premium"],
+      "metadata": { "description": "API Management SKU" }
+    },
+    "enablePrivateLink": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": { "description": "Enable Private Link endpoints" }
+    },
+    "enableFrontDoor": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": { "description": "Enable Front Door with WAF" }
+    }
+  },
+  "variables": {
+    "suffix": "[concat(parameters('projectName'), '-', parameters('environment'))]",
+    "uniqueSuffix": "[uniqueString(resourceGroup().id, parameters('projectName'))]",
+    "vnetName": "[concat('vnet-', variables('suffix'))]",
+    "containerAppsEnvName": "[concat('cae-', variables('suffix'))]",
+    "functionAppName": "[concat('func-', variables('suffix'))]",
+    "apimName": "[concat('apim-', variables('suffix'))]",
+    "cosmosDbAccountName": "[concat('cosmos-', parameters('projectName'), '-', variables('uniqueSuffix'))]",
+    "storageAccountName": "[concat('st', replace(parameters('projectName'), '-', ''), variables('uniqueSuffix'))]",
+    "serviceBusName": "[concat('sb-', variables('suffix'))]",
+    "eventGridTopicName": "[concat('evgt-', variables('suffix'))]",
+    "keyVaultName": "[concat('kv-', parameters('projectName'), '-', variables('uniqueSuffix'))]",
+    "appInsightsName": "[concat('appi-', variables('suffix'))]",
+    "logAnalyticsName": "[concat('log-', variables('suffix'))]",
+    "functionStorageName": "[concat('stfunc', variables('uniqueSuffix'))]",
+    "hostingPlanName": "[concat('asp-', variables('suffix'))]",
+    "vnetAddressPrefix": "10.0.0.0/16",
+    "snetContainerApps": "10.0.1.0/23",
+    "snetFunctions": "10.0.4.0/24",
+    "snetApim": "10.0.5.0/24",
+    "snetPrivateEndpoints": "10.0.6.0/24",
+    "agentNames": [
+      "architect", "tech-lead", "business-analyst", "dev-backend",
+      "dev-frontend", "qa-engineer", "tech-writer", "project-manager", "devops"
+    ],
+    "isProd": "[equals(parameters('environment'), 'prod')]",
+    "retentionDays": "[if(variables('isProd'), 90, 30)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2023-09-01",
+      "name": "[variables('logAnalyticsName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "properties": {
+        "sku": { "name": "PerGB2018" },
+        "retentionInDays": "[variables('retentionDays')]"
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('appInsightsName')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
+      ],
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "IngestionMode": "LogAnalytics"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-01-01",
+      "name": "[concat('nsg-container-apps-', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowHTTPSOutbound",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "DenyAllInbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 4096,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-01-01",
+      "name": "[concat('nsg-functions-', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowVNetInbound",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DenyPublicInbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "Internet",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 4096,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-01-01",
+      "name": "[concat('nsg-apim-', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowFrontDoorInbound",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "443",
+              "sourceAddressPrefix": "AzureFrontDoor.Backend",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "AllowAPIMManagement",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3443",
+              "sourceAddressPrefix": "ApiManagement",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 110,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-01-01",
+      "name": "[concat('nsg-pe-', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowVNetOnly",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "DenyAllInbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Deny",
+              "priority": 4096,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2024-01-01",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-container-apps-', variables('suffix')))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-functions-', variables('suffix')))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-apim-', variables('suffix')))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-pe-', variables('suffix')))]"
+      ],
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": ["[variables('vnetAddressPrefix')]"]
+        },
+        "subnets": [
+          {
+            "name": "snet-container-apps",
+            "properties": {
+              "addressPrefix": "[variables('snetContainerApps')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-container-apps-', variables('suffix')))]"
+              }
+            }
+          },
+          {
+            "name": "snet-functions",
+            "properties": {
+              "addressPrefix": "[variables('snetFunctions')]",
+              "delegations": [
+                {
+                  "name": "Microsoft.Web.serverFarms",
+                  "properties": {
+                    "serviceName": "Microsoft.Web/serverFarms"
+                  }
+                }
+              ],
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-functions-', variables('suffix')))]"
+              }
+            }
+          },
+          {
+            "name": "snet-apim",
+            "properties": {
+              "addressPrefix": "[variables('snetApim')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-apim-', variables('suffix')))]"
+              }
+            }
+          },
+          {
+            "name": "snet-private-endpoints",
+            "properties": {
+              "addressPrefix": "[variables('snetPrivateEndpoints')]",
+              "privateEndpointNetworkPolicies": "Disabled",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat('nsg-pe-', variables('suffix')))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2023-07-01",
+      "name": "[variables('keyVaultName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "properties": {
+        "sku": { "family": "A", "name": "standard" },
+        "tenantId": "[subscription().tenantId]",
+        "enableRbacAuthorization": true,
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90,
+        "enablePurgeProtection": true,
+        "networkAcls": {
+          "defaultAction": "[if(parameters('enablePrivateLink'), 'Deny', 'Allow')]",
+          "bypass": "AzureServices"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-02-15-preview",
+      "name": "[variables('cosmosDbAccountName')]",
+      "location": "[parameters('location')]",
+      "kind": "GlobalDocumentDB",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "properties": {
+        "databaseAccountOfferType": "Standard",
+        "capabilities": [
+          { "name": "EnableServerless" }
+        ],
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "Session"
+        },
+        "locations": [
+          {
+            "locationName": "[parameters('location')]",
+            "failoverPriority": 0,
+            "isZoneRedundant": "[variables('isProd')]"
+          }
+        ],
+        "publicNetworkAccess": "[if(parameters('enablePrivateLink'), 'Disabled', 'Enabled')]",
+        "networkAclBypass": "AzureServices",
+        "disableLocalAuth": true
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases",
+      "apiVersion": "2024-02-15-preview",
+      "name": "[concat(variables('cosmosDbAccountName'), '/forgesquad-db')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]"
+      ],
+      "properties": {
+        "resource": { "id": "forgesquad-db" }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-02-15-preview",
+      "name": "[concat(variables('cosmosDbAccountName'), '/forgesquad-db/audit-trail')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'forgesquad-db')]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "audit-trail",
+          "partitionKey": {
+            "paths": ["/squadId"],
+            "kind": "Hash",
+            "version": 2
+          },
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "automatic": true,
+            "includedPaths": [
+              { "path": "/squadId/?" },
+              { "path": "/phase/?" },
+              { "path": "/step/?" },
+              { "path": "/timestamp/?" },
+              { "path": "/eventType/?" }
+            ],
+            "excludedPaths": [
+              { "path": "/*" }
+            ]
+          },
+          "defaultTtl": -1
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-02-15-preview",
+      "name": "[concat(variables('cosmosDbAccountName'), '/forgesquad-db/pipeline-state')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'forgesquad-db')]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "pipeline-state",
+          "partitionKey": {
+            "paths": ["/squadId"],
+            "kind": "Hash",
+            "version": 2
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2024-02-15-preview",
+      "name": "[concat(variables('cosmosDbAccountName'), '/forgesquad-db/checkpoints')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosDbAccountName'), 'forgesquad-db')]"
+      ],
+      "properties": {
+        "resource": {
+          "id": "checkpoints",
+          "partitionKey": {
+            "paths": ["/squadId"],
+            "kind": "Hash",
+            "version": 2
+          },
+          "defaultTtl": 2592000
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "sku": {
+        "name": "[if(variables('isProd'), 'Standard_GRS', 'Standard_LRS')]"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": false,
+        "networkAcls": {
+          "defaultAction": "[if(parameters('enablePrivateLink'), 'Deny', 'Allow')]",
+          "bypass": "AzureServices"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2023-05-01",
+      "name": "[concat(variables('storageAccountName'), '/default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+      ],
+      "properties": {
+        "isVersioningEnabled": true,
+        "changeFeed": {
+          "enabled": true,
+          "retentionInDays": "[variables('retentionDays')]"
+        },
+        "deleteRetentionPolicy": {
+          "enabled": true,
+          "days": 30
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": true,
+          "days": 30
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-05-01",
+      "name": "[concat(variables('storageAccountName'), '/default/artifacts')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storageAccountName'), 'default')]"
+      ],
+      "properties": {
+        "publicAccess": "None"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-05-01",
+      "name": "[concat(variables('storageAccountName'), '/default/reports')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storageAccountName'), 'default')]"
+      ],
+      "properties": {
+        "publicAccess": "None"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2023-05-01",
+      "name": "[concat(variables('storageAccountName'), '/default/pipeline-state')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('storageAccountName'), 'default')]"
+      ],
+      "properties": {
+        "publicAccess": "None"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[variables('serviceBusName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "sku": {
+        "name": "[if(variables('isProd'), 'Premium', 'Standard')]",
+        "tier": "[if(variables('isProd'), 'Premium', 'Standard')]",
+        "capacity": "[if(variables('isProd'), 1, 0)]"
+      },
+      "properties": {
+        "publicNetworkAccess": "[if(parameters('enablePrivateLink'), 'Disabled', 'Enabled')]",
+        "disableLocalAuth": true,
+        "minimumTlsVersion": "1.2"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[concat(variables('serviceBusName'), '/agent-messages')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+      ],
+      "properties": {
+        "maxSizeInMegabytes": 1024,
+        "defaultMessageTimeToLive": "P7D",
+        "enablePartitioning": true
+      }
+    },
+    {
+      "copy": {
+        "name": "agentSubscriptionsCopy",
+        "count": "[length(variables('agentNames'))]"
+      },
+      "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[concat(variables('serviceBusName'), '/agent-messages/sub-', variables('agentNames')[copyIndex()])]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces/topics', variables('serviceBusName'), 'agent-messages')]"
+      ],
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxDeliveryCount": 5,
+        "defaultMessageTimeToLive": "P7D",
+        "deadLetteringOnMessageExpiration": true
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[concat(variables('serviceBusName'), '/approval-requests')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+      ],
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": true,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 3,
+        "deadLetteringOnMessageExpiration": true,
+        "defaultMessageTimeToLive": "P7D"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[concat(variables('serviceBusName'), '/approval-responses')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+      ],
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "maxDeliveryCount": 3,
+        "deadLetteringOnMessageExpiration": true,
+        "defaultMessageTimeToLive": "P7D"
+      }
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2022-10-01-preview",
+      "name": "[concat(variables('serviceBusName'), '/pipeline-commands')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]"
+      ],
+      "properties": {
+        "lockDuration": "PT1M",
+        "maxSizeInMegabytes": 1024,
+        "maxDeliveryCount": 5,
+        "deadLetteringOnMessageExpiration": true
+      }
+    },
+    {
+      "type": "Microsoft.EventGrid/topics",
+      "apiVersion": "2024-06-01-preview",
+      "name": "[variables('eventGridTopicName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "inputSchema": "EventGridSchema",
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2024-03-01",
+      "name": "[variables('containerAppsEnvName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))).customerId]",
+            "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2023-09-01').primarySharedKey]"
+          }
+        },
+        "vnetConfiguration": {
+          "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-container-apps')]",
+          "internal": false
+        },
+        "daprAIInstrumentationKey": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName'))).InstrumentationKey]"
+      }
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2024-03-01",
+      "name": "[concat('agent-runtime-', variables('suffix'))]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppsEnvName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.EventGrid/topics', variables('eventGridTopicName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+      ],
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppsEnvName'))]",
+        "configuration": {
+          "ingress": {
+            "external": false,
+            "targetPort": 8080,
+            "transport": "http"
+          },
+          "dapr": {
+            "enabled": true,
+            "appId": "agent-runtime",
+            "appPort": 8080,
+            "appProtocol": "http"
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "agent-runtime",
+              "image": "[parameters('agentContainerImage')]",
+              "resources": {
+                "cpu": 0.5,
+                "memory": "1Gi"
+              },
+              "env": [
+                { "name": "ENVIRONMENT", "value": "[parameters('environment')]" },
+                { "name": "APPLICATIONINSIGHTS_CONNECTION_STRING", "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName'))).ConnectionString]" },
+                { "name": "COSMOS_DB_ENDPOINT", "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))).documentEndpoint]" },
+                { "name": "COSMOS_DB_DATABASE", "value": "forgesquad-db" },
+                { "name": "STORAGE_ACCOUNT_NAME", "value": "[variables('storageAccountName')]" },
+                { "name": "EVENTGRID_TOPIC_ENDPOINT", "value": "[reference(resourceId('Microsoft.EventGrid/topics', variables('eventGridTopicName'))).endpoint]" },
+                { "name": "KEY_VAULT_URI", "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))).vaultUri]" },
+                { "name": "MODEL_TIER_ARCHITECT", "value": "gpt-4o" },
+                { "name": "MODEL_TIER_SENIOR", "value": "gpt-4o-mini" },
+                { "name": "MODEL_TIER_STANDARD", "value": "gpt-4o-mini" },
+                { "name": "AGENT_COUNT", "value": "9" },
+                { "name": "PIPELINE_PHASES", "value": "10" },
+                { "name": "PIPELINE_STEPS", "value": "24" },
+                { "name": "CHECKPOINTS", "value": "9" }
+              ],
+              "probes": [
+                {
+                  "type": "Liveness",
+                  "httpGet": { "path": "/health", "port": 8080 },
+                  "initialDelaySeconds": 10,
+                  "periodSeconds": 30
+                },
+                {
+                  "type": "Readiness",
+                  "httpGet": { "path": "/ready", "port": 8080 },
+                  "initialDelaySeconds": 5,
+                  "periodSeconds": 10
+                }
+              ]
+            }
+          ],
+          "scale": {
+            "minReplicas": "[if(variables('isProd'), 1, 0)]",
+            "maxReplicas": "[if(variables('isProd'), 10, 3)]",
+            "rules": [
+              {
+                "name": "http-scaling",
+                "http": {
+                  "metadata": { "concurrentRequests": "10" }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2023-05-01",
+      "name": "[variables('functionStorageName')]",
+      "location": "[parameters('location')]",
+      "sku": { "name": "Standard_LRS" },
+      "kind": "StorageV2",
+      "properties": {
+        "supportsHttpsTrafficOnly": true,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false
+      }
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('hostingPlanName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "sku": {
+        "name": "[if(variables('isProd'), 'EP1', 'Y1')]",
+        "tier": "[if(variables('isProd'), 'ElasticPremium', 'Dynamic')]"
+      },
+      "properties": {
+        "reserved": false
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2023-12-01",
+      "name": "[variables('functionAppName')]",
+      "location": "[parameters('location')]",
+      "kind": "functionapp",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.ServiceBus/namespaces', variables('serviceBusName'))]",
+        "[resourceId('Microsoft.EventGrid/topics', variables('eventGridTopicName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.App/containerApps', concat('agent-runtime-', variables('suffix')))]"
+      ],
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+        "httpsOnly": true,
+        "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-functions')]",
+        "siteConfig": {
+          "ftpsState": "Disabled",
+          "minTlsVersion": "1.2",
+          "nodeVersion": "~20",
+          "appSettings": [
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('functionStorageName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('functionStorageName')), '2023-05-01').keys[0].value)]"
+            },
+            { "name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4" },
+            { "name": "FUNCTIONS_WORKER_RUNTIME", "value": "node" },
+            { "name": "WEBSITE_NODE_DEFAULT_VERSION", "value": "~20" },
+            { "name": "APPLICATIONINSIGHTS_CONNECTION_STRING", "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName'))).ConnectionString]" },
+            { "name": "COSMOS_DB_ENDPOINT", "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))).documentEndpoint]" },
+            { "name": "COSMOS_DB_DATABASE", "value": "forgesquad-db" },
+            { "name": "STORAGE_ACCOUNT_NAME", "value": "[variables('storageAccountName')]" },
+            { "name": "SERVICEBUS_NAMESPACE", "value": "[concat(variables('serviceBusName'), '.servicebus.windows.net')]" },
+            { "name": "EVENTGRID_TOPIC_ENDPOINT", "value": "[reference(resourceId('Microsoft.EventGrid/topics', variables('eventGridTopicName'))).endpoint]" },
+            { "name": "KEY_VAULT_URI", "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))).vaultUri]" },
+            { "name": "CONTAINER_APP_FQDN", "value": "[reference(resourceId('Microsoft.App/containerApps', concat('agent-runtime-', variables('suffix')))).configuration.ingress.fqdn]" }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2023-09-01-preview",
+      "name": "[variables('apimName')]",
+      "location": "[parameters('location')]",
+      "tags": {
+        "project": "ForgeSquad",
+        "environment": "[parameters('environment')]"
+      },
+      "sku": {
+        "name": "[parameters('apimSku')]",
+        "capacity": 1
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ],
+      "properties": {
+        "publisherEmail": "forgesquad@nttdata.com",
+        "publisherName": "ForgeSquad - NTT DATA",
+        "virtualNetworkType": "External",
+        "virtualNetworkConfiguration": {
+          "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetName'), 'snet-apim')]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "vnetId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+    },
+    "containerAppsEnvId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppsEnvName'))]"
+    },
+    "functionAppHostname": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/sites', variables('functionAppName'))).defaultHostName]"
+    },
+    "apimGatewayUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.ApiManagement/service', variables('apimName'))).gatewayUrl]"
+    },
+    "cosmosDbEndpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))).documentEndpoint]"
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[variables('storageAccountName')]"
+    },
+    "serviceBusNamespace": {
+      "type": "string",
+      "value": "[concat(variables('serviceBusName'), '.servicebus.windows.net')]"
+    },
+    "eventGridTopicEndpoint": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.EventGrid/topics', variables('eventGridTopicName'))).endpoint]"
+    },
+    "keyVaultUri": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))).vaultUri]"
+    },
+    "appInsightsConnectionString": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName'))).ConnectionString]"
+    }
+  }
+}

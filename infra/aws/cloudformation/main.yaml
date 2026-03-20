@@ -1,0 +1,1670 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  ForgeSquad Multi-Agent Orchestration Framework — Complete AWS Infrastructure.
+  Deploys VPC, ECS Fargate, API Gateway, Lambda, DynamoDB, S3, SQS, SNS,
+  Cognito, CloudWatch, WAF, and KMS resources.
+
+# ==============================================================================
+# Parametros / Parameters
+# ==============================================================================
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Deployment environment (dev, staging, prod)
+
+  ProjectName:
+    Type: String
+    Default: forgesquad
+    Description: Project name used for resource naming
+
+  VpcCidr:
+    Type: String
+    Default: '10.0.0.0/16'
+    Description: CIDR block for the VPC
+
+  NotificationEmail:
+    Type: String
+    Description: Email address for checkpoint notifications
+    AllowedPattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+
+  AgentImageUri:
+    Type: String
+    Description: ECR image URI for the ForgeSquad agent container
+    Default: '123456789012.dkr.ecr.us-east-1.amazonaws.com/forgesquad-agent:latest'
+
+  GoogleClientId:
+    Type: String
+    Default: ''
+    Description: Google OAuth Client ID for Cognito
+
+  GoogleClientSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Google OAuth Client Secret
+
+  MicrosoftClientId:
+    Type: String
+    Default: ''
+    Description: Microsoft OAuth Client ID for Cognito
+
+  MicrosoftClientSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Microsoft OAuth Client Secret
+
+  GitHubClientId:
+    Type: String
+    Default: ''
+    Description: GitHub OAuth Client ID for Cognito
+
+  GitHubClientSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: GitHub OAuth Client Secret
+
+  DomainName:
+    Type: String
+    Default: ''
+    Description: Custom domain name for the API (optional)
+
+Conditions:
+  IsProd: !Equals [!Ref EnvironmentName, 'prod']
+  IsNotDev: !Not [!Equals [!Ref EnvironmentName, 'dev']]
+  HasDomain: !Not [!Equals [!Ref DomainName, '']]
+  HasGoogle: !Not [!Equals [!Ref GoogleClientId, '']]
+  HasMicrosoft: !Not [!Equals [!Ref MicrosoftClientId, '']]
+  HasGitHub: !Not [!Equals [!Ref GitHubClientId, '']]
+
+# ==============================================================================
+# Recursos / Resources
+# ==============================================================================
+Resources:
+
+  # ============================================================================
+  # KMS — Chave de Criptografia / Encryption Key
+  # ============================================================================
+  ForgeSquadKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: !Sub '${ProjectName}-${EnvironmentName} master encryption key'
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: EnableRootAccountAccess
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: AllowServiceAccess
+            Effect: Allow
+            Principal:
+              Service:
+                - logs.amazonaws.com
+                - sqs.amazonaws.com
+                - sns.amazonaws.com
+                - s3.amazonaws.com
+                - dynamodb.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: '*'
+      EnableKeyRotation: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ForgeSquadKmsAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/${ProjectName}-${EnvironmentName}'
+      TargetKeyId: !Ref ForgeSquadKmsKey
+
+  # ============================================================================
+  # VPC — Rede / Networking
+  # ============================================================================
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-vpc'
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-igw'
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  # --- Public Subnets ---
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: '10.0.1.0/24'
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-public-a'
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: '10.0.2.0/24'
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-public-b'
+
+  # --- Private Subnets (Application) ---
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: '10.0.10.0/24'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-private-a'
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: '10.0.11.0/24'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-private-b'
+
+  # --- Isolated Subnets (Data) ---
+  IsolatedSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: '10.0.20.0/24'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-isolated-a'
+
+  IsolatedSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: '10.0.21.0/24'
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-isolated-b'
+
+  # --- NAT Gateway ---
+  NatGatewayEipA:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEipA.AllocationId
+      SubnetId: !Ref PublicSubnetA
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-nat-a'
+
+  NatGatewayEipB:
+    Type: AWS::EC2::EIP
+    Condition: IsProd
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGatewayB:
+    Type: AWS::EC2::NatGateway
+    Condition: IsProd
+    Properties:
+      AllocationId: !GetAtt NatGatewayEipB.AllocationId
+      SubnetId: !Ref PublicSubnetB
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-nat-b'
+
+  # --- Route Tables ---
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-public-rt'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateRouteTableA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-private-rt-a'
+
+  PrivateRouteA:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableA
+      DestinationCidrBlock: '0.0.0.0/0'
+      NatGatewayId: !Ref NatGatewayA
+
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTableA
+
+  PrivateRouteTableB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-private-rt-b'
+
+  PrivateRouteB:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableB
+      DestinationCidrBlock: '0.0.0.0/0'
+      NatGatewayId: !If [IsProd, !Ref NatGatewayB, !Ref NatGatewayA]
+
+  PrivateSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTableB
+
+  # --- Security Groups ---
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ECS Fargate tasks
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '0.0.0.0/0'
+          Description: HTTPS outbound for API calls
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-ecs-sg'
+
+  VpcEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for VPC endpoints
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref EcsSecurityGroup
+          Description: HTTPS from ECS tasks
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${EnvironmentName}-vpce-sg'
+
+  # --- VPC Endpoints ---
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      VpcId: !Ref VPC
+      VpcEndpointType: Gateway
+      RouteTableIds:
+        - !Ref PrivateRouteTableA
+        - !Ref PrivateRouteTableB
+
+  DynamoDBGatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.dynamodb'
+      VpcId: !Ref VPC
+      VpcEndpointType: Gateway
+      RouteTableIds:
+        - !Ref PrivateRouteTableA
+        - !Ref PrivateRouteTableB
+
+  SqsInterfaceEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sqs'
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref IsolatedSubnetA
+        - !Ref IsolatedSubnetB
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+
+  SnsInterfaceEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sns'
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref IsolatedSubnetA
+        - !Ref IsolatedSubnetB
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+
+  SecretsManagerInterfaceEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.secretsmanager'
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref IsolatedSubnetA
+        - !Ref IsolatedSubnetB
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+
+  LogsInterfaceEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.logs'
+      VpcId: !Ref VPC
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref IsolatedSubnetA
+        - !Ref IsolatedSubnetB
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+
+  # ============================================================================
+  # S3 — Armazenamento de Artefatos / Artifact Storage
+  # ============================================================================
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub '${ProjectName}-${EnvironmentName}-artifacts-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !Ref ForgeSquadKmsKey
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionToIA
+            Status: Enabled
+            Transitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 90
+          - Id: TransitionToGlacier
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 365
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ArtifactsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ArtifactsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyNonHttps
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt ArtifactsBucket.Arn
+              - !Sub '${ArtifactsBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': false
+
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub '${ProjectName}-${EnvironmentName}-reports-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'aws:kms'
+              KMSMasterKeyID: !Ref ForgeSquadKmsKey
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # DynamoDB — Trilha de Auditoria e Estado / Audit Trail and State
+  # ============================================================================
+  AuditTrailTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-${EnvironmentName}-audit-trail'
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref ForgeSquadKmsKey
+      AttributeDefinitions:
+        - AttributeName: pipelineId
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+        - AttributeName: agentRole
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pipelineId
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: agent-role-index
+          KeySchema:
+            - AttributeName: agentRole
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  PipelineStateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-${EnvironmentName}-pipeline-state'
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref ForgeSquadKmsKey
+      AttributeDefinitions:
+        - AttributeName: pipelineId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pipelineId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  CheckpointTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-${EnvironmentName}-checkpoints'
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !Ref ForgeSquadKmsKey
+      AttributeDefinitions:
+        - AttributeName: checkpointId
+          AttributeType: S
+        - AttributeName: pipelineId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: checkpointId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: pipeline-index
+          KeySchema:
+            - AttributeName: pipelineId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # SQS — Filas de Comunicacao / Communication Queues
+  # ============================================================================
+  AgentDispatchQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${ProjectName}-${EnvironmentName}-agent-dispatch'
+      VisibilityTimeout: 900
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ApprovalRequestQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${ProjectName}-${EnvironmentName}-approval-requests'
+      VisibilityTimeout: 43200
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  AgentResponseQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${ProjectName}-${EnvironmentName}-agent-responses'
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub '${ProjectName}-${EnvironmentName}-dead-letter'
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # SNS — Notificacoes / Notifications
+  # ============================================================================
+  CheckpointNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-${EnvironmentName}-checkpoint-notify'
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  CheckpointEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref CheckpointNotificationTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+
+  PipelineCompleteTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-${EnvironmentName}-pipeline-complete'
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ErrorAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-${EnvironmentName}-error-alerts'
+      KmsMasterKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ErrorAlertsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref ErrorAlertsTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+
+  # ============================================================================
+  # Cognito — Autenticacao / Authentication
+  # ============================================================================
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${ProjectName}-${EnvironmentName}-users'
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      MfaConfiguration: !If [IsProd, 'ON', 'OPTIONAL']
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+          TemporaryPasswordValidityDays: 1
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+        - Name: name
+          Required: true
+          Mutable: true
+        - Name: squad_role
+          AttributeDataType: String
+          Mutable: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      UserPoolAddOns:
+        AdvancedSecurityMode: ENFORCED
+      Tags:
+        Project: !Ref ProjectName
+        Environment: !Ref EnvironmentName
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub '${ProjectName}-${EnvironmentName}-app'
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      CallbackURLs:
+        - !If [HasDomain, !Sub 'https://${DomainName}/callback', 'http://localhost:3000/callback']
+      LogoutURLs:
+        - !If [HasDomain, !Sub 'https://${DomainName}/logout', 'http://localhost:3000/logout']
+      PreventUserExistenceErrors: ENABLED
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub '${ProjectName}-${EnvironmentName}-${AWS::AccountId}'
+      UserPoolId: !Ref UserPool
+
+  # --- Cognito Groups ---
+  AdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: admin
+      UserPoolId: !Ref UserPool
+      Description: Full access to all ForgeSquad features
+      Precedence: 0
+
+  ArchitectGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: architect
+      UserPoolId: !Ref UserPool
+      Description: Can create squads, approve architecture decisions
+      Precedence: 10
+
+  DeveloperGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: developer
+      UserPoolId: !Ref UserPool
+      Description: Can run pipelines and approve code reviews
+      Precedence: 20
+
+  ViewerGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: viewer
+      UserPoolId: !Ref UserPool
+      Description: Read-only access to reports and artifacts
+      Precedence: 30
+
+  # ============================================================================
+  # ECS — Cluster e Execucao de Agentes / Agent Execution
+  # ============================================================================
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub '${ProjectName}-${EnvironmentName}'
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+      Configuration:
+        ExecuteCommandConfiguration:
+          KmsKeyId: !Ref ForgeSquadKmsKey
+          Logging: OVERRIDE
+          LogConfiguration:
+            CloudWatchLogGroupName: !Ref EcsExecLogGroup
+            CloudWatchEncryptionEnabled: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  EcsExecLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/${ProjectName}-${EnvironmentName}/exec'
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt ForgeSquadKmsKey.Arn
+
+  AgentLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/${ProjectName}-${EnvironmentName}/agents'
+      RetentionInDays: !If [IsProd, 365, 30]
+      KmsKeyId: !GetAtt ForgeSquadKmsKey.Arn
+
+  AgentTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-agent-exec-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+      Policies:
+        - PolicyName: SecretsAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ProjectName}/${EnvironmentName}/*'
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource:
+                  - !GetAtt ForgeSquadKmsKey.Arn
+
+  AgentTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-agent-task-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AgentPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: SQSAccess
+                Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource:
+                  - !GetAtt AgentDispatchQueue.Arn
+                  - !GetAtt AgentResponseQueue.Arn
+                  - !GetAtt ApprovalRequestQueue.Arn
+              - Sid: S3ArtifactAccess
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt ArtifactsBucket.Arn
+                  - !Sub '${ArtifactsBucket.Arn}/*'
+              - Sid: DynamoDBAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt AuditTrailTable.Arn
+                  - !Sub '${AuditTrailTable.Arn}/index/*'
+                  - !GetAtt PipelineStateTable.Arn
+              - Sid: KMSAccess
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource:
+                  - !GetAtt ForgeSquadKmsKey.Arn
+              - Sid: CloudWatchLogs
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !GetAtt AgentLogGroup.Arn
+
+  AgentTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub '${ProjectName}-${EnvironmentName}-agent'
+      Cpu: '256'
+      Memory: '512'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt AgentTaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt AgentTaskRole.Arn
+      EphemeralStorage:
+        SizeInGiB: 30
+      ContainerDefinitions:
+        - Name: agent
+          Image: !Ref AgentImageUri
+          Essential: true
+          Environment:
+            - Name: ENVIRONMENT
+              Value: !Ref EnvironmentName
+            - Name: PROJECT_NAME
+              Value: !Ref ProjectName
+            - Name: AWS_REGION
+              Value: !Ref 'AWS::Region'
+            - Name: DISPATCH_QUEUE_URL
+              Value: !Ref AgentDispatchQueue
+            - Name: RESPONSE_QUEUE_URL
+              Value: !Ref AgentResponseQueue
+            - Name: APPROVAL_QUEUE_URL
+              Value: !Ref ApprovalRequestQueue
+            - Name: ARTIFACTS_BUCKET
+              Value: !Ref ArtifactsBucket
+            - Name: AUDIT_TABLE
+              Value: !Ref AuditTrailTable
+            - Name: PIPELINE_STATE_TABLE
+              Value: !Ref PipelineStateTable
+            - Name: CHECKPOINT_TOPIC_ARN
+              Value: !Ref CheckpointNotificationTopic
+            - Name: MODEL_TIER
+              Value: sonnet
+          Secrets:
+            - Name: ANTHROPIC_API_KEY
+              ValueFrom: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ProjectName}/${EnvironmentName}/anthropic-api-key'
+            - Name: GITHUB_TOKEN
+              ValueFrom: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ProjectName}/${EnvironmentName}/github-token'
+            - Name: DEVIN_API_KEY
+              ValueFrom: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ProjectName}/${EnvironmentName}/devin-api-key'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref AgentLogGroup
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: agent
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - 'curl -f http://localhost:8080/health || exit 1'
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # Lambda — Funcoes de Orquestracao / Orchestration Functions
+  # ============================================================================
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'
+      Policies:
+        - PolicyName: ForgeSquadLambdaPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ECSRunTask
+                Effect: Allow
+                Action:
+                  - ecs:RunTask
+                  - ecs:StopTask
+                  - ecs:DescribeTasks
+                Resource:
+                  - !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${ProjectName}-${EnvironmentName}-agent:*'
+                  - !Sub 'arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task/${ProjectName}-${EnvironmentName}/*'
+              - Sid: ECSPassRole
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource:
+                  - !GetAtt AgentTaskExecutionRole.Arn
+                  - !GetAtt AgentTaskRole.Arn
+              - Sid: SQSAccess
+                Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:GetQueueUrl
+                Resource:
+                  - !GetAtt AgentDispatchQueue.Arn
+                  - !GetAtt ApprovalRequestQueue.Arn
+                  - !GetAtt AgentResponseQueue.Arn
+              - Sid: SNSPublish
+                Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Ref CheckpointNotificationTopic
+                  - !Ref PipelineCompleteTopic
+                  - !Ref ErrorAlertsTopic
+              - Sid: DynamoDBAccess
+                Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt AuditTrailTable.Arn
+                  - !Sub '${AuditTrailTable.Arn}/index/*'
+                  - !GetAtt PipelineStateTable.Arn
+                  - !GetAtt CheckpointTable.Arn
+                  - !Sub '${CheckpointTable.Arn}/index/*'
+              - Sid: S3Access
+                Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !GetAtt ArtifactsBucket.Arn
+                  - !Sub '${ArtifactsBucket.Arn}/*'
+                  - !GetAtt ReportsBucket.Arn
+                  - !Sub '${ReportsBucket.Arn}/*'
+              - Sid: KMSAccess
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource:
+                  - !GetAtt ForgeSquadKmsKey.Arn
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${EnvironmentName}-pipeline-runner'
+      RetentionInDays: !If [IsProd, 365, 30]
+      KmsKeyId: !GetAtt ForgeSquadKmsKey.Arn
+
+  PipelineRunnerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${EnvironmentName}-pipeline-runner'
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Timeout: 900
+      MemorySize: 1024
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          // Placeholder — deploy actual code from lambda/pipeline-runner/index.js
+          exports.handler = async (event) => ({ statusCode: 200, body: 'Deploy pipeline-runner code' });
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref EnvironmentName
+          PROJECT_NAME: !Ref ProjectName
+          ECS_CLUSTER: !Ref EcsCluster
+          TASK_DEFINITION: !Ref AgentTaskDefinition
+          DISPATCH_QUEUE_URL: !Ref AgentDispatchQueue
+          RESPONSE_QUEUE_URL: !Ref AgentResponseQueue
+          APPROVAL_QUEUE_URL: !Ref ApprovalRequestQueue
+          ARTIFACTS_BUCKET: !Ref ArtifactsBucket
+          AUDIT_TABLE: !Ref AuditTrailTable
+          PIPELINE_STATE_TABLE: !Ref PipelineStateTable
+          CHECKPOINT_TABLE: !Ref CheckpointTable
+          CHECKPOINT_TOPIC_ARN: !Ref CheckpointNotificationTopic
+          PIPELINE_COMPLETE_TOPIC_ARN: !Ref PipelineCompleteTopic
+          ERROR_ALERTS_TOPIC_ARN: !Ref ErrorAlertsTopic
+          SUBNET_A: !Ref PrivateSubnetA
+          SUBNET_B: !Ref PrivateSubnetB
+          SECURITY_GROUP: !Ref EcsSecurityGroup
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnetA
+          - !Ref PrivateSubnetB
+        SecurityGroupIds:
+          - !Ref EcsSecurityGroup
+      TracingConfig:
+        Mode: Active
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ApprovalGateLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${EnvironmentName}-approval-gate'
+      RetentionInDays: !If [IsProd, 365, 30]
+      KmsKeyId: !GetAtt ForgeSquadKmsKey.Arn
+
+  ApprovalGateFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${EnvironmentName}-approval-gate'
+      Runtime: nodejs20.x
+      Handler: index.handler
+      Timeout: 30
+      MemorySize: 256
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          // Placeholder — deploy actual code from lambda/approval-gate/index.js
+          exports.handler = async (event) => ({ statusCode: 200, body: 'Deploy approval-gate code' });
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref EnvironmentName
+          PROJECT_NAME: !Ref ProjectName
+          AUDIT_TABLE: !Ref AuditTrailTable
+          PIPELINE_STATE_TABLE: !Ref PipelineStateTable
+          CHECKPOINT_TABLE: !Ref CheckpointTable
+          DISPATCH_QUEUE_URL: !Ref AgentDispatchQueue
+          ARTIFACTS_BUCKET: !Ref ArtifactsBucket
+          PIPELINE_RUNNER_FUNCTION: !Sub '${ProjectName}-${EnvironmentName}-pipeline-runner'
+      VpcConfig:
+        SubnetIds:
+          - !Ref PrivateSubnetA
+          - !Ref PrivateSubnetB
+        SecurityGroupIds:
+          - !Ref EcsSecurityGroup
+      TracingConfig:
+        Mode: Active
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # API Gateway — Interface REST
+  # ============================================================================
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-api'
+      Description: ForgeSquad Pipeline Orchestration API
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  ApiGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: CognitoAuthorizer
+      RestApiId: !Ref ApiGateway
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      ProviderARNs:
+        - !GetAtt UserPool.Arn
+
+  # --- /pipeline resource ---
+  PipelineResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: pipeline
+
+  PipelinePostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref PipelineResource
+      HttpMethod: POST
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref ApiGatewayAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PipelineRunnerFunction.Arn}/invocations'
+
+  PipelineRunnerApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PipelineRunnerFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/pipeline'
+
+  # --- /approval resource ---
+  ApprovalResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: approval
+
+  ApprovalPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref ApprovalResource
+      HttpMethod: POST
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref ApiGatewayAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApprovalGateFunction.Arn}/invocations'
+
+  ApprovalGateApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApprovalGateFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/approval'
+
+  # --- API Deployment ---
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - PipelinePostMethod
+      - ApprovalPostMethod
+    Properties:
+      RestApiId: !Ref ApiGateway
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref ApiGateway
+      DeploymentId: !Ref ApiDeployment
+      StageName: !Ref EnvironmentName
+      TracingEnabled: true
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          ThrottlingBurstLimit: 100
+          ThrottlingRateLimit: 50
+          LoggingLevel: INFO
+          DataTraceEnabled: !If [IsProd, false, true]
+          MetricsEnabled: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  # ============================================================================
+  # WAF — Protecao da API / API Protection
+  # ============================================================================
+  WebAcl:
+    Type: AWS::WAFv2::WebACL
+    Condition: IsNotDev
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-waf'
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub '${ProjectName}-${EnvironmentName}-waf'
+      Rules:
+        - Name: RateLimit
+          Priority: 1
+          Action:
+            Block: {}
+          Statement:
+            RateBasedStatement:
+              Limit: 1000
+              AggregateKeyType: IP
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub '${ProjectName}-rate-limit'
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 2
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub '${ProjectName}-common-rules'
+        - Name: AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 3
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub '${ProjectName}-bad-inputs'
+        - Name: AWSManagedRulesSQLiRuleSet
+          Priority: 4
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesSQLiRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub '${ProjectName}-sqli'
+
+  WebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Condition: IsNotDev
+    Properties:
+      ResourceArn: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}/stages/${EnvironmentName}'
+      WebACLArn: !GetAtt WebAcl.Arn
+
+  # ============================================================================
+  # CloudWatch — Monitoramento / Monitoring
+  # ============================================================================
+  ForgeSquadDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub '${ProjectName}-${EnvironmentName}'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "metric",
+              "x": 0, "y": 0, "width": 12, "height": 6,
+              "properties": {
+                "title": "Pipeline Executions",
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${PipelineRunnerFunction}"],
+                  ["AWS/Lambda", "Errors", "FunctionName", "${PipelineRunnerFunction}"],
+                  ["AWS/Lambda", "Duration", "FunctionName", "${PipelineRunnerFunction}"]
+                ],
+                "region": "${AWS::Region}",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12, "y": 0, "width": 12, "height": 6,
+              "properties": {
+                "title": "Approval Gate",
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${ApprovalGateFunction}"],
+                  ["AWS/Lambda", "Errors", "FunctionName", "${ApprovalGateFunction}"]
+                ],
+                "region": "${AWS::Region}",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "SQS Queue Depths",
+                "metrics": [
+                  ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${ProjectName}-${EnvironmentName}-agent-dispatch"],
+                  ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${ProjectName}-${EnvironmentName}-approval-requests"],
+                  ["AWS/SQS", "ApproximateNumberOfMessagesVisible", "QueueName", "${ProjectName}-${EnvironmentName}-dead-letter"]
+                ],
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12, "y": 6, "width": 12, "height": 6,
+              "properties": {
+                "title": "ECS Agent Tasks",
+                "metrics": [
+                  ["AWS/ECS", "RunningTaskCount", "ClusterName", "${ProjectName}-${EnvironmentName}"],
+                  ["AWS/ECS", "CPUUtilization", "ClusterName", "${ProjectName}-${EnvironmentName}"],
+                  ["AWS/ECS", "MemoryUtilization", "ClusterName", "${ProjectName}-${EnvironmentName}"]
+                ],
+                "region": "${AWS::Region}",
+                "period": 60
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0, "y": 12, "width": 24, "height": 6,
+              "properties": {
+                "title": "API Gateway",
+                "metrics": [
+                  ["AWS/ApiGateway", "Count", "ApiName", "${ProjectName}-${EnvironmentName}-api"],
+                  ["AWS/ApiGateway", "4XXError", "ApiName", "${ProjectName}-${EnvironmentName}-api"],
+                  ["AWS/ApiGateway", "5XXError", "ApiName", "${ProjectName}-${EnvironmentName}-api"],
+                  ["AWS/ApiGateway", "Latency", "ApiName", "${ProjectName}-${EnvironmentName}-api"]
+                ],
+                "region": "${AWS::Region}",
+                "period": 300
+              }
+            }
+          ]
+        }
+
+  # --- Alarms ---
+  DeadLetterQueueAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-${EnvironmentName}-dlq-messages'
+      AlarmDescription: Messages in dead letter queue indicate processing failures
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DeadLetterQueue.QueueName
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref ErrorAlertsTopic
+
+  LambdaErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-${EnvironmentName}-lambda-errors'
+      AlarmDescription: Pipeline runner Lambda function errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref PipelineRunnerFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref ErrorAlertsTopic
+
+  ApiGateway5xxAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-${EnvironmentName}-api-5xx'
+      AlarmDescription: API Gateway 5xx errors
+      MetricName: 5XXError
+      Namespace: AWS/ApiGateway
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub '${ProjectName}-${EnvironmentName}-api'
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - !Ref ErrorAlertsTopic
+
+  # ============================================================================
+  # Secrets Manager — Segredos / Secrets
+  # ============================================================================
+  AnthropicApiKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${ProjectName}/${EnvironmentName}/anthropic-api-key'
+      Description: Anthropic API key for Claude model access
+      KmsKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  GitHubTokenSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${ProjectName}/${EnvironmentName}/github-token'
+      Description: GitHub personal access token for repository operations
+      KmsKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+  DevinApiKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${ProjectName}/${EnvironmentName}/devin-api-key'
+      Description: Devin API key for autonomous coding tasks
+      KmsKeyId: !Ref ForgeSquadKmsKey
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref EnvironmentName
+
+# ==============================================================================
+# Saidas / Outputs
+# ==============================================================================
+Outputs:
+  VpcId:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-vpc-id'
+
+  EcsClusterName:
+    Description: ECS Cluster name
+    Value: !Ref EcsCluster
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-ecs-cluster'
+
+  ApiGatewayUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}'
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-api-url'
+
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-user-pool-id'
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-user-pool-client-id'
+
+  CognitoDomain:
+    Description: Cognito hosted UI domain
+    Value: !Sub 'https://${ProjectName}-${EnvironmentName}-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com'
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-cognito-domain'
+
+  ArtifactsBucketName:
+    Description: S3 bucket for artifacts
+    Value: !Ref ArtifactsBucket
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-artifacts-bucket'
+
+  ReportsBucketName:
+    Description: S3 bucket for reports
+    Value: !Ref ReportsBucket
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-reports-bucket'
+
+  AuditTrailTableName:
+    Description: DynamoDB audit trail table
+    Value: !Ref AuditTrailTable
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-audit-table'
+
+  PipelineStateTableName:
+    Description: DynamoDB pipeline state table
+    Value: !Ref PipelineStateTable
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-pipeline-state-table'
+
+  CheckpointNotificationTopicArn:
+    Description: SNS topic for checkpoint notifications
+    Value: !Ref CheckpointNotificationTopic
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-checkpoint-topic'
+
+  KmsKeyArn:
+    Description: KMS key ARN for encryption
+    Value: !GetAtt ForgeSquadKmsKey.Arn
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-kms-key'
+
+  PipelineRunnerFunctionArn:
+    Description: Pipeline Runner Lambda ARN
+    Value: !GetAtt PipelineRunnerFunction.Arn
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-pipeline-runner-arn'
+
+  ApprovalGateFunctionArn:
+    Description: Approval Gate Lambda ARN
+    Value: !GetAtt ApprovalGateFunction.Arn
+    Export:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-approval-gate-arn'

@@ -1,0 +1,458 @@
+# ============================================================================
+# ForgeSquad — Azure Container Apps Agent Configuration
+# Configuracao do Container Apps para o runtime de agentes
+# Version: 1.0 | Date: 2026-03-20
+# ============================================================================
+
+# ─── Container App Definition ───────────────────────────────────────────────
+
+apiVersion: apps.containerapps.io/v1
+kind: ContainerApp
+metadata:
+  name: agent-runtime
+  namespace: forgesquad
+  labels:
+    app: forgesquad
+    component: agent-runtime
+    tier: compute
+  annotations:
+    forgesquad.io/version: "1.0"
+    forgesquad.io/agent-count: "9"
+    forgesquad.io/pipeline-phases: "10"
+    forgesquad.io/pipeline-steps: "24"
+    forgesquad.io/checkpoints: "9"
+
+spec:
+  # ─── Managed Environment ─────────────────────────────────────────────────
+  managedEnvironmentId: /subscriptions/{subscription-id}/resourceGroups/rg-forgesquad/providers/Microsoft.App/managedEnvironments/cae-forgesquad-prod
+  workloadProfileName: Consumption
+
+  # ─── Identity (Managed Identity for Azure services) ──────────────────────
+  identity:
+    type: SystemAssigned
+
+  # ─── Configuration ──────────────────────────────────────────────────────
+  configuration:
+    # Ingress (internal only — accessed via APIM and Functions)
+    ingress:
+      external: false
+      targetPort: 8080
+      transport: http
+      allowInsecure: false
+      traffic:
+        - latestRevision: true
+          weight: 100
+      corsPolicy:
+        allowedOrigins:
+          - "https://apim-forgesquad-prod.azure-api.net"
+        allowedMethods:
+          - GET
+          - POST
+          - PUT
+        allowedHeaders:
+          - "*"
+        maxAge: 3600
+
+    # Dapr sidecar configuration
+    dapr:
+      enabled: true
+      appId: agent-runtime
+      appPort: 8080
+      appProtocol: http
+      enableApiLogging: true
+      logLevel: info
+      httpMaxRequestSize: 16  # MB — large payloads for code artifacts
+
+    # Active revisions (single revision mode for simplicity)
+    activeRevisionsMode: Single
+
+    # Max inactive revisions to keep
+    maxInactiveRevisions: 5
+
+    # Secrets (referenced from Azure Key Vault via managed identity)
+    secrets:
+      - name: openai-api-key
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/openai-api-key
+        identity: system
+      - name: anthropic-api-key
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/anthropic-api-key
+        identity: system
+      - name: github-token
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/github-token
+        identity: system
+      - name: devin-api-key
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/devin-api-key
+        identity: system
+      - name: stackspot-api-key
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/stackspot-api-key
+        identity: system
+      - name: servicebus-connection
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/servicebus-connection
+        identity: system
+      - name: appinsights-key
+        keyVaultUrl: https://kv-forgesquad.vault.azure.net/secrets/appinsights-instrumentation-key
+        identity: system
+
+    # Container registries
+    registries:
+      - server: crforgesquad.azurecr.io
+        identity: system
+
+  # ─── Template ───────────────────────────────────────────────────────────
+  template:
+    revisionSuffix: v1-0-0
+
+    # Init container: pre-load agent configurations
+    initContainers:
+      - name: config-loader
+        image: crforgesquad.azurecr.io/forgesquad/config-loader:latest
+        resources:
+          cpu: 0.25
+          memory: 0.5Gi
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Loading agent configurations..."
+            cp /config/agents/*.yaml /shared/agents/
+            echo "Agent configs loaded successfully"
+        volumeMounts:
+          - volumeName: shared-config
+            mountPath: /shared
+
+    # Main containers
+    containers:
+      - name: agent-runtime
+        image: crforgesquad.azurecr.io/forgesquad/agent-runtime:latest
+        resources:
+          cpu: 0.5
+          memory: 1Gi
+        command: ["node", "server.js"]
+
+        # ─── Environment Variables ─────────────────────────────────────
+        env:
+          # General
+          - name: NODE_ENV
+            value: production
+          - name: ENVIRONMENT
+            value: prod
+          - name: PORT
+            value: "8080"
+          - name: LOG_LEVEL
+            value: info
+
+          # ForgeSquad Configuration
+          - name: FORGESQUAD_AGENT_COUNT
+            value: "9"
+          - name: FORGESQUAD_PIPELINE_PHASES
+            value: "10"
+          - name: FORGESQUAD_PIPELINE_STEPS
+            value: "24"
+          - name: FORGESQUAD_CHECKPOINTS
+            value: "9"
+
+          # Model Tier Routing
+          # Architect & Tech Lead get the most capable model
+          - name: MODEL_TIER_ARCHITECT
+            value: gpt-4o
+          - name: MODEL_TIER_TECH_LEAD
+            value: gpt-4o
+          # Senior roles (BA, QA, DevOps) get a balanced model
+          - name: MODEL_TIER_SENIOR
+            value: gpt-4o-mini
+          # Standard roles (Devs, Tech Writer, PM) get cost-efficient model
+          - name: MODEL_TIER_STANDARD
+            value: gpt-4o-mini
+
+          # Agent-to-Model Mapping
+          - name: AGENT_MODEL_MAP
+            value: |
+              {
+                "architect": "gpt-4o",
+                "tech-lead": "gpt-4o",
+                "business-analyst": "gpt-4o-mini",
+                "dev-backend": "gpt-4o-mini",
+                "dev-frontend": "gpt-4o-mini",
+                "qa-engineer": "gpt-4o-mini",
+                "tech-writer": "gpt-4o-mini",
+                "project-manager": "gpt-4o-mini",
+                "devops": "gpt-4o-mini"
+              }
+
+          # Azure Services
+          - name: COSMOS_DB_ENDPOINT
+            value: https://cosmos-forgesquad.documents.azure.com:443/
+          - name: COSMOS_DB_DATABASE
+            value: forgesquad-db
+          - name: STORAGE_ACCOUNT_NAME
+            value: stforgesquad
+          - name: SERVICEBUS_NAMESPACE
+            value: sb-forgesquad-prod.servicebus.windows.net
+          - name: EVENTGRID_TOPIC_ENDPOINT
+            value: https://evgt-forgesquad-prod.eastus-1.eventgrid.azure.net/api/events
+          - name: KEY_VAULT_URI
+            value: https://kv-forgesquad.vault.azure.net/
+
+          # Application Insights
+          - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+            secretRef: appinsights-key
+
+          # API Keys (from Key Vault secrets)
+          - name: OPENAI_API_KEY
+            secretRef: openai-api-key
+          - name: ANTHROPIC_API_KEY
+            secretRef: anthropic-api-key
+          - name: GITHUB_TOKEN
+            secretRef: github-token
+
+          # Tool Integration Keys
+          - name: DEVIN_API_KEY
+            secretRef: devin-api-key
+          - name: STACKSPOT_API_KEY
+            secretRef: stackspot-api-key
+
+          # Dapr Configuration
+          - name: DAPR_PUBSUB_NAME
+            value: forgesquad-pubsub
+          - name: DAPR_STATESTORE_NAME
+            value: forgesquad-statestore
+          - name: DAPR_HTTP_PORT
+            value: "3500"
+
+        # ─── Health Probes ─────────────────────────────────────────────
+        probes:
+          - type: Liveness
+            httpGet:
+              path: /health
+              port: 8080
+              httpHeaders:
+                - name: X-Probe-Type
+                  value: liveness
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+            timeoutSeconds: 5
+
+          - type: Readiness
+            httpGet:
+              path: /ready
+              port: 8080
+              httpHeaders:
+                - name: X-Probe-Type
+                  value: readiness
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+
+          - type: Startup
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 10
+            timeoutSeconds: 3
+
+        # ─── Volume Mounts ─────────────────────────────────────────────
+        volumeMounts:
+          - volumeName: shared-config
+            mountPath: /app/config
+          - volumeName: tmp-storage
+            mountPath: /tmp
+
+    # ─── Volumes ─────────────────────────────────────────────────────────
+    volumes:
+      - name: shared-config
+        storageType: EmptyDir
+      - name: tmp-storage
+        storageType: EmptyDir
+
+    # ─── Scaling Rules ───────────────────────────────────────────────────
+    scale:
+      minReplicas: 1
+      maxReplicas: 10
+      rules:
+        # Scale based on HTTP concurrent requests
+        - name: http-scaling
+          http:
+            metadata:
+              concurrentRequests: "10"
+
+        # Scale based on Service Bus queue depth
+        - name: servicebus-queue-scaling
+          custom:
+            type: azure-servicebus
+            metadata:
+              queueName: pipeline-commands
+              namespace: sb-forgesquad-prod
+              messageCount: "5"
+            auth:
+              - secretRef: servicebus-connection
+                triggerParameter: connection
+
+        # Scale based on Service Bus topic messages
+        - name: servicebus-topic-scaling
+          custom:
+            type: azure-servicebus
+            metadata:
+              topicName: agent-messages
+              subscriptionName: sub-architect
+              namespace: sb-forgesquad-prod
+              messageCount: "3"
+            auth:
+              - secretRef: servicebus-connection
+                triggerParameter: connection
+
+        # Scale based on CPU utilization
+        - name: cpu-scaling
+          custom:
+            type: cpu
+            metadata:
+              type: Utilization
+              value: "70"
+
+---
+# ─── Dapr Component: Service Bus Pub/Sub ─────────────────────────────────────
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: forgesquad-pubsub
+  namespace: forgesquad
+spec:
+  type: pubsub.azure.servicebus.topics
+  version: v1
+  metadata:
+    - name: namespaceName
+      value: sb-forgesquad-prod.servicebus.windows.net
+    - name: azureClientId
+      value: "" # Uses managed identity
+    - name: maxConcurrentHandlers
+      value: "5"
+    - name: maxActiveMessages
+      value: "10"
+    - name: lockRenewalInSec
+      value: "300"
+    - name: maxRetriableErrorsPerSec
+      value: "5"
+    - name: publishMaxRetries
+      value: "3"
+    - name: publishInitialRetryIntervalInMs
+      value: "500"
+  scopes:
+    - agent-runtime
+    - pipeline-runner
+
+---
+# ─── Dapr Component: Cosmos DB State Store ───────────────────────────────────
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: forgesquad-statestore
+  namespace: forgesquad
+spec:
+  type: state.azure.cosmosdb
+  version: v1
+  metadata:
+    - name: url
+      value: https://cosmos-forgesquad.documents.azure.com:443/
+    - name: database
+      value: forgesquad-db
+    - name: collection
+      value: pipeline-state
+    - name: masterKey
+      value: "" # Uses managed identity via AAD
+    - name: contentType
+      value: application/json
+    - name: actorStateStore
+      value: "false"
+  scopes:
+    - agent-runtime
+    - pipeline-runner
+
+---
+# ─── Dapr Component: Blob Storage Binding (Artifacts) ────────────────────────
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: forgesquad-artifacts
+  namespace: forgesquad
+spec:
+  type: bindings.azure.blobstorage
+  version: v1
+  metadata:
+    - name: accountName
+      value: stforgesquad
+    - name: containerName
+      value: artifacts
+    - name: azureClientId
+      value: "" # Uses managed identity
+    - name: decodeBase64
+      value: "false"
+    - name: getBlobRetryCount
+      value: "3"
+  scopes:
+    - agent-runtime
+
+---
+# ─── Dapr Subscription: Agent Messages ──────────────────────────────────────
+
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: agent-messages-subscription
+  namespace: forgesquad
+spec:
+  pubsubname: forgesquad-pubsub
+  topic: agent-messages
+  routes:
+    default: /api/agents/message
+    rules:
+      - match: event.data.targetAgent == "architect"
+        path: /api/agents/architect/message
+      - match: event.data.targetAgent == "tech-lead"
+        path: /api/agents/tech-lead/message
+      - match: event.data.targetAgent == "business-analyst"
+        path: /api/agents/business-analyst/message
+      - match: event.data.targetAgent == "dev-backend"
+        path: /api/agents/dev-backend/message
+      - match: event.data.targetAgent == "dev-frontend"
+        path: /api/agents/dev-frontend/message
+      - match: event.data.targetAgent == "qa-engineer"
+        path: /api/agents/qa-engineer/message
+      - match: event.data.targetAgent == "tech-writer"
+        path: /api/agents/tech-writer/message
+      - match: event.data.targetAgent == "project-manager"
+        path: /api/agents/project-manager/message
+      - match: event.data.targetAgent == "devops"
+        path: /api/agents/devops/message
+  scopes:
+    - agent-runtime
+
+---
+# ─── Dapr Subscription: Pipeline Commands ───────────────────────────────────
+
+apiVersion: dapr.io/v2alpha1
+kind: Subscription
+metadata:
+  name: pipeline-commands-subscription
+  namespace: forgesquad
+spec:
+  pubsubname: forgesquad-pubsub
+  topic: pipeline-commands
+  routes:
+    default: /api/pipeline/command
+    rules:
+      - match: event.data.command == "start"
+        path: /api/pipeline/start
+      - match: event.data.command == "pause"
+        path: /api/pipeline/pause
+      - match: event.data.command == "resume"
+        path: /api/pipeline/resume
+      - match: event.data.command == "cancel"
+        path: /api/pipeline/cancel
+  scopes:
+    - pipeline-runner

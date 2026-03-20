@@ -1,0 +1,722 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "name": "ForgeSquad-Pipeline-Orchestrator",
+    "description": "Power Automate flow that orchestrates the ForgeSquad pipeline through 10 phases, 24 steps, and 9 human checkpoints",
+    "author": "ForgeSquad Team",
+    "version": "1.0.0"
+  },
+  "parameters": {
+    "$connections": {
+      "defaultValue": {},
+      "type": "Object"
+    },
+    "azureOpenAiEndpoint": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "azureOpenAiKey": {
+      "defaultValue": "",
+      "type": "SecureString"
+    },
+    "dataverseEnvironmentUrl": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "teamsChannelId": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "teamsTeamId": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "sharePointSiteUrl": {
+      "defaultValue": "",
+      "type": "String"
+    },
+    "sharePointArtifactsLibrary": {
+      "defaultValue": "ForgeSquad-Artifacts",
+      "type": "String"
+    }
+  },
+  "triggers": {
+    "When_a_squad_run_is_requested": {
+      "type": "Request",
+      "kind": "Http",
+      "inputs": {
+        "schema": {
+          "type": "object",
+          "properties": {
+            "squadName": { "type": "string" },
+            "projectName": { "type": "string" },
+            "projectDescription": { "type": "string" },
+            "requestedBy": { "type": "string" },
+            "configuration": {
+              "type": "object",
+              "properties": {
+                "skipPhases": {
+                  "type": "array",
+                  "items": { "type": "integer" }
+                },
+                "approvers": {
+                  "type": "object",
+                  "properties": {
+                    "checkpoint1": { "type": "string" },
+                    "checkpoint2": { "type": "string" },
+                    "checkpoint3": { "type": "string" },
+                    "checkpoint4": { "type": "string" },
+                    "checkpoint5": { "type": "string" },
+                    "checkpoint6": { "type": "string" },
+                    "checkpoint7": { "type": "string" },
+                    "checkpoint8": { "type": "string" },
+                    "checkpoint9": { "type": "string" }
+                  }
+                },
+                "modelTier": {
+                  "type": "string",
+                  "enum": ["standard", "premium"]
+                }
+              }
+            }
+          },
+          "required": ["squadName", "projectName", "projectDescription", "requestedBy"]
+        }
+      }
+    }
+  },
+  "actions": {
+    "Initialize_RunId": {
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "RunId",
+            "type": "string",
+            "value": "@{guid()}"
+          }
+        ]
+      },
+      "runAfter": {}
+    },
+    "Initialize_CurrentPhase": {
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "CurrentPhase",
+            "type": "integer",
+            "value": 1
+          }
+        ]
+      },
+      "runAfter": {
+        "Initialize_RunId": ["Succeeded"]
+      }
+    },
+    "Initialize_PipelineStatus": {
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "PipelineStatus",
+            "type": "string",
+            "value": "Running"
+          }
+        ]
+      },
+      "runAfter": {
+        "Initialize_CurrentPhase": ["Succeeded"]
+      }
+    },
+    "Initialize_TotalTokens": {
+      "type": "InitializeVariable",
+      "inputs": {
+        "variables": [
+          {
+            "name": "TotalTokens",
+            "type": "integer",
+            "value": 0
+          }
+        ]
+      },
+      "runAfter": {
+        "Initialize_PipelineStatus": ["Succeeded"]
+      }
+    },
+    "Create_Run_Record_in_Dataverse": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['dataverse']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/v2/datasets/@{encodeURIComponent(parameters('dataverseEnvironmentUrl'))}/tables/forgesquad_runs/items",
+        "body": {
+          "forgesquad_runid": "@variables('RunId')",
+          "forgesquad_squadname": "@triggerBody()?['squadName']",
+          "forgesquad_projectname": "@triggerBody()?['projectName']",
+          "forgesquad_status": "Running",
+          "forgesquad_startedat": "@utcNow()",
+          "forgesquad_createdby": "@triggerBody()?['requestedBy']"
+        }
+      },
+      "runAfter": {
+        "Initialize_TotalTokens": ["Succeeded"]
+      }
+    },
+    "Notify_Pipeline_Start_in_Teams": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['teams']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/v3/teams/@{parameters('teamsTeamId')}/channels/@{parameters('teamsChannelId')}/messages",
+        "body": {
+          "body": {
+            "contentType": "html",
+            "content": "<h2>ForgeSquad Pipeline Iniciado</h2><p><strong>Squad:</strong> @{triggerBody()?['squadName']}</p><p><strong>Projeto:</strong> @{triggerBody()?['projectName']}</p><p><strong>Run ID:</strong> @{variables('RunId')}</p><p><strong>Iniciado por:</strong> @{triggerBody()?['requestedBy']}</p><p><strong>Hora:</strong> @{utcNow()}</p><hr/><p>O pipeline sera executado em 10 fases com 9 checkpoints de aprovacao.</p>"
+          }
+        }
+      },
+      "runAfter": {
+        "Create_Run_Record_in_Dataverse": ["Succeeded"]
+      }
+    },
+
+    "Phase_1_Discovery": {
+      "type": "Scope",
+      "actions": {
+        "Log_Phase1_Start": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['dataverse']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/v2/datasets/@{encodeURIComponent(parameters('dataverseEnvironmentUrl'))}/tables/forgesquad_phaseexecutions/items",
+            "body": {
+              "forgesquad_executionid": "@{guid()}",
+              "forgesquad_runid": "@variables('RunId')",
+              "forgesquad_phasename": "Discovery",
+              "forgesquad_phasenumber": 1,
+              "forgesquad_agentname": "PM, BA, Architect",
+              "forgesquad_status": "Running",
+              "forgesquad_startedat": "@utcNow()"
+            }
+          },
+          "runAfter": {}
+        },
+        "Step_1_1_Stakeholder_Mapping": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o-mini/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Project Manager of ForgeSquad. Your task is to identify and map all stakeholders for the project. Output a structured stakeholder map with: name/role, interest level (high/medium/low), influence level (high/medium/low), engagement strategy."
+                },
+                {
+                  "role": "user",
+                  "content": "Project: @{triggerBody()?['projectName']}\nDescription: @{triggerBody()?['projectDescription']}\n\nCreate a comprehensive stakeholder map."
+                }
+              ],
+              "max_tokens": 2000,
+              "temperature": 0.3
+            }
+          },
+          "runAfter": {
+            "Log_Phase1_Start": ["Succeeded"]
+          }
+        },
+        "Step_1_2_Domain_Analysis": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o-mini/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Business Analyst of ForgeSquad. Analyze the domain of the project. Identify bounded contexts, key entities, business rules, and domain events using DDD principles."
+                },
+                {
+                  "role": "user",
+                  "content": "Project: @{triggerBody()?['projectName']}\nDescription: @{triggerBody()?['projectDescription']}\nStakeholder Map: @{body('Step_1_1_Stakeholder_Mapping')?['choices']?[0]?['message']?['content']}\n\nPerform domain analysis."
+                }
+              ],
+              "max_tokens": 3000,
+              "temperature": 0.3
+            }
+          },
+          "runAfter": {
+            "Step_1_1_Stakeholder_Mapping": ["Succeeded"]
+          }
+        },
+        "Step_1_3_Feasibility_Check": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Architect of ForgeSquad. Based on the stakeholder map and domain analysis, perform a technical feasibility assessment. Evaluate complexity, risks, technology fit, and provide a Go/No-Go recommendation."
+                },
+                {
+                  "role": "user",
+                  "content": "Project: @{triggerBody()?['projectName']}\nDomain Analysis: @{body('Step_1_2_Domain_Analysis')?['choices']?[0]?['message']?['content']}\n\nPerform feasibility check."
+                }
+              ],
+              "max_tokens": 3000,
+              "temperature": 0.2
+            }
+          },
+          "runAfter": {
+            "Step_1_2_Domain_Analysis": ["Succeeded"]
+          }
+        },
+        "Save_Phase1_Artifacts": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/datasets/@{parameters('sharePointSiteUrl')}/tables/@{parameters('sharePointArtifactsLibrary')}/items",
+            "body": {
+              "FileName": "@{variables('RunId')}/phase1-discovery/feasibility-analysis.md",
+              "FileContent": "@{body('Step_1_3_Feasibility_Check')?['choices']?[0]?['message']?['content']}"
+            }
+          },
+          "runAfter": {
+            "Step_1_3_Feasibility_Check": ["Succeeded"]
+          }
+        }
+      },
+      "runAfter": {
+        "Notify_Pipeline_Start_in_Teams": ["Succeeded"]
+      }
+    },
+
+    "Checkpoint_1_Discovery_Approval": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['approvals']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/approvals/create",
+        "body": {
+          "title": "ForgeSquad Checkpoint 1: Discovery",
+          "type": "Approve/Reject - First to respond",
+          "assignedTo": "@{coalesce(triggerBody()?['configuration']?['approvers']?['checkpoint1'], triggerBody()?['requestedBy'])}",
+          "details": "## Fase 1: Discovery Concluida\n\n### Artefatos Gerados:\n1. Stakeholder Map\n2. Domain Analysis\n3. Feasibility Assessment\n\n### Resumo:\n@{body('Step_1_3_Feasibility_Check')?['choices']?[0]?['message']?['content']}\n\n### Acao Necessaria:\nAprove para prosseguir para a fase de Requirements, ou rejeite para re-executar Discovery.",
+          "itemLink": "@{parameters('sharePointSiteUrl')}/ForgeSquad-Artifacts/@{variables('RunId')}/phase1-discovery/",
+          "itemLinkDescription": "Ver artefatos no SharePoint"
+        }
+      },
+      "runAfter": {
+        "Phase_1_Discovery": ["Succeeded"]
+      }
+    },
+
+    "Check_Checkpoint_1_Decision": {
+      "type": "If",
+      "expression": {
+        "and": [
+          {
+            "equals": [
+              "@body('Checkpoint_1_Discovery_Approval')?['outcome']",
+              "Approve"
+            ]
+          }
+        ]
+      },
+      "actions": {
+        "Log_CP1_Approved": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['dataverse']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/v2/datasets/@{encodeURIComponent(parameters('dataverseEnvironmentUrl'))}/tables/forgesquad_approvals/items",
+            "body": {
+              "forgesquad_approvalid": "@{guid()}",
+              "forgesquad_checkpointnumber": 1,
+              "forgesquad_approveremail": "@{body('Checkpoint_1_Discovery_Approval')?['responder']?['email']}",
+              "forgesquad_decision": "Approved",
+              "forgesquad_comments": "@{body('Checkpoint_1_Discovery_Approval')?['comments']}",
+              "forgesquad_decidedat": "@utcNow()"
+            }
+          },
+          "runAfter": {}
+        }
+      },
+      "else": {
+        "actions": {
+          "Log_CP1_Rejected": {
+            "type": "ApiConnection",
+            "inputs": {
+              "host": {
+                "connection": {
+                  "name": "@parameters('$connections')['dataverse']['connectionId']"
+                }
+              },
+              "method": "post",
+              "path": "/v2/datasets/@{encodeURIComponent(parameters('dataverseEnvironmentUrl'))}/tables/forgesquad_approvals/items",
+              "body": {
+                "forgesquad_approvalid": "@{guid()}",
+                "forgesquad_checkpointnumber": 1,
+                "forgesquad_decision": "Rejected",
+                "forgesquad_comments": "@{body('Checkpoint_1_Discovery_Approval')?['comments']}",
+                "forgesquad_decidedat": "@utcNow()"
+              }
+            },
+            "runAfter": {}
+          },
+          "Notify_Rejection_CP1": {
+            "type": "ApiConnection",
+            "inputs": {
+              "host": {
+                "connection": {
+                  "name": "@parameters('$connections')['teams']['connectionId']"
+                }
+              },
+              "method": "post",
+              "path": "/v3/teams/@{parameters('teamsTeamId')}/channels/@{parameters('teamsChannelId')}/messages",
+              "body": {
+                "body": {
+                  "contentType": "html",
+                  "content": "<h3>Checkpoint 1 REJEITADO</h3><p>O pipeline foi pausado. Motivo: @{body('Checkpoint_1_Discovery_Approval')?['comments']}</p>"
+                }
+              }
+            },
+            "runAfter": {
+              "Log_CP1_Rejected": ["Succeeded"]
+            }
+          },
+          "Set_Pipeline_Paused": {
+            "type": "SetVariable",
+            "inputs": {
+              "name": "PipelineStatus",
+              "value": "Paused"
+            },
+            "runAfter": {
+              "Notify_Rejection_CP1": ["Succeeded"]
+            }
+          },
+          "Terminate_Pipeline_On_Rejection": {
+            "type": "Terminate",
+            "inputs": {
+              "runStatus": "Cancelled",
+              "runError": {
+                "code": "CheckpointRejected",
+                "message": "Checkpoint 1 (Discovery) was rejected. Pipeline paused for review."
+              }
+            },
+            "runAfter": {
+              "Set_Pipeline_Paused": ["Succeeded"]
+            }
+          }
+        }
+      },
+      "runAfter": {
+        "Checkpoint_1_Discovery_Approval": ["Succeeded"]
+      }
+    },
+
+    "Phase_2_Requirements": {
+      "type": "Scope",
+      "actions": {
+        "Step_2_1_User_Stories": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o-mini/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Business Analyst of ForgeSquad. Create detailed user stories in the format: As a [role], I want [feature], so that [benefit]. Include acceptance criteria in Gherkin format (Given/When/Then) for each story."
+                },
+                {
+                  "role": "user",
+                  "content": "Project: @{triggerBody()?['projectName']}\nDescription: @{triggerBody()?['projectDescription']}\nDomain Analysis: @{body('Step_1_2_Domain_Analysis')?['choices']?[0]?['message']?['content']}\n\nCreate comprehensive user stories with acceptance criteria."
+                }
+              ],
+              "max_tokens": 4000,
+              "temperature": 0.3
+            }
+          },
+          "runAfter": {}
+        },
+        "Step_2_2_Acceptance_Criteria": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o-mini/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the QA Engineer of ForgeSquad. Review the user stories and refine the acceptance criteria. Add edge cases, error scenarios, and non-functional requirements to each story."
+                },
+                {
+                  "role": "user",
+                  "content": "User Stories: @{body('Step_2_1_User_Stories')?['choices']?[0]?['message']?['content']}\n\nRefine acceptance criteria with edge cases and NFRs."
+                }
+              ],
+              "max_tokens": 4000,
+              "temperature": 0.3
+            }
+          },
+          "runAfter": {
+            "Step_2_1_User_Stories": ["Succeeded"]
+          }
+        },
+        "Step_2_3_Requirements_Review": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Architect of ForgeSquad reviewing requirements. Validate technical feasibility of each story, identify dependencies, risks, and suggest architectural considerations. Flag any requirements that conflict or are ambiguous."
+                },
+                {
+                  "role": "user",
+                  "content": "User Stories with Acceptance Criteria: @{body('Step_2_2_Acceptance_Criteria')?['choices']?[0]?['message']?['content']}\n\nReview and validate all requirements."
+                }
+              ],
+              "max_tokens": 3000,
+              "temperature": 0.2
+            }
+          },
+          "runAfter": {
+            "Step_2_2_Acceptance_Criteria": ["Succeeded"]
+          }
+        }
+      },
+      "runAfter": {
+        "Check_Checkpoint_1_Decision": ["Succeeded"]
+      }
+    },
+
+    "Checkpoint_2_Requirements_Approval": {
+      "type": "ApiConnection",
+      "inputs": {
+        "host": {
+          "connection": {
+            "name": "@parameters('$connections')['approvals']['connectionId']"
+          }
+        },
+        "method": "post",
+        "path": "/approvals/create",
+        "body": {
+          "title": "ForgeSquad Checkpoint 2: Requirements",
+          "type": "Approve/Reject - First to respond",
+          "assignedTo": "@{coalesce(triggerBody()?['configuration']?['approvers']?['checkpoint2'], triggerBody()?['requestedBy'])}",
+          "details": "## Fase 2: Requirements Concluida\n\n### Artefatos:\n1. User Stories com Acceptance Criteria\n2. Requirements Review pelo Architect\n\n### Resumo:\n@{substring(body('Step_2_3_Requirements_Review')?['choices']?[0]?['message']?['content'], 0, min(length(body('Step_2_3_Requirements_Review')?['choices']?[0]?['message']?['content']), 2000))}"
+        }
+      },
+      "runAfter": {
+        "Phase_2_Requirements": ["Succeeded"]
+      }
+    },
+
+    "Phase_3_to_10_Continue": {
+      "type": "Scope",
+      "metadata": {
+        "description": "Phases 3-10 follow the same pattern as Phases 1-2. Each phase scope contains HTTP calls to Azure OpenAI for each step, followed by a checkpoint approval action. The full implementation would repeat the pattern for: Phase 3 (Architecture), Phase 4 (Planning), Phase 5 (Backend Dev), Phase 6 (Frontend Dev), Phase 7 (QA), Phase 8 (Documentation), Phase 9 (Deployment), Phase 10 (Retrospective). Each checkpoint uses Teams Approvals with the appropriate approver from the configuration."
+      },
+      "actions": {
+        "Phase_3_Architecture_Design": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Architect of ForgeSquad. Design the system architecture including: C4 diagrams (context, container, component), technology stack, architectural patterns, ADRs, NFR solutions, and security considerations."
+                },
+                {
+                  "role": "user",
+                  "content": "Project: @{triggerBody()?['projectName']}\nRequirements Review: @{body('Step_2_3_Requirements_Review')?['choices']?[0]?['message']?['content']}\n\nDesign the complete system architecture."
+                }
+              ],
+              "max_tokens": 4096,
+              "temperature": 0.2
+            }
+          },
+          "runAfter": {}
+        },
+        "Checkpoint_3_Architecture_Approval": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['approvals']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/approvals/create",
+            "body": {
+              "title": "ForgeSquad Checkpoint 3: Architecture",
+              "type": "Approve/Reject - First to respond",
+              "assignedTo": "@{coalesce(triggerBody()?['configuration']?['approvers']?['checkpoint3'], triggerBody()?['requestedBy'])}",
+              "details": "## Architecture Review\n\n@{substring(body('Phase_3_Architecture_Design')?['choices']?[0]?['message']?['content'], 0, min(length(body('Phase_3_Architecture_Design')?['choices']?[0]?['message']?['content']), 2000))}"
+            }
+          },
+          "runAfter": {
+            "Phase_3_Architecture_Design": ["Succeeded"]
+          }
+        }
+      },
+      "runAfter": {
+        "Checkpoint_2_Requirements_Approval": ["Succeeded"]
+      }
+    },
+
+    "Final_Pipeline_Summary": {
+      "type": "Scope",
+      "actions": {
+        "Generate_Final_Report": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "@{parameters('azureOpenAiEndpoint')}/openai/deployments/forgesquad-gpt4o-mini/chat/completions?api-version=2024-08-01-preview",
+            "headers": {
+              "api-key": "@{parameters('azureOpenAiKey')}",
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are the Project Manager of ForgeSquad. Generate a final pipeline execution report summarizing all phases, checkpoints, artifacts generated, and key decisions made."
+                },
+                {
+                  "role": "user",
+                  "content": "Generate final report for Run ID: @{variables('RunId')}, Project: @{triggerBody()?['projectName']}"
+                }
+              ],
+              "max_tokens": 3000,
+              "temperature": 0.3
+            }
+          },
+          "runAfter": {}
+        },
+        "Update_Run_Status_Completed": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['dataverse']['connectionId']"
+              }
+            },
+            "method": "patch",
+            "path": "/v2/datasets/@{encodeURIComponent(parameters('dataverseEnvironmentUrl'))}/tables/forgesquad_runs/items/@{variables('RunId')}",
+            "body": {
+              "forgesquad_status": "Completed",
+              "forgesquad_completedat": "@utcNow()"
+            }
+          },
+          "runAfter": {
+            "Generate_Final_Report": ["Succeeded"]
+          }
+        },
+        "Send_Final_Report_to_Teams": {
+          "type": "ApiConnection",
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['teams']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/v3/teams/@{parameters('teamsTeamId')}/channels/@{parameters('teamsChannelId')}/messages",
+            "body": {
+              "body": {
+                "contentType": "html",
+                "content": "<h2>ForgeSquad Pipeline Concluido</h2><p><strong>Squad:</strong> @{triggerBody()?['squadName']}</p><p><strong>Projeto:</strong> @{triggerBody()?['projectName']}</p><p><strong>Run ID:</strong> @{variables('RunId')}</p><p><strong>Status:</strong> Completed</p><hr/><p>@{body('Generate_Final_Report')?['choices']?[0]?['message']?['content']}</p>"
+              }
+            }
+          },
+          "runAfter": {
+            "Update_Run_Status_Completed": ["Succeeded"]
+          }
+        }
+      },
+      "runAfter": {
+        "Phase_3_to_10_Continue": ["Succeeded"]
+      }
+    },
+
+    "Response_Success": {
+      "type": "Response",
+      "inputs": {
+        "statusCode": 200,
+        "body": {
+          "runId": "@variables('RunId')",
+          "status": "Completed",
+          "message": "ForgeSquad pipeline executed successfully"
+        }
+      },
+      "runAfter": {
+        "Final_Pipeline_Summary": ["Succeeded"]
+      }
+    }
+  },
+  "outputs": {}
+}

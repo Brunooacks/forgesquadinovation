@@ -1,0 +1,186 @@
+{
+  "family": "forgesquad-agent",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "ephemeralStorage": {
+    "sizeInGiB": 30
+  },
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/forgesquad-ENVIRONMENT-agent-exec-role",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/forgesquad-ENVIRONMENT-agent-task-role",
+  "containerDefinitions": [
+    {
+      "name": "agent",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/forgesquad-agent:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "dev"
+        },
+        {
+          "name": "PROJECT_NAME",
+          "value": "forgesquad"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "us-east-1"
+        },
+        {
+          "name": "DISPATCH_QUEUE_URL",
+          "value": "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/forgesquad-ENVIRONMENT-agent-dispatch"
+        },
+        {
+          "name": "RESPONSE_QUEUE_URL",
+          "value": "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/forgesquad-ENVIRONMENT-agent-responses"
+        },
+        {
+          "name": "APPROVAL_QUEUE_URL",
+          "value": "https://sqs.us-east-1.amazonaws.com/ACCOUNT_ID/forgesquad-ENVIRONMENT-approval-requests"
+        },
+        {
+          "name": "ARTIFACTS_BUCKET",
+          "value": "forgesquad-ENVIRONMENT-artifacts-ACCOUNT_ID"
+        },
+        {
+          "name": "AUDIT_TABLE",
+          "value": "forgesquad-ENVIRONMENT-audit-trail"
+        },
+        {
+          "name": "PIPELINE_STATE_TABLE",
+          "value": "forgesquad-ENVIRONMENT-pipeline-state"
+        },
+        {
+          "name": "CHECKPOINT_TOPIC_ARN",
+          "value": "arn:aws:sns:us-east-1:ACCOUNT_ID:forgesquad-ENVIRONMENT-checkpoint-notify"
+        },
+        {
+          "name": "MODEL_TIER",
+          "value": "sonnet",
+          "__comment": "Model tier routing: opus (Architect, Tech Lead), sonnet (Developers, BA, QA), haiku (Tech Writer, PM)"
+        },
+        {
+          "name": "AGENT_ROLE",
+          "value": "architect",
+          "__comment": "Override per task via containerOverrides. Valid roles: architect, tech-lead, business-analyst, dev-backend, dev-frontend, dev-cli, qa-engineer, tech-writer, project-manager"
+        },
+        {
+          "name": "PIPELINE_ID",
+          "value": "",
+          "__comment": "Set via containerOverrides at dispatch time"
+        },
+        {
+          "name": "PHASE",
+          "value": "",
+          "__comment": "Set via containerOverrides at dispatch time"
+        },
+        {
+          "name": "STEP",
+          "value": "",
+          "__comment": "Set via containerOverrides at dispatch time"
+        },
+        {
+          "name": "TASK_ID",
+          "value": "",
+          "__comment": "Set via containerOverrides at dispatch time"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:forgesquad/ENVIRONMENT/anthropic-api-key"
+        },
+        {
+          "name": "GITHUB_TOKEN",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:forgesquad/ENVIRONMENT/github-token"
+        },
+        {
+          "name": "DEVIN_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:forgesquad/ENVIRONMENT/devin-api-key"
+        },
+        {
+          "name": "STACKSPOT_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:ACCOUNT_ID:secret:forgesquad/ENVIRONMENT/stackspot-api-key"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/forgesquad-ENVIRONMENT/agents",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "agent",
+          "awslogs-create-group": "true"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "ulimits": [
+        {
+          "name": "nofile",
+          "softLimit": 65536,
+          "hardLimit": 65536
+        }
+      ],
+      "linuxParameters": {
+        "initProcessEnabled": true
+      },
+      "readonlyRootFilesystem": false,
+      "mountPoints": [],
+      "volumesFrom": []
+    }
+  ],
+  "volumes": [],
+  "placementConstraints": [],
+  "tags": [
+    {
+      "key": "Project",
+      "value": "forgesquad"
+    },
+    {
+      "key": "Component",
+      "value": "agent-runtime"
+    },
+    {
+      "key": "ManagedBy",
+      "value": "forgesquad-infra"
+    }
+  ],
+  "__modelTierReference": {
+    "__comment": "Reference for MODEL_TIER values per agent role. Set via containerOverrides.",
+    "opus": {
+      "roles": ["architect", "tech-lead"],
+      "description": "Highest capability model for architectural decisions and technical leadership",
+      "estimatedCostPer1kTokens": "$0.015 input / $0.075 output"
+    },
+    "sonnet": {
+      "roles": ["business-analyst", "dev-backend", "dev-frontend", "dev-cli", "qa-engineer"],
+      "description": "Balanced model for development and analysis tasks",
+      "estimatedCostPer1kTokens": "$0.003 input / $0.015 output"
+    },
+    "haiku": {
+      "roles": ["tech-writer", "project-manager"],
+      "description": "Fast, cost-effective model for documentation and reporting",
+      "estimatedCostPer1kTokens": "$0.00025 input / $0.00125 output"
+    }
+  },
+  "__taskSizeReference": {
+    "__comment": "Recommended Fargate task sizes per workload. Override cpu/memory at registration time.",
+    "small": { "cpu": "256", "memory": "512", "useCase": "Tech Writer, PM — lightweight generation" },
+    "medium": { "cpu": "512", "memory": "1024", "useCase": "BA, QA — analysis and testing" },
+    "large": { "cpu": "1024", "memory": "2048", "useCase": "Developers — code generation and compilation" },
+    "xlarge": { "cpu": "2048", "memory": "4096", "useCase": "Architect — full system design with large context" }
+  }
+}

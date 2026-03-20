@@ -1,0 +1,457 @@
+# ForgeSquad - Architect Copilot
+# Copilot Studio Configuration
+# This YAML defines the Architect agent for Microsoft Copilot Studio
+
+copilot:
+  name: "ForgeSquad-Architect"
+  display_name: "ForgeSquad Architect"
+  description: >
+    Agente responsavel por design de arquitetura de sistemas, decisoes
+    arquiteturais (ADRs), validacao de requisitos nao-funcionais e
+    governanca tecnica do squad.
+  language: "pt-BR"
+  fallback_language: "en-US"
+
+  # Azure OpenAI Configuration
+  generative_ai:
+    model: "gpt-4o"
+    deployment: "forgesquad-gpt4o"
+    endpoint: "${AZURE_OPENAI_ENDPOINT}"
+    temperature: 0.3
+    max_tokens: 4096
+    top_p: 0.9
+
+  # System Instructions (System Prompt)
+  instructions: |
+    Voce e o **Architect** do ForgeSquad, o agente mais senior do squad de engenharia.
+
+    ## Seu Papel
+    Voce participa de TODAS as fases do pipeline — de Discovery a Retrospectiva.
+    Voce e o guardiao da qualidade tecnica e da coerencia arquitetural do projeto.
+
+    ## Responsabilidades
+    1. **Design de Arquitetura**: Projetar solucoes usando padroes como Hexagonal,
+       Clean Architecture, Microservices, Event-Driven, CQRS
+    2. **Decisoes Arquiteturais (ADRs)**: Documentar todas as decisoes importantes
+       no formato ADR (Architecture Decision Record)
+    3. **Validacao Tecnica**: Revisar e validar artefatos de todos os outros agentes
+    4. **Governanca**: Garantir aderencia a padroes, politicas e regulacoes
+    5. **Quality Gates**: Definir e aplicar criterios de qualidade em cada fase
+
+    ## Modelo de Decisao
+    Para cada decisao arquitetural, siga este framework:
+    - **Contexto**: Qual e o problema ou necessidade?
+    - **Opcoes**: Quais alternativas foram consideradas? (minimo 3)
+    - **Decisao**: Qual foi a escolha e por que?
+    - **Consequencias**: Quais sao os trade-offs?
+    - **Status**: Proposed / Accepted / Deprecated / Superseded
+
+    ## Formato de Output
+    Sempre estruture suas respostas com:
+    - Secoes claras com headers markdown
+    - Diagramas em formato ASCII ou Mermaid quando aplicavel
+    - Referencias a ADRs existentes
+    - Justificativa tecnica para cada recomendacao
+
+    ## Restricoes
+    - Nunca recomende tecnologias sem justificar o trade-off
+    - Sempre considere requisitos nao-funcionais (performance, seguranca, escalabilidade)
+    - Sempre valide conformidade com regulacoes aplicaveis (LGPD, Bacen, etc.)
+    - Mantenha consistencia com decisoes anteriores (consulte ADRs)
+
+    ## Interacao com Outros Agentes
+    - Com **Tech Lead**: Colabore em decisoes de implementacao
+    - Com **BA**: Valide que requisitos sao tecnicamente viaveis
+    - Com **Finance Advisor**: Garanta compliance regulatorio
+    - Com **QA**: Defina criterios de qualidade arquitetural
+    - Com **Dev Backend/Frontend**: Oriente sobre padroes e boas praticas
+
+  # Knowledge Sources
+  knowledge:
+    sources:
+      - type: "sharepoint"
+        name: "Padroes Arquiteturais"
+        description: "Biblioteca de padroes e guidelines da empresa"
+        url: "${SHAREPOINT_ARCHITECTURE_LIBRARY_URL}"
+
+      - type: "sharepoint"
+        name: "ADRs Anteriores"
+        description: "Historico de decisoes arquiteturais"
+        url: "${SHAREPOINT_ADRS_URL}"
+
+      - type: "dataverse"
+        name: "Tech Radar"
+        description: "Tecnologias aprovadas e suas classificacoes"
+        table: "forgesquad_techradar"
+
+      - type: "web"
+        name: "OWASP Top 10"
+        url: "https://owasp.org/www-project-top-ten/"
+
+      - type: "file"
+        name: "Company Tech Stack"
+        description: "Stack tecnologico padrao da empresa"
+        path: "_forgesquad/_memory/company.md"
+
+  # Actions (Plugins / Connectors)
+  actions:
+    - name: "GenerateC4Diagram"
+      description: "Gera diagrama C4 Model a partir de descricao textual"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_C4_GENERATOR_ID}"
+      inputs:
+        - name: "system_description"
+          type: "string"
+          description: "Descricao do sistema"
+        - name: "level"
+          type: "string"
+          enum: ["context", "container", "component", "code"]
+          description: "Nivel do diagrama C4"
+      outputs:
+        - name: "diagram_url"
+          type: "string"
+          description: "URL do diagrama gerado"
+        - name: "diagram_code"
+          type: "string"
+          description: "Codigo PlantUML/Mermaid do diagrama"
+
+    - name: "CreateADR"
+      description: "Cria um Architecture Decision Record"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_ADR_CREATOR_ID}"
+      inputs:
+        - name: "title"
+          type: "string"
+        - name: "context"
+          type: "string"
+        - name: "options"
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name: { type: "string" }
+              pros: { type: "array", items: { type: "string" } }
+              cons: { type: "array", items: { type: "string" } }
+        - name: "decision"
+          type: "string"
+        - name: "consequences"
+          type: "string"
+        - name: "status"
+          type: "string"
+          enum: ["Proposed", "Accepted", "Deprecated", "Superseded"]
+      outputs:
+        - name: "adr_id"
+          type: "string"
+        - name: "adr_url"
+          type: "string"
+
+    - name: "ValidateArchitecture"
+      description: "Valida arquitetura contra checklist de qualidade"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_ARCH_VALIDATOR_ID}"
+      inputs:
+        - name: "architecture_description"
+          type: "string"
+        - name: "checklist_type"
+          type: "string"
+          enum: ["security", "performance", "scalability", "compliance", "full"]
+      outputs:
+        - name: "score"
+          type: "number"
+        - name: "issues"
+          type: "array"
+        - name: "recommendations"
+          type: "array"
+
+    - name: "CheckTechRadar"
+      description: "Consulta o Tech Radar da empresa para validar tecnologia"
+      type: "dataverse_query"
+      table: "forgesquad_techradar"
+      inputs:
+        - name: "technology_name"
+          type: "string"
+      outputs:
+        - name: "status"
+          type: "string"
+          description: "Adopt / Trial / Assess / Hold"
+        - name: "approved"
+          type: "boolean"
+        - name: "notes"
+          type: "string"
+
+    - name: "SaveArtifact"
+      description: "Salva artefato no SharePoint e registra no Dataverse"
+      type: "power_automate_flow"
+      flow_id: "${FLOW_SAVE_ARTIFACT_ID}"
+      inputs:
+        - name: "artifact_type"
+          type: "string"
+          enum: ["ADR", "Diagram", "Document", "Code", "Report"]
+        - name: "file_name"
+          type: "string"
+        - name: "content"
+          type: "string"
+        - name: "phase"
+          type: "string"
+        - name: "run_id"
+          type: "string"
+      outputs:
+        - name: "artifact_id"
+          type: "string"
+        - name: "sharepoint_url"
+          type: "string"
+        - name: "content_hash"
+          type: "string"
+
+  # Topics (Pipeline Phase Handlers)
+  topics:
+    - name: "Phase1_FeasibilityCheck"
+      display_name: "Analise de Viabilidade"
+      description: "Fase 1 - Step 1.3: Analise de viabilidade tecnica do projeto"
+      trigger_phrases:
+        - "analisar viabilidade"
+        - "viabilidade tecnica"
+        - "feasibility check"
+        - "e viavel?"
+      nodes:
+        - type: "message"
+          text: "Vou analisar a viabilidade tecnica do projeto. Preciso de algumas informacoes."
+        - type: "question"
+          variable: "project_description"
+          text: "Descreva o projeto e seus principais requisitos:"
+        - type: "question"
+          variable: "constraints"
+          text: "Quais sao as restricoes conhecidas (prazo, orcamento, equipe, tecnologia)?"
+        - type: "question"
+          variable: "nfrs"
+          text: "Quais requisitos nao-funcionais sao criticos (performance, seguranca, compliance)?"
+        - type: "action"
+          action: "CheckTechRadar"
+          description: "Verifica tecnologias propostas no Tech Radar"
+        - type: "generative_answer"
+          prompt: |
+            Com base nas informacoes coletadas, faca uma analise de viabilidade tecnica:
+
+            Projeto: {project_description}
+            Restricoes: {constraints}
+            NFRs: {nfrs}
+
+            Estruture sua resposta em:
+            1. **Viabilidade Tecnica**: Alta / Media / Baixa
+            2. **Riscos Identificados**: Lista priorizada
+            3. **Tecnologias Recomendadas**: Com justificativa
+            4. **Estimativa de Complexidade**: Fibonacci (1-21)
+            5. **Recomendacao**: Go / No-Go / Go-with-conditions
+            6. **Proximos Passos**: Acoes recomendadas
+        - type: "action"
+          action: "SaveArtifact"
+          inputs:
+            artifact_type: "Document"
+            file_name: "feasibility-analysis.md"
+            phase: "Phase1-Discovery"
+
+    - name: "Phase3_SolutionDesign"
+      display_name: "Design da Solucao"
+      description: "Fase 3 - Step 3.1: Design da arquitetura da solucao"
+      trigger_phrases:
+        - "projetar arquitetura"
+        - "design de solucao"
+        - "criar arquitetura"
+        - "solution design"
+      nodes:
+        - type: "message"
+          text: "Iniciando o design da arquitetura. Vou precisar de contexto do projeto."
+        - type: "question"
+          variable: "requirements_summary"
+          text: "Resuma os requisitos principais (funcionais e nao-funcionais):"
+        - type: "question"
+          variable: "architecture_style"
+          text: |
+            Qual estilo arquitetural considerar?
+            1. Microservices
+            2. Modular Monolith
+            3. Event-Driven
+            4. Hexagonal / Clean Architecture
+            5. Definir baseado na analise
+        - type: "question"
+          variable: "integration_points"
+          text: "Quais sistemas externos precisam ser integrados?"
+        - type: "generative_answer"
+          prompt: |
+            Projete a arquitetura da solucao considerando:
+
+            Requisitos: {requirements_summary}
+            Estilo: {architecture_style}
+            Integracoes: {integration_points}
+
+            Sua resposta DEVE incluir:
+            1. **Visao Geral**: Descricao da arquitetura em alto nivel
+            2. **Diagrama C4 - Context**: Sistema e atores externos
+            3. **Diagrama C4 - Container**: Componentes principais
+            4. **Padroes Utilizados**: Lista com justificativa
+            5. **Stack Tecnologico**: Com validacao do Tech Radar
+            6. **Requisitos Nao-Funcionais**: Como cada um e atendido
+            7. **Riscos Arquiteturais**: Com mitigacao
+            8. **ADR Necessarios**: Lista de decisoes a documentar
+        - type: "action"
+          action: "GenerateC4Diagram"
+          inputs:
+            level: "container"
+        - type: "action"
+          action: "SaveArtifact"
+          inputs:
+            artifact_type: "Diagram"
+            file_name: "architecture-design.md"
+            phase: "Phase3-Architecture"
+
+    - name: "Phase3_ADRCreation"
+      display_name: "Criacao de ADR"
+      description: "Fase 3 - Step 3.2: Criar Architecture Decision Record"
+      trigger_phrases:
+        - "criar ADR"
+        - "registrar decisao"
+        - "architecture decision"
+        - "nova decisao arquitetural"
+      nodes:
+        - type: "message"
+          text: "Vou criar um ADR (Architecture Decision Record). Vamos documentar a decisao."
+        - type: "question"
+          variable: "adr_title"
+          text: "Qual e o titulo da decisao? (ex: 'Usar PostgreSQL como banco principal')"
+        - type: "question"
+          variable: "adr_context"
+          text: "Qual e o contexto que levou a essa decisao?"
+        - type: "question"
+          variable: "adr_options"
+          text: "Quais opcoes foram consideradas? (liste pelo menos 3)"
+        - type: "generative_answer"
+          prompt: |
+            Crie um ADR completo no formato padrao:
+
+            Titulo: {adr_title}
+            Contexto: {adr_context}
+            Opcoes: {adr_options}
+
+            Formato:
+            # ADR-{numero}: {titulo}
+            **Date:** {data_atual}
+            **Status:** Proposed
+
+            ## Context
+            {contexto expandido}
+
+            ## Decision Drivers
+            - {driver 1}
+            - {driver 2}
+
+            ## Options Considered
+            ### Option 1: {nome}
+            - Pros: ...
+            - Cons: ...
+            (repetir para cada opcao)
+
+            ## Decision
+            {decisao com justificativa}
+
+            ## Consequences
+            ### Positive
+            - ...
+            ### Negative
+            - ...
+
+            ## Compliance
+            - LGPD: {impacto}
+            - Bacen: {impacto se aplicavel}
+        - type: "action"
+          action: "CreateADR"
+        - type: "action"
+          action: "SaveArtifact"
+          inputs:
+            artifact_type: "ADR"
+            phase: "Phase3-Architecture"
+
+    - name: "ReviewGate"
+      display_name: "Revisao de Artefato"
+      description: "Gate de qualidade - revisao de artefatos de qualquer fase"
+      trigger_phrases:
+        - "revisar artefato"
+        - "quality gate"
+        - "validar entrega"
+        - "review"
+      nodes:
+        - type: "message"
+          text: "Vou revisar o artefato como Architect. Qual artefato devo analisar?"
+        - type: "question"
+          variable: "artifact_content"
+          text: "Cole o conteudo do artefato ou forneça o link:"
+        - type: "question"
+          variable: "review_type"
+          text: |
+            Que tipo de revisao?
+            1. Qualidade Tecnica
+            2. Seguranca
+            3. Performance
+            4. Compliance
+            5. Revisao Completa
+        - type: "action"
+          action: "ValidateArchitecture"
+          inputs:
+            checklist_type: "{review_type}"
+        - type: "generative_answer"
+          prompt: |
+            Faca uma revisao critica como Architect do artefato:
+
+            Artefato: {artifact_content}
+            Tipo de revisao: {review_type}
+
+            Sua revisao DEVE incluir:
+            1. **Score Geral**: 0-100
+            2. **Pontos Fortes**: O que esta bem feito
+            3. **Issues Criticas**: Problemas que bloqueiam aprovacao
+            4. **Issues Menores**: Sugestoes de melhoria
+            5. **Conformidade**: Aderencia a padroes da empresa
+            6. **Decisao**: APPROVED / NEEDS_CHANGES / REJECTED
+            7. **Acoes Necessarias**: Lista de acoes se nao aprovado
+
+  # Channel Configuration
+  channels:
+    - type: "microsoft_teams"
+      enabled: true
+      app_name: "ForgeSquad Architect"
+      description: "Agente de arquitetura do ForgeSquad"
+
+    - type: "web"
+      enabled: true
+
+    - type: "power_automate"
+      enabled: true
+      description: "Acionado pelo pipeline orchestrator"
+
+  # Security & Governance
+  security:
+    authentication:
+      type: "azure_ad"
+      required: true
+      allowed_groups:
+        - "ForgeSquad-Users"
+        - "ForgeSquad-Admins"
+        - "Architecture-Team"
+
+    data_loss_prevention:
+      sensitive_topics_blocked: true
+      external_sharing: false
+
+    rate_limits:
+      messages_per_minute: 30
+      messages_per_day: 2000
+
+  # Analytics
+  analytics:
+    enabled: true
+    track_topics: true
+    track_satisfaction: true
+    track_escalation: true
+    custom_dimensions:
+      - "phase"
+      - "squad_name"
+      - "project_name"
