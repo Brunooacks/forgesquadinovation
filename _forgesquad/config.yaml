@@ -30,3 +30,33 @@ models:
   tech_writer: fast
   finance_advisor: powerful
   project_manager: fast
+
+# Ralph Loop Configuration
+# Autonomous iterative implementation engine (inspired by snarktank/ralph)
+# When a step uses `execution: ralph-loop`, the runner spawns fresh AI sessions
+# iteratively until all stories in the generated prd.json are complete.
+ralph:
+  enabled: true
+  default_max_iterations: 10
+  default_tool: claude          # claude or amp
+  default_quality_gates:
+    - typecheck
+    - lint
+    - test
+  story_source: auto            # auto (generate from step requirements) or prd (pre-generated)
+  branch_prefix: ralph          # git branch prefix for ralph iterations
+
+# Project Management Methodologies
+# Selectable at squad creation time. Shapes how the pipeline executes:
+# grouping, checkpoint frequency, reporting cadence, ceremonies.
+methodologies:
+  default: default
+  available:
+    - id: default
+      label: "Default (Linear Pipeline)"
+    - id: waterfall
+      label: "Waterfall"
+    - id: scrum
+      label: "Scrum"
+    - id: kanban
+      label: "Kanban"
