@@ -1,0 +1,80 @@
+# ForgeSquad Production Dockerfile Template
+# Multi-stage build optimized for production
+#
+# Replace {variables} with project-specific values
+
+# ============================================
+# Stage 1: Builder
+# ============================================
+FROM {base_image} AS builder
+
+WORKDIR /app
+
+# Install dependencies first (cache optimization)
+COPY {dependency_files} ./
+RUN {install_command}
+
+# Copy source and build
+COPY . .
+RUN {build_command}
+
+# ============================================
+# Stage 2: Production Runtime
+# ============================================
+FROM {runtime_image} AS runtime
+
+# Security: non-root user
+RUN addgroup -g 1001 appgroup && \
+    adduser -u 1001 -G appgroup -s /bin/sh -D appuser
+
+WORKDIR /app
+
+# Copy only production artifacts
+COPY --from=builder /app/{build_output} ./{build_output}
+COPY --from=builder /app/{dependency_dir} ./{dependency_dir}
+COPY {config_files} ./
+
+# Set ownership
+RUN chown -R appuser:appgroup /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE {port}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:{port}/health || exit 1
+
+# Run
+CMD {run_command}
+
+# ============================================
+# Labels (OCI standard)
+# ============================================
+LABEL org.opencontainers.image.title="{project_name}"
+LABEL org.opencontainers.image.version="{version}"
+LABEL org.opencontainers.image.source="{repo_url}"
+LABEL org.opencontainers.image.created="{build_date}"
+
+# ============================================
+# Example: Node.js
+# ============================================
+# FROM node:20-alpine AS builder
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm ci --production=false
+# COPY . .
+# RUN npm run build
+#
+# FROM node:20-alpine AS runtime
+# RUN addgroup -g 1001 appgroup && adduser -u 1001 -G appgroup -s /bin/sh -D appuser
+# WORKDIR /app
+# COPY --from=builder /app/dist ./dist
+# COPY --from=builder /app/node_modules ./node_modules
+# COPY package*.json ./
+# USER appuser
+# EXPOSE 3000
+# HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/health || exit 1
+# CMD ["node", "dist/server.js"]
