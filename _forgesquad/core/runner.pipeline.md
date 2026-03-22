@@ -113,6 +113,21 @@ Before executing any step that references an agent:
 - Present output in conversation
 - Save output to specified file
 
+#### If `execution: ralph-loop`
+- Read ralph configuration from step frontmatter, squad.yaml, and `_forgesquad/config.yaml` (in precedence order)
+- Read `_forgesquad/core/ralph.engine.md` for full execution instructions
+- Inform user: `🔄 {Agent Name} starting Ralph Loop — autonomous iterative implementation...`
+- Initialize ralph working directory: `squads/{name}/output/{run_id}/_ralph/{step-id}/`
+- Generate or load `prd.json` based on `story_source` setting
+- Update state.json with `ralph` sub-state object
+- Execute the iterative loop (up to `max_iterations`):
+  - Each iteration: fresh AI session, implement one story, run quality gates
+  - Update state.json after each iteration with progress
+  - Log each iteration to audit trail
+- On completion (all stories pass): collect outputs, present summary, proceed to next step
+- On max iterations reached: pause at checkpoint for user decision (continue/skip/abort)
+- See `_forgesquad/core/ralph.engine.md` for detailed execution logic
+
 #### If `type: checkpoint`
 - Present checkpoint message with context
 - If requires decision: present options as numbered list
