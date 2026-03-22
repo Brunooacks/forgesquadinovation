@@ -56,6 +56,7 @@ agent:
           - Ask about team model (full squad, backend-only, frontend-only, platform)
           - Ask about delivery model (greenfield, brownfield, migration, sustaining)
           - Ask about tool preferences (Devin, Copilot, StackSpot, Kiro)
+          - Ask about project management methodology (Default, Waterfall, Scrum, Kanban)
           - Design the squad with agents, pipeline, and checkpoints
           - Present the design for approval
           - Generate all files (squad.yaml, agents/, pipeline/, squad-party.csv)
@@ -108,6 +109,18 @@ agent:
         - execution
         - skills
         - tasks
+
+    squad_yaml_optional:
+      - methodology           # default | waterfall | scrum | kanban
+
+    methodology_catalog:
+      source: "_forgesquad/methodologies/_catalog.yaml"
+      question: >
+        What project management methodology should this squad use?
+        1. Default (Linear Pipeline) — Sequential execution with human checkpoints
+        2. Waterfall — Formal phases, sign-offs between phases, heavy documentation
+        3. Scrum — Sprint-based, daily standups, sprint reviews, retrospectives
+        4. Kanban — Continuous flow, WIP limits, lead time tracking
 
     pipeline_step:
       types:

@@ -1,0 +1,151 @@
+# ForgeSquad Methodology: Scrum
+#
+# Sprint-based execution with ceremonies: Planning, Daily Standup,
+# Sprint Review, and Retrospective. Iterative delivery with
+# incremental releases per sprint.
+
+id: scrum
+name: "Scrum"
+version: "1.0"
+
+# Sprint configuration
+sprint:
+  default_size: 6              # steps per sprint (adjustable)
+  numbering: sequential        # Sprint 1, Sprint 2, ...
+
+  # Scrum ceremonies injected by the Pipeline Runner
+  ceremonies:
+    planning:
+      when: sprint_start
+      type: checkpoint
+      description: >
+        Sprint Planning: Review the backlog of remaining steps, select items
+        for this sprint, define the sprint goal, and confirm priorities.
+      template: |
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        📋 SPRINT PLANNING — Sprint {sprint_number}
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        🎯 Sprint Goal: {sprint_goal}
+
+        📋 Backlog ({remaining_steps} steps remaining):
+        {backlog_list}
+
+        📌 Selected for this sprint ({sprint_size} steps):
+        {selected_steps}
+
+        👥 Agents involved:
+        {agent_list}
+
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        Approve sprint plan? [S]im / [N]ão / [R]eordenar backlog
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    daily_standup:
+      when: every_step
+      type: summary
+      description: >
+        Daily Standup summary generated automatically after each step.
+        Shows what was done, what's next, and any blockers.
+      template: |
+        **🔄 Daily Standup — Step {step_current}/{step_total} (Sprint {sprint_number})**
+
+        ✅ Done: {last_step_summary}
+        📁 Artifact: {last_artifact_path}
+
+        🔜 Next: {next_step_name} ({next_agent_name})
+
+        ⚠️ Blockers: {blockers_or_none}
+
+        📊 Sprint Progress: {sprint_progress_bar} {sprint_percent}%
+
+    review:
+      when: sprint_end
+      type: checkpoint
+      description: >
+        Sprint Review: Demo all outputs produced during the sprint,
+        collect stakeholder feedback, and decide on release readiness.
+      template: |
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        🎬 SPRINT REVIEW — Sprint {sprint_number}
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        🎯 Sprint Goal: {sprint_goal}
+        ✅ Steps completed: {completed_count}/{sprint_size}
+
+        📄 Artifacts produced:
+        {artifact_list}
+
+        📊 Quality Metrics:
+        - Review cycles: {review_count}
+        - Veto triggers: {veto_count}
+        - Quality gate passes: {gate_pass_count}
+
+        🚀 Release candidate: v{release_version}
+
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        Accept sprint deliverables? [S]im / [N]ão / [F]eedback
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    retrospective:
+      when: sprint_end
+      type: auto
+      description: >
+        Sprint Retrospective: Auto-generated analysis of what went well,
+        what needs improvement, and action items for next sprint.
+      template: |
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        🔍 SPRINT RETROSPECTIVE — Sprint {sprint_number}
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        ✅ What went well:
+        - Steps completed on target: {on_target_count}/{sprint_size}
+        - Quality gates: {gate_pass_rate}% pass rate
+        - {positive_observations}
+
+        ⚠️ What needs improvement:
+        - Review cycles: {review_count} (target: < 2 per step)
+        - Veto triggers: {veto_count} (target: 0)
+        - {improvement_observations}
+
+        📋 Action Items for Sprint {next_sprint}:
+        - {action_items}
+
+        📊 Velocity: {velocity} steps/sprint
+        📈 Burndown: {burndown_summary}
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Rules that the Pipeline Runner applies
+rules:
+  pipeline_behavior:
+    grouping: sprints
+    sprint_size: auto            # auto-calculate or use default_size
+    allow_backlog_reorder: true  # user can reorder at planning
+    burndown_tracking: true
+
+  checkpoint_frequency: sprint_boundaries_plus_approval_gates
+
+  documentation: medium
+
+  reporting:
+    format: sprint_report
+    cadence: per_sprint
+    includes:
+      - sprint_goal
+      - completed_stories
+      - velocity
+      - burndown_chart_data
+      - retrospective_actions
+
+  # State.json extension for scrum tracking
+  state_extension:
+    scrum:
+      current_sprint: 1
+      sprint_goal: ""
+      sprint_steps: []
+      sprint_completed: []
+      velocity_history: []
+      burndown:
+        total_steps: 0
+        remaining_steps: 0
+        completed_steps: 0

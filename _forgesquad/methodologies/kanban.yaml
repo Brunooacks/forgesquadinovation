@@ -1,0 +1,129 @@
+# ForgeSquad Methodology: Kanban
+#
+# Continuous flow with WIP limits, pull-based work, and flow metrics.
+# No fixed iterations — steps flow through columns and release when ready.
+
+id: kanban
+name: "Kanban"
+version: "1.0"
+
+# Board configuration
+board:
+  columns:
+    - id: backlog
+      name: "Backlog"
+      wip_limit: null            # No limit on backlog
+      description: "Steps waiting to be started"
+
+    - id: in_progress
+      name: "In Progress"
+      wip_limit: 1               # Only one step active at a time
+      description: "Step currently being executed by an agent"
+
+    - id: review
+      name: "Review"
+      wip_limit: 1               # One step in review at a time
+      description: "Step output being reviewed or at checkpoint"
+
+    - id: done
+      name: "Done"
+      wip_limit: null            # No limit on done
+      description: "Steps completed and approved"
+
+# Flow metrics tracked automatically
+metrics:
+  lead_time:
+    description: "Time from step entering backlog to completion"
+    unit: minutes
+  cycle_time:
+    description: "Time from step starting to completion"
+    unit: minutes
+  throughput:
+    description: "Steps completed per hour"
+    unit: steps_per_hour
+  wip:
+    description: "Current work in progress count"
+    unit: count
+
+# Rules that the Pipeline Runner applies
+rules:
+  pipeline_behavior:
+    grouping: flow
+    wip_enforcement: true        # Block new work if WIP limit reached
+    pull_based: true             # Steps are pulled into columns, not pushed
+    lead_time_tracking: true
+    cycle_time_tracking: true
+
+  checkpoint_frequency: on_column_transition
+
+  documentation: light
+
+  reporting:
+    format: flow_metrics
+    cadence: per_step
+    includes:
+      - lead_time_per_step
+      - cycle_time_per_step
+      - cumulative_flow
+      - bottleneck_identification
+      - throughput_rate
+      - wip_violations
+
+  # Step transition template
+  column_transition_template: |
+    **📊 Kanban Board Update**
+    ```
+    Backlog [{backlog_count}]  →  In Progress [{in_progress_count}/{in_progress_limit}]  →  Review [{review_count}/{review_limit}]  →  Done [{done_count}]
+    ```
+    Step: {step_name} moved to **{target_column}**
+    Cycle time so far: {cycle_time}
+    Avg throughput: {throughput} steps/hour
+
+  # Bottleneck detection
+  bottleneck_template: |
+    ⚠️ **Bottleneck Detected**
+    Column: {column_name}
+    WIP: {current_wip}/{wip_limit}
+    Avg time in column: {avg_time}
+    Action: {suggestion}
+
+  # Flow metrics summary (generated after each step)
+  metrics_template: |
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    📊 KANBAN FLOW METRICS
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    📋 Board:
+    {board_visualization}
+
+    ⏱️ Metrics:
+    - Avg Lead Time: {avg_lead_time}
+    - Avg Cycle Time: {avg_cycle_time}
+    - Throughput: {throughput} steps/hour
+    - WIP: {current_wip}
+
+    📈 Cumulative Flow:
+    {cumulative_flow_data}
+
+    🚦 Bottlenecks: {bottleneck_summary_or_none}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  # State.json extension for kanban tracking
+  state_extension:
+    kanban:
+      columns:
+        backlog:
+          steps: []
+        in_progress:
+          steps: []
+          wip_limit: 1
+        review:
+          steps: []
+          wip_limit: 1
+        done:
+          steps: []
+      metrics:
+        avg_lead_time: null
+        avg_cycle_time: null
+        throughput: null
+        step_times: []

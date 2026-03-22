@@ -24,6 +24,15 @@ Before starting execution:
    b. Read SKILL.md, parse frontmatter for type
    c. If type: mcp, verify MCP is configured
 4. **Load model tier config**: Read `_forgesquad/config.yaml` for model tiers.
+4b. **Load methodology** (if specified):
+    - Read `squad.yaml` → `methodology` field
+    - If present and not `default`:
+      a. Read `_forgesquad/methodologies/_catalog.yaml` to find the methodology file
+      b. Read `_forgesquad/methodologies/{methodology}.yaml` for rules and configuration
+      c. Apply grouping rules to organize pipeline steps (phases/sprints/flow)
+      d. Set checkpoint frequency and reporting cadence per methodology rules
+      e. Initialize methodology-specific state tracking in state.json
+    - If absent or `default`: proceed as normal (fully backward compatible)
 5. Inform the user that the squad is starting:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -92,6 +101,25 @@ Before executing any step that references an agent:
 6. **Inject tool context**: If agent uses external tools (Devin, Copilot, StackSpot, Kiro):
    - Read tool skill file for integration instructions
    - Apply tool-specific workflow patterns
+
+### Methodology Hooks (before/after steps)
+
+If a methodology is loaded, apply these hooks around step execution:
+
+**Before step**:
+- **Scrum**: If this is the first step of a sprint, run Sprint Planning ceremony
+- **Kanban**: Move step from `backlog` to `in_progress`, enforce WIP limit
+- **Waterfall**: If this is the first step of a new phase, announce phase start
+
+**After step**:
+- **Scrum**: Generate Daily Standup summary. If last step in sprint, run Review + Retrospective
+- **Kanban**: Move step from `in_progress` to `review` (if checkpoint) or `done`. Update flow metrics
+- **Waterfall**: If last step in phase, present Phase Gate for formal sign-off
+
+**Between groups** (phase/sprint boundaries):
+- **Waterfall**: Mandatory phase gate checkpoint — block until sign-off
+- **Scrum**: Sprint boundary — Review + Retrospective + Planning for next sprint
+- **Kanban**: No boundaries — continuous flow
 
 ### For each pipeline step:
 

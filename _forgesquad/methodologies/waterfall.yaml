@@ -1,0 +1,112 @@
+# ForgeSquad Methodology: Waterfall
+#
+# Sequential phases with formal gates. Each phase must complete
+# and receive sign-off before the next phase begins.
+
+id: waterfall
+name: "Waterfall"
+version: "1.0"
+
+# Phase definitions — pipeline steps are grouped into these phases
+phases:
+  - id: requirements
+    name: "Requirements"
+    description: "Gather, analyze, and document all project requirements"
+    gate: formal_signoff
+    step_patterns:
+      - "checkpoint"
+      - "briefing"
+      - "requirements"
+      - "business"
+
+  - id: design
+    name: "Design"
+    description: "System architecture, technical design, and ADRs"
+    gate: formal_signoff
+    step_patterns:
+      - "architecture"
+      - "design"
+      - "planning"
+
+  - id: implementation
+    name: "Implementation"
+    description: "Backend, frontend, and infrastructure coding"
+    gate: formal_signoff
+    step_patterns:
+      - "backend"
+      - "frontend"
+      - "impl"
+
+  - id: verification
+    name: "Verification"
+    description: "Testing, code review, and quality assurance"
+    gate: formal_signoff
+    step_patterns:
+      - "test"
+      - "review"
+      - "performance"
+
+  - id: deployment
+    name: "Deployment"
+    description: "Documentation, deployment, and project closure"
+    gate: formal_signoff
+    step_patterns:
+      - "documentation"
+      - "deploy"
+      - "report"
+      - "closure"
+
+# Rules that the Pipeline Runner applies
+rules:
+  # How steps are organized
+  pipeline_behavior:
+    grouping: phases
+    allow_parallel_within_phase: false
+    require_signoff_between_phases: true
+
+  # When checkpoints are inserted
+  checkpoint_frequency: after_each_phase
+
+  # Documentation level
+  documentation: heavy
+
+  # Report format and cadence
+  reporting:
+    format: phase_completion_report
+    cadence: per_phase
+    includes:
+      - phase_summary
+      - deliverables_checklist
+      - formal_signoff_record
+      - risk_register_update
+      - traceability_matrix
+
+  # Phase gate template
+  phase_gate_template: |
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    📋 PHASE GATE — {phase_name}
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Phase: {phase_name}
+    Status: {COMPLETE}
+    Steps completed: {step_count}
+
+    📄 Deliverables:
+    {deliverables_list}
+
+    📊 Quality Metrics:
+    - Review cycles: {review_count}
+    - Veto conditions triggered: {veto_count}
+    - Artifacts generated: {artifact_count}
+
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Approve phase completion? [S]im / [N]ão / [R]evisar
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  # State.json extension for waterfall tracking
+  state_extension:
+    waterfall:
+      current_phase: "{phase_id}"
+      phases_completed: []
+      phases_remaining: []
+      phase_gate_status: "pending|approved|rejected"

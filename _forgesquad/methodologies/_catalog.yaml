@@ -1,0 +1,39 @@
+# ForgeSquad — Project Management Methodologies
+#
+# Selectable at squad creation time. Shapes how the pipeline executes:
+# step grouping, checkpoint frequency, reporting cadence, and ceremonies.
+#
+# Usage: Set `methodology: {id}` in squad.yaml
+# Default: "default" (current linear pipeline behavior, fully backward compatible)
+
+methodologies:
+  - id: default
+    name: "Default (Linear Pipeline)"
+    file: null
+    description: >
+      Sequential pipeline execution with human checkpoints between agent handoffs.
+      Current ForgeSquad behavior. No additional ceremonies or grouping.
+
+  - id: waterfall
+    name: "Waterfall"
+    file: waterfall.yaml
+    description: >
+      Sequential phases with formal sign-offs between each phase.
+      Heavy documentation, gate reports mandatory. No phase overlap.
+      Best for: regulated industries, fixed-scope projects, compliance-heavy work.
+
+  - id: scrum
+    name: "Scrum"
+    file: scrum.yaml
+    description: >
+      Sprint-based execution with planning, daily standups, reviews, and retrospectives.
+      Iterative delivery with incremental releases per sprint.
+      Best for: product development, evolving requirements, continuous delivery.
+
+  - id: kanban
+    name: "Kanban"
+    file: kanban.yaml
+    description: >
+      Continuous flow with WIP limits, pull-based work, and flow metrics.
+      No fixed iterations — release when ready.
+      Best for: maintenance, operations, continuous improvement, support teams.
