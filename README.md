@@ -214,16 +214,6 @@ project/
             └── SKILL.md               # Entry point do framework
 ```
 
-## Inspiração
-
-Este framework é inspirado no [OpenSquad](https://www.promptfy.io/opensquad) da Promptfy, adaptado especificamente para o domínio de engenharia de software com foco em:
-
-- Ciclo de vida completo (requisitos → produção → sustentação)
-- Arquiteto como papel transversal em todas as fases
-- Squad completo com todos os papéis de engenharia
-- Integração com ferramentas modernas de desenvolvimento (Devin, Copilot, StackSpot, Kiro)
-- Reports automatizados para gestão de projeto
-
 ## Licença
 
 MIT — use como quiser.
