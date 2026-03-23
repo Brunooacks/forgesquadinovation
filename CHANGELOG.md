@@ -19,6 +19,13 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 - **Production Output Standard** — padrão obrigatório para outputs production-ready
 - **Governance layer** — policies, metrics rollup, audit trail automático
 - **Scale config** — suporte a 375+ squads simultâneos (3000+ devs)
+- **Runner Executável** — coração do framework (760 linhas): checkpoints obrigatórios, geração automática de artefatos (state.json, audit-trail.json, reports), handoff approval gates, resume de pipeline
+- **Backup Engine** — 3 camadas: git auto-commit por step, snapshots locais por checkpoint, remote backup opcional (S3/Azure/GCS)
+- **Multi-IDE** — funciona em VS Code (Copilot, Continue, Cline, Amazon Q), Cursor, Windsurf, Claude Code, Codex CLI
+- **Arquivos de instrução por IDE** — CLAUDE.md, AGENTS.md, COPILOT.md, .cursorrules (mesmo conteúdo, formatos diferentes)
+- **VS Code setup** — .vscode/settings.json, extensions.json, guia completo de setup
+- **Skill /forgesquad** — entry point unificado com rotas para create, run, list, backup, report, help
+- **Templates** — squad-init.yaml e pipeline-default.yaml (24 steps) para onboarding rápido
 
 ### Alterado
 - Catálogo de agentes: 9 → 11 agentes

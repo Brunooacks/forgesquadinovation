@@ -192,6 +192,41 @@ Analisa um codebase existente para:
 | `/forgesquad skills` | Gerencia capabilities e providers |
 | `/forgesquad delete <name>` | Remove um squad |
 
+## Runner Executável — O Coração do Framework
+
+O Runner não é documentação — é instrução executável. Quando você roda `/forgesquad run`, o AI segue o `runner.executable.md` que FORÇA:
+
+- **Checkpoints obrigatórios** — O pipeline PARA e pede sua aprovação (S/N/R)
+- **Artefatos automáticos** — `state.json`, `audit-trail.json`, reports gerados a cada step
+- **Handoff approval gates** — Pausa entre agentes diferentes para aprovação
+- **10 regras invioláveis** — O AI não pode pular checkpoints, não pode modificar artefatos aprovados
+
+Evidências geradas em `.forgesquad/runs/{run_id}/`:
+```
+audit-trail.json        # Log imutável com SHA-256
+state.json              # Estado em tempo real
+step-01-briefing.md     # Output de cada step
+checkpoint-step-03.md   # Decisões em cada checkpoint
+final-report.md         # Relatório final com métricas
+```
+
+## Compatibilidade — Funciona em Qualquer IDE
+
+ForgeSquad não depende de vendor. O mesmo framework funciona em múltiplos IDEs e AI providers.
+
+| IDE | Extensão AI | Arquivo de Instrução |
+|-----|-------------|---------------------|
+| **VS Code** | GitHub Copilot Chat | `COPILOT.md` |
+| **VS Code** | Continue.dev (Claude/GPT) | `AGENTS.md` |
+| **VS Code** | Cline | `CLAUDE.md` |
+| **VS Code** | Amazon Q Developer | `AGENTS.md` |
+| **Cursor** | Nativo | `.cursorrules` |
+| **Windsurf** | Nativo | `AGENTS.md` |
+| **Claude Code** | Nativo | `CLAUDE.md` |
+| **Codex CLI** | Nativo | `AGENTS.md` |
+
+Setup completo para VS Code: [`docs/setup-vscode.md`](docs/setup-vscode.md)
+
 ## Estrutura de Diretórios
 
 ```
