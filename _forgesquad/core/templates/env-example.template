@@ -1,0 +1,59 @@
+# ForgeSquad .env.example Template
+# Copy to .env and fill in values
+# NEVER commit .env to git — only .env.example
+#
+# Replace {variables} with project-specific defaults
+
+# ============================================
+# Application
+# ============================================
+APP_NAME={project_name}
+APP_ENV=development                    # development | staging | production
+APP_PORT={port}
+APP_LOG_LEVEL=debug                    # debug | info | warn | error
+APP_LOG_FORMAT=json                    # json | text
+
+# ============================================
+# Database
+# ============================================
+DATABASE_URL=postgresql://{db_user}:{db_password}@localhost:5432/{db_name}
+DATABASE_POOL_MIN=2
+DATABASE_POOL_MAX=10
+DATABASE_SSL=false                     # true in production
+
+# ============================================
+# Cache
+# ============================================
+REDIS_URL=redis://localhost:6379
+REDIS_TTL=3600                         # Default TTL in seconds
+
+# ============================================
+# Authentication
+# ============================================
+# JWT_SECRET=                          # Generate: openssl rand -hex 32
+# JWT_EXPIRY=15m                       # Access token expiry
+# JWT_REFRESH_EXPIRY=7d                # Refresh token expiry
+
+# ============================================
+# External Services
+# ============================================
+# API_KEY_SERVICE_X=                   # Get from vault
+# WEBHOOK_URL=                         # For notifications
+
+# ============================================
+# Monitoring
+# ============================================
+# OTEL_EXPORTER_OTLP_ENDPOINT=        # OpenTelemetry collector
+# SENTRY_DSN=                          # Error tracking
+# METRICS_PORT=9090                    # Prometheus metrics
+
+# ============================================
+# Cloud Provider (uncomment as needed)
+# ============================================
+# AWS_REGION=
+# AWS_ACCESS_KEY_ID=                   # Use IAM roles in production
+# AWS_SECRET_ACCESS_KEY=
+
+# AZURE_TENANT_ID=
+# AZURE_CLIENT_ID=
+# AZURE_CLIENT_SECRET=

@@ -1,0 +1,110 @@
+# ForgeSquad Makefile Template
+# Standardized project commands
+#
+# Replace {variables} with project-specific values
+# Usage: make <target>
+
+.PHONY: help build test test-unit test-integration lint format migrate seed \
+        docker-build docker-run docker-stop deploy-staging deploy-prod clean
+
+# Default target
+.DEFAULT_GOAL := help
+
+# ============================================
+# Help
+# ============================================
+help: ## Show available commands
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# ============================================
+# Development
+# ============================================
+install: ## Install dependencies
+	{install_command}
+
+build: ## Build the application
+	{build_command}
+
+dev: ## Run in development mode
+	{dev_command}
+
+clean: ## Clean build artifacts
+	{clean_command}
+
+# ============================================
+# Testing
+# ============================================
+test: ## Run all tests
+	{test_command}
+
+test-unit: ## Run unit tests only
+	{unit_test_command}
+
+test-integration: ## Run integration tests
+	{integration_test_command}
+
+test-e2e: ## Run end-to-end tests
+	{e2e_test_command}
+
+test-coverage: ## Run tests with coverage report
+	{coverage_command}
+
+# ============================================
+# Code Quality
+# ============================================
+lint: ## Run linter
+	{lint_command}
+
+format: ## Format code
+	{format_command}
+
+typecheck: ## Run type checker
+	{typecheck_command}
+
+# ============================================
+# Database
+# ============================================
+migrate: ## Run database migrations
+	{migrate_command}
+
+migrate-down: ## Rollback last migration
+	{migrate_down_command}
+
+seed: ## Seed test data
+	{seed_command}
+
+# ============================================
+# Docker
+# ============================================
+docker-build: ## Build Docker image
+	docker build -f docker/Dockerfile.prod -t {image_name}:latest .
+
+docker-run: ## Run with Docker Compose (local development)
+	docker compose -f docker/docker-compose.yml up -d
+
+docker-stop: ## Stop Docker Compose
+	docker compose -f docker/docker-compose.yml down
+
+docker-logs: ## View Docker Compose logs
+	docker compose -f docker/docker-compose.yml logs -f
+
+# ============================================
+# Deployment
+# ============================================
+deploy-staging: ## Deploy to staging environment
+	@echo "Deploying to staging..."
+	{deploy_staging_command}
+
+deploy-prod: ## Deploy to production (requires confirmation)
+	@echo "⚠️  Deploying to PRODUCTION"
+	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ] || exit 1
+	{deploy_prod_command}
+
+# ============================================
+# Utilities
+# ============================================
+check: lint typecheck test ## Run all checks (lint + typecheck + test)
+
+ready: check docker-build ## Verify production readiness
+	@echo "✅ All checks passed. Ready for deployment."

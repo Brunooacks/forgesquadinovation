@@ -1,0 +1,98 @@
+# ForgeSquad Docker Compose Template
+# Local development stack with all dependencies
+#
+# Replace {variables} with project-specific values
+# Usage: docker compose up -d
+
+version: "3.9"
+
+services:
+  # ============================================
+  # Application
+  # ============================================
+  app:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "{app_port}:{app_port}"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://{db_user}:{db_password}@postgres:5432/{db_name}
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=debug
+      - PORT={app_port}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../../src:/app/src   # Hot reload in development
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:{app_port}/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  # ============================================
+  # Database
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: {db_name}
+      POSTGRES_USER: {db_user}
+      POSTGRES_PASSWORD: {db_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {db_user}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================
+  # Cache
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================
+  # Monitoring (optional — uncomment if needed)
+  # ============================================
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   restart: unless-stopped
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   ports:
+  #     - "3001:3000"
+  #   environment:
+  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  #   depends_on:
+  #     - prometheus
+  #   restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
