@@ -1,0 +1,53 @@
+{
+  "// ForgeSquad v2.0 — VS Code Configuration": "",
+
+  "// Editor": "",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "editor.bracketPairColorization.enabled": true,
+
+  "// Files": "",
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.forgesquad/backups": true
+  },
+  "files.associations": {
+    "*.agent.md": "markdown",
+    "*.engine.md": "markdown",
+    "*.executable.md": "markdown",
+    "SKILL.md": "markdown",
+    "squad.yaml": "yaml",
+    "pipeline.yaml": "yaml",
+    "config.yaml": "yaml"
+  },
+
+  "// YAML": "",
+  "yaml.schemas": {
+    "https://json-schema.org/draft/2020-12/schema": ["squad.yaml", "pipeline.yaml", "config.yaml"]
+  },
+
+  "// Markdown": "",
+  "markdown.preview.fontSize": 14,
+
+  "// Terminal": "",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.linux": "bash",
+
+  "// GitHub Copilot": "",
+  "github.copilot.enable": {
+    "*": true,
+    "markdown": true,
+    "yaml": true
+  },
+
+  "// Search — exclude generated files": "",
+  "search.exclude": {
+    "**/.forgesquad/runs": true,
+    "**/.forgesquad/backups": true,
+    "**/output": true
+  }
+}
