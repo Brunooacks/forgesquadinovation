@@ -6,51 +6,88 @@
   <title>ForgeSquad — Software Engineering Multi-Agent Framework</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f8fafc;
-      --bg-card: #ffffff;
-      --bg-dark: #0f172a;
-      --text: #1e293b;
+      --bg: #0a0a0f;
+      --bg-subtle: #0d0d14;
+      --bg-card: rgba(255,255,255,0.03);
+      --bg-card-hover: rgba(255,255,255,0.06);
+      --text: #e2e8f0;
       --text-muted: #64748b;
-      --accent: #2563eb;
-      --accent-light: #60a5fa;
-      --accent-bg: #eff6ff;
-      --green: #00b894;
-      --green-light: #e8f8f5;
-      --orange: #fdcb6e;
-      --orange-dark: #e17055;
-      --blue: #0984e3;
-      --border: #e8e6e3;
+      --text-bright: #f8fafc;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.25);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.25);
+      --orange: #f59e0b;
+      --pink: #ec4899;
+      --border: rgba(255,255,255,0.06);
+      --border-bright: rgba(255,255,255,0.1);
       --radius: 16px;
       --radius-sm: 10px;
-      --shadow: 0 2px 20px rgba(37, 99, 235, 0.08);
-      --shadow-lg: 0 8px 40px rgba(37, 99, 235, 0.12);
+      --glass: rgba(255,255,255,0.03);
+      --glass-border: rgba(255,255,255,0.08);
     }
 
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { color: var(--cyan); }
 
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ===== ANIMATED BACKGROUND ===== */
+    .hero-bg {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      overflow: hidden; z-index: 0;
+    }
+    .hero-bg::before {
+      content: '';
+      position: absolute; top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background:
+        radial-gradient(ellipse 600px 400px at 20% 30%, rgba(99, 102, 241, 0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 350px at 75% 60%, rgba(6, 182, 212, 0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 50% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 70%);
+      animation: meshFloat 20s ease-in-out infinite alternate;
+    }
+    @keyframes meshFloat {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(2%, -1%) rotate(1deg); }
+      66% { transform: translate(-1%, 2%) rotate(-0.5deg); }
+      100% { transform: translate(1%, -2%) rotate(0.5deg); }
+    }
+
+    /* Dot grid pattern */
+    .dot-grid {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      z-index: 1;
+    }
 
     /* ===== NAVBAR ===== */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(248, 250, 252, 0.9);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--glass-border);
       padding: 14px 0;
     }
     nav .container {
@@ -58,174 +95,218 @@
     }
     .nav-brand {
       display: flex; align-items: center; gap: 10px;
-      font-size: 1.25rem; font-weight: 700; color: var(--text);
+      font-size: 1.2rem; font-weight: 700; color: var(--text-bright);
     }
-    .nav-brand svg { width: 32px; height: 32px; }
+    .nav-logo {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .nav-logo svg { width: 20px; height: 20px; }
     .nav-badge {
-      font-size: 0.7rem; font-weight: 600;
-      background: var(--accent-bg); color: var(--accent);
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.5px;
+      background: rgba(99, 102, 241, 0.15); color: var(--accent-light);
       padding: 3px 10px; border-radius: 20px;
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
-    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
     .nav-links a {
-      font-size: 0.9rem; color: var(--text-muted); font-weight: 500;
+      font-size: 0.85rem; color: var(--text-muted); font-weight: 500;
       transition: color 0.2s;
     }
-    .nav-links a:hover { color: var(--accent); text-decoration: none; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600;
+      transition: all 0.3s; cursor: pointer; border: none;
+      font-family: inherit;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      color: #fff;
+      box-shadow: 0 0 24px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px); color: #fff;
+    }
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(8px);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent-light); }
+    .btn-ghost {
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent-light); }
 
     /* ===== HERO ===== */
     .hero {
-      text-align: center; padding: 100px 0 60px;
-      background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+      position: relative;
+      text-align: center; padding: 120px 0 80px;
+      min-height: 90vh;
+      display: flex; align-items: center;
     }
+    .hero .container { position: relative; z-index: 2; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      font-size: 0.85rem; color: var(--accent); font-weight: 500;
-      margin-bottom: 28px;
+      font-size: 0.8rem; color: var(--cyan); font-weight: 500;
+      margin-bottom: 32px;
+      padding: 6px 16px; border-radius: 30px;
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid rgba(6, 182, 212, 0.15);
     }
     .hero-badge::before {
-      content: ''; width: 8px; height: 8px;
-      background: var(--accent); border-radius: 50%;
+      content: ''; width: 6px; height: 6px;
+      background: var(--cyan); border-radius: 50%;
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulse-dot 2s ease-in-out infinite;
     }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--cyan); }
+      50% { opacity: 0.5; box-shadow: 0 0 16px var(--cyan); }
+    }
+
     .hero h1 {
-      font-size: clamp(2.4rem, 5.5vw, 4rem);
-      font-weight: 800; line-height: 1.1;
-      color: #bfdbfe;
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 800; line-height: 1.08;
       margin-bottom: 28px;
+      letter-spacing: -0.03em;
     }
-    .hero h1 em {
-      font-style: normal; color: var(--accent);
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, #818cf8 0%, #06b6d4 50%, #a78bfa 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 6s ease infinite;
     }
+    @keyframes gradientShift {
+      0% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+      100% { background-position: 0% center; }
+    }
+    .hero h1 .white-text { color: var(--text-bright); }
+
     .hero p {
       font-size: 1.1rem; color: var(--text-muted);
-      max-width: 680px; margin: 0 auto 40px;
+      max-width: 700px; margin: 0 auto 44px;
+      line-height: 1.7;
     }
     .hero p strong { color: var(--text); }
     .hero-actions {
-      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
     }
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 14px 28px; border-radius: 12px;
-      font-size: 0.95rem; font-weight: 600;
-      transition: all 0.2s; cursor: pointer; border: none;
+
+    /* ===== SECTION COMMON ===== */
+    .section { padding: 100px 0; position: relative; }
+    .section-alt { background: var(--bg-subtle); }
+    .section-divider {
+      height: 1px; width: 100%;
+      background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
     }
-    .btn-primary {
-      background: var(--accent); color: #fff;
-      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+    .section-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--accent-light);
+      margin-bottom: 16px;
     }
-    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); text-decoration: none; color: #fff; }
-    .btn-secondary {
-      background: var(--bg-card); color: var(--text);
-      border: 1px solid var(--border);
+    .section-title {
+      text-align: center; font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 800; margin-bottom: 14px;
+      color: var(--text-bright);
+      letter-spacing: -0.02em;
     }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+    .section-subtitle {
+      text-align: center; color: var(--text-muted);
+      font-size: 1rem; margin-bottom: 60px;
+      max-width: 620px; margin-left: auto; margin-right: auto;
+      line-height: 1.7;
+    }
 
     /* ===== TERMINAL ===== */
-    .terminal-section { padding: 0 0 80px; }
+    .terminal-section { padding: 0 0 0; margin-top: -40px; position: relative; z-index: 3; }
     .terminal {
-      max-width: 780px; margin: 0 auto;
-      background: var(--bg-card); border-radius: var(--radius);
-      box-shadow: var(--shadow-lg);
+      max-width: 800px; margin: 0 auto;
+      background: #111118;
+      border-radius: var(--radius);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px var(--glass-border);
       overflow: hidden;
     }
     .terminal-bar {
       display: flex; align-items: center; gap: 8px;
-      padding: 14px 20px; border-bottom: 1px solid var(--border);
-      font-size: 0.8rem; color: var(--text-muted);
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem; color: var(--text-muted);
     }
-    .terminal-dot {
-      width: 12px; height: 12px; border-radius: 50%;
-    }
+    .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
     .terminal-dot.red { background: #ff5f57; }
     .terminal-dot.yellow { background: #febc2e; }
     .terminal-dot.green { background: #28c840; }
     .terminal-body {
-      padding: 24px 28px; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      font-size: 0.85rem; line-height: 2;
+      padding: 24px 28px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'JetBrains Mono', monospace;
+      font-size: 0.82rem; line-height: 2;
     }
     .t-prompt { color: var(--text-muted); }
-    .t-cmd { color: var(--text); font-weight: 600; }
-    .t-string { color: var(--accent); }
+    .t-cmd { color: var(--text-bright); font-weight: 600; }
+    .t-string { color: var(--cyan); }
     .t-success { color: var(--green); }
     .t-info { color: var(--text-muted); }
     .t-agent { font-weight: 600; }
-    .t-checkpoint { color: var(--orange-dark); font-weight: 600; }
+    .t-checkpoint { color: var(--orange); font-weight: 600; }
     .t-status { margin-left: 12px; }
     .t-line { display: block; }
-
-    /* ===== SECTION COMMON ===== */
-    .section { padding: 80px 0; }
-    .section-title {
-      text-align: center; font-size: 2.2rem; font-weight: 800;
-      margin-bottom: 12px;
+    .cursor {
+      border-right: 2px solid var(--accent);
+      animation: blink 1s step-end infinite;
     }
-    .section-subtitle {
-      text-align: center; color: var(--text-muted);
-      font-size: 1.05rem; margin-bottom: 56px;
-      max-width: 600px; margin-left: auto; margin-right: auto;
-    }
+    @keyframes blink { 50% { border-color: transparent; } }
 
     /* ===== ANIMATED DEMO ===== */
-    .demo-section { background: #fff; }
     .demo-video {
-      max-width: 820px; margin: 0 auto;
+      max-width: 860px; margin: 0 auto;
       border-radius: 20px;
-      box-shadow: var(--shadow-lg);
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--glass-border);
+      background: #0e0e16;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4);
     }
-    .demo-screen {
-      background: var(--bg);
-      padding: 32px;
-    }
+    .demo-screen { padding: 32px; }
     .demo-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 28px;
     }
-    .demo-squad-name {
-      font-size: 1.1rem; font-weight: 700;
-    }
+    .demo-squad-name { font-size: 1rem; font-weight: 700; color: var(--text-bright); }
     .demo-status {
-      font-size: 0.85rem; color: var(--accent);
-      font-weight: 600;
+      font-size: 0.8rem; color: var(--cyan); font-weight: 600;
       animation: pulse 2s ease-in-out infinite;
     }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+      50% { opacity: 0.4; }
     }
-
-    .demo-pipeline {
-      display: flex; gap: 4px; margin-bottom: 28px;
-    }
-    .demo-phase {
-      flex: 1; text-align: center;
-    }
-    .demo-phase-icon {
-      font-size: 1.1rem; margin-bottom: 6px;
-    }
+    .demo-pipeline { display: flex; gap: 4px; margin-bottom: 28px; }
+    .demo-phase { flex: 1; text-align: center; }
+    .demo-phase-icon { font-size: 1rem; margin-bottom: 4px; }
     .demo-phase::after {
-      content: attr(data-label);
-      display: block;
-      font-size: 0.6rem; color: var(--text-muted);
+      content: attr(data-label); display: block;
+      font-size: 0.55rem; color: var(--text-muted);
       margin-top: 4px; font-weight: 500;
     }
     .demo-phase-bar {
-      height: 6px; border-radius: 3px;
-      background: var(--border);
-      overflow: hidden;
+      height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,0.06); overflow: hidden;
     }
-    .demo-bar-fill {
-      height: 100%; border-radius: 3px;
-      width: 0%;
-    }
-
-    /* Animate phases sequentially */
-    .demo-phase.active .demo-bar-fill {
-      background: var(--accent);
-      animation: fillBar 2s ease forwards;
-    }
+    .demo-bar-fill { height: 100%; border-radius: 2px; width: 0%; }
+    .demo-phase.active .demo-bar-fill { background: var(--accent); animation: fillBar 2s ease forwards; }
     .demo-phase:nth-child(2) .demo-bar-fill { animation: fillBar 2s ease 2s forwards; background: var(--accent); }
     .demo-phase:nth-child(3) .demo-bar-fill { animation: fillBar 2s ease 4s forwards; background: var(--accent); }
     .demo-phase:nth-child(4) .demo-bar-fill { animation: fillBar 2s ease 6s forwards; background: var(--accent); }
@@ -234,40 +315,23 @@
     .demo-phase:nth-child(7) .demo-bar-fill { animation: fillBar 2s ease 12s forwards; background: var(--accent); }
     .demo-phase:nth-child(8) .demo-bar-fill { animation: fillBar 2s ease 14s forwards; background: var(--accent); }
     .demo-phase:nth-child(9) .demo-bar-fill { animation: fillBar 2s ease 16s forwards; background: var(--accent); }
-    .demo-phase:nth-child(10) .demo-bar-fill { animation: fillBar 2s ease 18s forwards; background: #16a34a; }
-
-    @keyframes fillBar {
-      to { width: 100%; }
-    }
+    .demo-phase:nth-child(10) .demo-bar-fill { animation: fillBar 2s ease 18s forwards; background: var(--green); }
+    @keyframes fillBar { to { width: 100%; } }
 
     .demo-feed {
-      background: var(--bg-card);
-      border-radius: 12px;
-      padding: 16px 20px;
-      border: 1px solid var(--border);
-      max-height: 240px;
-      overflow: hidden;
+      background: rgba(255,255,255,0.02); border-radius: 12px;
+      padding: 16px 20px; border: 1px solid var(--border);
+      max-height: 260px; overflow: hidden;
     }
     .demo-feed-item {
       display: flex; align-items: center; gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-      opacity: 0;
-      transform: translateY(10px);
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+      font-size: 0.82rem; opacity: 0; transform: translateY(10px);
     }
     .demo-feed-item:last-child { border-bottom: none; }
-    .demo-agent-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    }
-    .demo-feed-agent {
-      font-weight: 600; white-space: nowrap;
-    }
-    .demo-feed-msg {
-      color: var(--text-muted);
-    }
-
-    /* Stagger feed items */
+    .demo-agent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .demo-feed-agent { font-weight: 600; white-space: nowrap; color: var(--text-bright); }
+    .demo-feed-msg { color: var(--text-muted); }
     .item-1 { animation: feedIn 0.4s ease 0.5s forwards; }
     .item-2 { animation: feedIn 0.4s ease 2.5s forwards; }
     .item-3 { animation: feedIn 0.4s ease 3.5s forwards; }
@@ -278,164 +342,298 @@
     .item-8 { animation: feedIn 0.4s ease 11s forwards; }
     .item-9 { animation: feedIn 0.4s ease 15s forwards; }
     .item-10 { animation: feedIn 0.4s ease 17s forwards; }
-
-    @keyframes feedIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes feedIn { to { opacity: 1; transform: translateY(0); } }
 
     /* ===== HOW IT WORKS ===== */
     .steps-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
     }
     .step-card {
       background: var(--bg-card); border-radius: var(--radius);
       padding: 36px 28px; text-align: center;
-      border: 1px solid var(--border);
-      transition: box-shadow 0.3s, transform 0.3s;
+      border: 1px solid var(--glass-border);
+      transition: all 0.4s ease;
+      position: relative; overflow: hidden;
     }
-    .step-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
-    .step-icon {
-      width: 56px; height: 56px; border-radius: 14px;
+    .step-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .step-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .step-card:hover::before { opacity: 1; }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; margin: 0 auto 18px;
+      font-size: 1.1rem; font-weight: 800; margin: 0 auto 18px;
+      color: var(--accent-light);
     }
-    .step-icon.purple { background: var(--accent-bg); }
-    .step-icon.green { background: var(--green-light); }
-    .step-icon.blue { background: #e3f2fd; }
-    .step-card h3 { font-size: 1.1rem; margin-bottom: 10px; }
-    .step-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+    .step-num.s1 { background: rgba(99, 102, 241, 0.12); }
+    .step-num.s2 { background: rgba(6, 182, 212, 0.12); color: var(--cyan); }
+    .step-num.s3 { background: rgba(16, 185, 129, 0.12); color: var(--green); }
+    .step-card h3 { font-size: 1.05rem; margin-bottom: 10px; color: var(--text-bright); }
+    .step-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ===== GLASS CARD MIXIN ===== */
+    .glass-card {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      backdrop-filter: blur(8px);
+      transition: all 0.35s ease;
+    }
+    .glass-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.15);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2), 0 0 0 1px rgba(99, 102, 241, 0.08);
+      transform: translateY(-2px);
+    }
 
     /* ===== SQUAD ROLES ===== */
-    .roles-section { background: #fff; }
     .roles-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
     }
     .role-card {
-      background: var(--bg); border-radius: var(--radius);
-      padding: 28px 22px; border: 1px solid var(--border);
-      transition: all 0.3s;
+      background: var(--bg-card); border-radius: var(--radius);
+      padding: 28px 22px; border: 1px solid var(--glass-border);
+      transition: all 0.35s ease;
     }
-    .role-card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+    .role-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.15);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      transform: translateY(-3px);
+    }
     .role-avatar {
       width: 48px; height: 48px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; margin-bottom: 14px;
+      font-size: 1.3rem; margin-bottom: 14px;
     }
-    .role-card h4 { font-size: 0.95rem; margin-bottom: 6px; }
-    .role-card p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
-    .role-tools {
-      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;
-    }
+    .role-card h4 { font-size: 0.95rem; margin-bottom: 6px; color: var(--text-bright); }
+    .role-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
+    .role-tools { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
     .role-tool {
-      font-size: 0.7rem; padding: 3px 8px;
-      background: var(--accent-bg); color: var(--accent);
+      font-size: 0.68rem; padding: 3px 8px;
+      background: rgba(99, 102, 241, 0.1); color: var(--accent-light);
       border-radius: 6px; font-weight: 500;
+      border: 1px solid rgba(99, 102, 241, 0.15);
     }
+
+    /* ===== ARCHITECT SECTION ===== */
+    .architect-section {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.04) 100%);
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .architect-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    }
+    .architect-card {
+      background: rgba(99, 102, 241, 0.06);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 24px; border: 1px solid rgba(99, 102, 241, 0.12);
+      transition: all 0.35s ease;
+    }
+    .architect-card:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.25);
+      transform: translateY(-2px);
+    }
+    .architect-card h4 {
+      font-size: 0.9rem; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text-bright);
+    }
+    .architect-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
 
     /* ===== PIPELINE ===== */
     .pipeline-flow {
       display: flex; flex-wrap: wrap; gap: 8px;
       justify-content: center; align-items: center;
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
     .phase-pill {
       display: flex; align-items: center; gap: 6px;
       padding: 10px 18px; border-radius: 30px;
-      font-size: 0.85rem; font-weight: 600;
-      background: var(--bg-card); border: 1px solid var(--border);
-      transition: all 0.3s;
+      font-size: 0.82rem; font-weight: 600;
+      background: var(--bg-card); border: 1px solid var(--glass-border);
+      color: var(--text); transition: all 0.3s;
     }
-    .phase-pill:hover { border-color: var(--accent); background: var(--accent-bg); }
-    .phase-arrow { color: var(--accent-light); font-size: 1.2rem; }
+    .phase-pill:hover {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.08);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .phase-arrow { color: var(--text-muted); font-size: 1rem; }
 
     .pipeline-detail {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
     }
     .pipeline-card {
       background: var(--bg-card); border-radius: var(--radius);
-      padding: 28px; border: 1px solid var(--border);
-      position: relative;
+      padding: 28px; border: 1px solid var(--glass-border);
+      position: relative; transition: all 0.35s;
+    }
+    .pipeline-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.15);
+      transform: translateY(-2px);
     }
     .pipeline-card::before {
       content: attr(data-phase);
       position: absolute; top: -10px; left: 20px;
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-      color: var(--accent); background: var(--accent-bg);
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-light);
+      background: rgba(99, 102, 241, 0.12);
       padding: 3px 10px; border-radius: 6px;
+      border: 1px solid rgba(99, 102, 241, 0.2);
     }
-    .pipeline-card h4 { font-size: 0.95rem; margin-bottom: 8px; margin-top: 6px; }
-    .pipeline-card p { font-size: 0.82rem; color: var(--text-muted); }
-    .pipeline-agents {
-      display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;
-    }
+    .pipeline-card h4 { font-size: 0.95rem; margin-bottom: 8px; margin-top: 6px; color: var(--text-bright); }
+    .pipeline-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
+    .pipeline-agents { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
     .pipeline-agent-badge {
-      font-size: 0.75rem; padding: 4px 10px;
-      background: var(--bg); border-radius: 8px;
+      font-size: 0.72rem; padding: 4px 10px;
+      background: rgba(255,255,255,0.04); border-radius: 8px;
       border: 1px solid var(--border);
+      color: var(--text-muted);
     }
 
     /* ===== TOOLS ===== */
     .tools-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;
     }
     .tool-card {
       display: flex; gap: 20px; align-items: flex-start;
       background: var(--bg-card); border-radius: var(--radius);
-      padding: 28px; border: 1px solid var(--border);
-      transition: all 0.3s;
+      padding: 28px; border: 1px solid var(--glass-border);
+      transition: all 0.35s;
     }
-    .tool-card:hover { box-shadow: var(--shadow); border-color: var(--accent); }
+    .tool-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.15);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+      transform: translateY(-2px);
+    }
     .tool-icon {
-      width: 52px; height: 52px; border-radius: 14px;
+      width: 48px; height: 48px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; flex-shrink: 0;
+      font-size: 1.3rem; flex-shrink: 0;
     }
-    .tool-card h4 { font-size: 1rem; margin-bottom: 4px; }
-    .tool-card p { font-size: 0.85rem; color: var(--text-muted); }
-    .tool-agents {
-      display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap;
-    }
+    .tool-card h4 { font-size: 0.95rem; margin-bottom: 4px; color: var(--text-bright); }
+    .tool-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; }
+    .tool-agents { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
     .tool-agents span {
-      font-size: 0.7rem; background: var(--bg);
+      font-size: 0.68rem; background: rgba(255,255,255,0.04);
       padding: 2px 8px; border-radius: 6px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border); color: var(--text-muted);
     }
 
-    /* ===== ARCHITECT HIGHLIGHT ===== */
-    .architect-section {
-      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-      color: #fff;
+    /* ===== SKILLS BADGES ===== */
+    .skills-badge-row {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      justify-content: center; margin-top: 48px;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
     }
-    .architect-section .section-title { color: #fff; }
-    .architect-section .section-subtitle { color: rgba(255,255,255,0.8); }
-    .architect-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+    .skill-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 30px;
+      font-size: 0.8rem; font-weight: 600;
+      border: 1px solid; transition: all 0.3s;
+      position: relative;
     }
-    .architect-card {
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(8px);
-      border-radius: var(--radius);
-      padding: 24px; border: 1px solid rgba(255,255,255,0.2);
+    .skill-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
     }
-    .architect-card h4 {
-      font-size: 0.9rem; margin-bottom: 6px;
+    .skill-badge.sre {
+      color: #f87171; border-color: rgba(248, 113, 113, 0.25);
+      background: rgba(248, 113, 113, 0.06);
+    }
+    .skill-badge.sre::before { background: #f87171; box-shadow: 0 0 8px rgba(248,113,113,0.5); }
+    .skill-badge.devops {
+      color: var(--cyan); border-color: rgba(6, 182, 212, 0.25);
+      background: rgba(6, 182, 212, 0.06);
+    }
+    .skill-badge.devops::before { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
+    .skill-badge.architect {
+      color: var(--accent-light); border-color: rgba(99, 102, 241, 0.25);
+      background: rgba(99, 102, 241, 0.06);
+    }
+    .skill-badge.architect::before { background: var(--accent-light); box-shadow: 0 0 8px var(--accent-glow); }
+    .skill-badge.crypto {
+      color: var(--orange); border-color: rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.06);
+    }
+    .skill-badge.crypto::before { background: var(--orange); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+    .skill-badge.ralph {
+      color: var(--green); border-color: rgba(16, 185, 129, 0.25);
+      background: rgba(16, 185, 129, 0.06);
+    }
+    .skill-badge.ralph::before { background: var(--green); box-shadow: 0 0 8px var(--green-glow); }
+    .skill-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+
+    /* ===== METHODOLOGIES ===== */
+    .method-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    }
+    .method-card {
+      background: var(--bg-card); border-radius: var(--radius);
+      padding: 36px 28px; text-align: center;
+      border: 1px solid var(--glass-border);
+      transition: all 0.35s ease;
+    }
+    .method-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(6, 182, 212, 0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .method-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin: 0 auto 18px;
+    }
+    .method-card h3 { font-size: 1.1rem; margin-bottom: 10px; color: var(--text-bright); }
+    .method-card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ===== PRODUCTION READY ===== */
+    .prod-section {
+      text-align: center;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(6, 182, 212, 0.04) 100%);
+      border-top: 1px solid var(--glass-border);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .prod-checklist {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      justify-content: center; max-width: 800px; margin: 0 auto;
+    }
+    .prod-item {
       display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 10px;
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.12);
+      font-size: 0.85rem; color: var(--text);
+      transition: all 0.3s;
     }
-    .architect-card p { font-size: 0.82rem; color: rgba(255,255,255,0.8); }
+    .prod-item:hover {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.25);
+      transform: translateY(-1px);
+    }
+    .prod-check { color: var(--green); font-weight: 700; }
 
     /* ===== INSTALL ===== */
     .install-section { text-align: center; }
-    .install-section .section-title {
-      font-size: 2.4rem;
-    }
     .install-steps {
-      max-width: 650px; margin: 0 auto;
-      text-align: left;
+      max-width: 680px; margin: 0 auto; text-align: left;
     }
     .install-step {
       display: flex; gap: 18px; align-items: flex-start;
@@ -443,99 +641,103 @@
     }
     .install-num {
       width: 36px; height: 36px; border-radius: 50%;
-      background: var(--accent); color: #fff;
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; font-weight: 700; flex-shrink: 0;
+      font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
+      box-shadow: 0 0 20px var(--accent-glow);
     }
     .install-step label {
-      font-size: 0.95rem; color: var(--text-muted);
+      font-size: 0.9rem; color: var(--text-muted);
       display: block; margin-bottom: 10px;
     }
     .install-cmd {
-      background: var(--bg-dark); color: #e8e8e8;
+      background: #111118; color: var(--text);
       padding: 14px 20px; border-radius: var(--radius-sm);
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.9rem; width: 100%;
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.85rem; width: 100%;
       display: flex; justify-content: space-between; align-items: center;
+      border: 1px solid var(--border);
     }
     .install-cmd .copy-btn {
       background: none; border: none; color: var(--text-muted);
-      cursor: pointer; font-size: 1rem; padding: 4px;
+      cursor: pointer; font-size: 0.9rem; padding: 4px;
       transition: color 0.2s;
     }
-    .install-cmd .copy-btn:hover { color: #fff; }
+    .install-cmd .copy-btn:hover { color: var(--accent-light); }
 
-    /* ===== EXAMPLES ===== */
     .examples-list {
       max-width: 700px; margin: 0 auto;
+      background: #111118; border-radius: var(--radius);
+      border: 1px solid var(--border); overflow: hidden;
     }
     .example-item {
       padding: 14px 20px;
       border-bottom: 1px solid var(--border);
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.85rem; color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.82rem; color: var(--text-muted);
+      transition: background 0.2s;
     }
+    .example-item:hover { background: rgba(255,255,255,0.02); color: var(--text); }
     .example-item:last-child { border-bottom: none; }
 
     /* ===== DIRECTORY STRUCTURE ===== */
-    .dir-section { background: #fff; }
     .dir-tree {
-      max-width: 700px; margin: 0 auto;
-      background: var(--bg-dark); color: #d4d4e8;
+      max-width: 720px; margin: 0 auto;
+      background: #111118; color: #d4d4e8;
       border-radius: var(--radius);
-      padding: 32px; font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 0.82rem; line-height: 1.8;
+      padding: 32px;
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      font-size: 0.8rem; line-height: 1.8;
       overflow-x: auto;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.3);
     }
     .dir-tree .folder { color: var(--accent-light); font-weight: 600; }
-    .dir-tree .file { color: #b2bec3; }
-    .dir-tree .comment { color: #636e72; }
+    .dir-tree .file { color: var(--text-muted); }
+    .dir-tree .comment { color: #4a5568; }
 
     /* ===== FOOTER ===== */
     footer {
       border-top: 1px solid var(--border);
-      padding: 24px 0;
+      padding: 28px 0;
     }
     footer .container {
       display: flex; align-items: center; justify-content: space-between;
     }
     .footer-brand {
       display: flex; align-items: center; gap: 8px;
-      font-weight: 700; color: var(--text);
+      font-weight: 700; color: var(--text-bright); font-size: 0.9rem;
     }
     .footer-links { display: flex; gap: 24px; }
-    .footer-links a { font-size: 0.85rem; color: var(--text-muted); }
-    .footer-right { font-size: 0.8rem; color: var(--text-muted); }
+    .footer-links a { font-size: 0.82rem; color: var(--text-muted); }
+    .footer-links a:hover { color: var(--accent-light); }
+    .footer-right { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ===== SCROLL ANIMATIONS ===== */
+    .fade-in {
+      opacity: 1; transform: translateY(0);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 900px) {
-      .steps-grid, .roles-grid, .pipeline-detail, .architect-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-grid, .roles-grid, .pipeline-detail, .architect-grid, .method-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
       .tools-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 600px) {
-      .steps-grid, .roles-grid, .pipeline-detail, .architect-grid { grid-template-columns: 1fr; }
-      .hero h1 { font-size: 2rem; }
+      .steps-grid, .roles-grid, .pipeline-detail, .architect-grid, .method-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 { font-size: 2.2rem; }
+      .hero { padding: 80px 0 60px; min-height: auto; }
       .nav-links { display: none; }
       .pipeline-flow { flex-direction: column; }
-    }
-
-    /* ===== ANIMATIONS ===== */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate { animation: fadeInUp 0.6s ease forwards; }
-
-    @keyframes typing {
-      from { width: 0; }
-      to { width: 100%; }
-    }
-    @keyframes blink {
-      50% { border-color: transparent; }
-    }
-    .cursor {
-      border-right: 2px solid var(--accent);
-      animation: blink 1s step-end infinite;
+      .prod-checklist { flex-direction: column; align-items: center; }
+      footer .container { flex-direction: column; gap: 16px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
     }
   </style>
 </head>
@@ -545,43 +747,47 @@
   <nav>
     <div class="container">
       <div class="nav-brand">
-        <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#2563eb"/><path d="M8 12l8-5 8 5v10l-8 5-8-5V12z" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="17" r="3" fill="#fff"/></svg>
+        <div class="nav-logo">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M8 12l8-5 8 5v10l-8 5-8-5V12z" stroke="#fff" stroke-width="2.5" fill="none"/><circle cx="16" cy="17" r="3" fill="#fff"/></svg>
+        </div>
         ForgeSquad
-        <span class="nav-badge">Framework</span>
+        <span class="nav-badge">v1.2.0</span>
       </div>
       <div class="nav-links">
         <a href="#como-funciona">Como Funciona</a>
         <a href="#squad">O Squad</a>
         <a href="#pipeline">Pipeline</a>
         <a href="#ferramentas">Ferramentas</a>
-        <a href="#instalação">Instalação</a>
-        <a href="workspace.html" class="btn btn-primary" style="padding:8px 18px;font-size:0.8rem;">Workspace</a>
-        <a href="login.html" class="btn btn-primary" style="padding:8px 18px;font-size:0.8rem;background:#2563eb;color:#fff;border-radius:8px;">Login</a>
+        <a href="#instalacao">Instalar</a>
+        <a href="workspace.html" class="btn btn-ghost" style="padding:7px 16px;font-size:0.78rem;">Workspace</a>
+        <a href="login.html" class="btn btn-primary" style="padding:7px 16px;font-size:0.78rem;">Login</a>
       </div>
     </div>
   </nav>
 
   <!-- ===== HERO ===== -->
   <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="dot-grid"></div>
     <div class="container">
       <div class="hero-badge">Software Engineering Multi-Agent Framework</div>
       <h1>
-        Squads de engenharia de software<br>
-        <em>com agentes IA</em> &mdash;<br>
-        do requisito ao deploy
+        <span class="white-text">Squads de engenharia de software</span><br>
+        <span class="gradient-text">com agentes IA</span> &mdash;<br>
+        <span class="white-text">do requisito ao deploy</span>
       </h1>
       <p>
-        ForgeSquad é um framework de orquestração multi-agente para <strong>engenharia de software</strong>.
+        ForgeSquad e um framework de orquestracao multi-agente para <strong>engenharia de software</strong>.
         Descreva o projeto, e um squad completo &mdash; arquiteto, devs, QAs, analista, consultor financeiro, tech writer e PM &mdash;
         trabalha junto automaticamente. Integra <strong>Devin, Copilot, StackSpot e Kiro</strong>.
       </p>
       <div class="hero-actions">
-        <a href="#instalação" class="btn btn-primary">Começar agora &darr;</a>
-        <a href="dashboard.html" class="btn btn-secondary" style="background:var(--bg-dark);color:white;border-color:var(--bg-dark);">
+        <a href="#instalacao" class="btn btn-primary">Comecar agora &darr;</a>
+        <a href="dashboard.html" class="btn btn-secondary">
           &#x1F3AE; Ver Dashboard
         </a>
-        <a href="#como-funciona" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8S12.42 0 8 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM6.5 5l5 3-5 3V5z"/></svg>
+        <a href="#como-funciona" class="btn btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8S12.42 0 8 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zM6.5 5l5 3-5 3V5z"/></svg>
           Ver como funciona
         </a>
       </div>
@@ -591,7 +797,7 @@
   <!-- ===== TERMINAL DEMO ===== -->
   <section class="terminal-section">
     <div class="container">
-      <div class="terminal">
+      <div class="terminal fade-in">
         <div class="terminal-bar">
           <span class="terminal-dot red"></span>
           <span class="terminal-dot yellow"></span>
@@ -605,8 +811,8 @@
           <span class="t-line"><span class="t-prompt">~ $</span> <span class="t-cmd">s</span></span>
           <span class="t-line"><span class="t-info">&nbsp;&nbsp;&nbsp;&nbsp;&mdash;&mdash;&mdash; Iniciando squad &mdash;&mdash;&mdash;</span></span>
           <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-agent" style="color: var(--green);">BA Clara Requisitos</span><span class="t-status t-info">elicitando requisitos...</span></span>
-          <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-agent" style="color: var(--green);">Arq. Sofia Sistemas</span><span class="t-status t-info">projetando arquitetura...</span></span>
-          <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-checkpoint">&bull; Você decide</span><span class="t-status" style="color: var(--orange-dark);">aprovando requisitos...</span></span>
+          <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-agent" style="color: var(--cyan);">Arq. Sofia Sistemas</span><span class="t-status t-info">projetando arquitetura...</span></span>
+          <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-checkpoint">&bull; Voce decide</span><span class="t-status" style="color: var(--orange);">aprovando requisitos...</span></span>
           <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-agent" style="color: var(--text-muted);">Dev Bruno Backend</span><span class="t-status t-info">aguardando...</span></span>
           <span class="t-line">&nbsp;&nbsp;&bull; <span class="t-agent" style="color: var(--text-muted);">QA Quesia Quality</span><span class="t-status t-info">aguardando...</span></span>
           <span class="t-line"><span class="t-prompt">~ $</span><span class="cursor">&nbsp;</span></span>
@@ -616,19 +822,19 @@
   </section>
 
   <!-- ===== ANIMATED DEMO ===== -->
-  <section class="section demo-section" id="demo">
+  <section class="section" id="demo">
     <div class="container">
-      <h2 class="section-title">Veja o ForgeSquad em ação</h2>
+      <div class="section-label">&#9889; Demo ao vivo</div>
+      <h2 class="section-title">Veja o ForgeSquad em acao</h2>
       <p class="section-subtitle">
-        Acompanhe como os 9 agentes colaboram em tempo real — da estimativa ao deploy.
+        Acompanhe como os 9 agentes colaboram em tempo real &mdash; da estimativa ao deploy.
       </p>
 
-      <div class="demo-video">
+      <div class="demo-video fade-in">
         <div class="demo-screen">
-          <!-- Pipeline Animation -->
           <div class="demo-header">
             <div class="demo-squad-name">&#127959;&#65039; forge-engineering</div>
-            <div class="demo-status">Executando...</div>
+            <div class="demo-status">&#9679; Executando...</div>
           </div>
 
           <div class="demo-pipeline">
@@ -648,7 +854,7 @@
               <div class="demo-phase-icon">&#128197;</div>
               <div class="demo-phase-bar"><div class="demo-bar-fill"></div></div>
             </div>
-            <div class="demo-phase pending" data-label="Implementação">
+            <div class="demo-phase pending" data-label="Implementacao">
               <div class="demo-phase-icon">&#9881;&#65039;</div>
               <div class="demo-phase-bar"><div class="demo-bar-fill"></div></div>
             </div>
@@ -660,7 +866,7 @@
               <div class="demo-phase-icon">&#128064;</div>
               <div class="demo-phase-bar"><div class="demo-bar-fill"></div></div>
             </div>
-            <div class="demo-phase pending" data-label="Documentação">
+            <div class="demo-phase pending" data-label="Documentacao">
               <div class="demo-phase-icon">&#128221;</div>
               <div class="demo-phase-bar"><div class="demo-bar-fill"></div></div>
             </div>
@@ -668,63 +874,62 @@
               <div class="demo-phase-icon">&#128640;</div>
               <div class="demo-phase-bar"><div class="demo-bar-fill"></div></div>
             </div>
-            <div class="demo-phase pending" data-label="Sustentação">
+            <div class="demo-phase pending" data-label="Sustentacao">
               <div class="demo-phase-icon">&#128295;</div>
               <div class="demo-phase-bar"><div class="demo-bar-fill"></div></div>
             </div>
           </div>
 
-          <!-- Agent Activity Feed -->
           <div class="demo-feed">
             <div class="demo-feed-item item-1">
-              <span class="demo-agent-dot" style="background:#2563eb"></span>
+              <span class="demo-agent-dot" style="background:var(--accent)"></span>
               <span class="demo-feed-agent">&#128202; BA Clara</span>
               <span class="demo-feed-msg">Elicitando requisitos com Kiro...</span>
             </div>
             <div class="demo-feed-item item-2">
-              <span class="demo-agent-dot" style="background:#16a34a"></span>
+              <span class="demo-agent-dot" style="background:var(--green)"></span>
               <span class="demo-feed-agent">&#127959;&#65039; Sofia</span>
               <span class="demo-feed-msg">Validando NFRs no documento...</span>
             </div>
             <div class="demo-feed-item item-3">
-              <span class="demo-agent-dot" style="background:#ea580c"></span>
+              <span class="demo-agent-dot" style="background:var(--orange)"></span>
               <span class="demo-feed-agent">&#9199;&#65039; Checkpoint</span>
-              <span class="demo-feed-msg">Aprovação de requisitos pendente</span>
+              <span class="demo-feed-msg">Aprovacao de requisitos pendente</span>
             </div>
             <div class="demo-feed-item item-4">
-              <span class="demo-agent-dot" style="background:#2563eb"></span>
+              <span class="demo-agent-dot" style="background:var(--accent)"></span>
               <span class="demo-feed-agent">&#127959;&#65039; Sofia</span>
               <span class="demo-feed-msg">Projetando arquitetura do sistema...</span>
             </div>
             <div class="demo-feed-item item-5">
-              <span class="demo-agent-dot" style="background:#16a34a"></span>
+              <span class="demo-agent-dot" style="background:var(--cyan)"></span>
               <span class="demo-feed-agent">&#128203; Rafael</span>
               <span class="demo-feed-msg">Planejando sprint backlog...</span>
             </div>
             <div class="demo-feed-item item-6">
-              <span class="demo-agent-dot" style="background:#7c3aed"></span>
+              <span class="demo-agent-dot" style="background:#a78bfa"></span>
               <span class="demo-feed-agent">&#128295; Bruno</span>
               <span class="demo-feed-msg">Implementando APIs com Devin...</span>
             </div>
             <div class="demo-feed-item item-7">
-              <span class="demo-agent-dot" style="background:#db2777"></span>
+              <span class="demo-agent-dot" style="background:var(--pink)"></span>
               <span class="demo-feed-agent">&#127912; Fernanda</span>
               <span class="demo-feed-msg">Criando componentes UI com Copilot...</span>
             </div>
             <div class="demo-feed-item item-8">
-              <span class="demo-agent-dot" style="background:#16a34a"></span>
+              <span class="demo-agent-dot" style="background:var(--green)"></span>
               <span class="demo-feed-agent">&#128269; Quesia</span>
               <span class="demo-feed-msg">Executando testes automatizados...</span>
             </div>
             <div class="demo-feed-item item-9">
-              <span class="demo-agent-dot" style="background:#14b8a6"></span>
+              <span class="demo-agent-dot" style="background:var(--cyan)"></span>
               <span class="demo-feed-agent">&#127974; Ricardo</span>
-              <span class="demo-feed-msg">Emitindo sign-off regulatório...</span>
+              <span class="demo-feed-msg">Emitindo sign-off regulatorio...</span>
             </div>
             <div class="demo-feed-item item-10">
-              <span class="demo-agent-dot" style="background:#16a34a"></span>
+              <span class="demo-agent-dot" style="background:var(--green)"></span>
               <span class="demo-feed-agent">&#9989; Pipeline</span>
-              <span class="demo-feed-msg">Completo! Deploy em produção realizado.</span>
+              <span class="demo-feed-msg">Completo! Deploy em producao realizado.</span>
             </div>
           </div>
         </div>
@@ -732,94 +937,100 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
+
   <!-- ===== COMO FUNCIONA ===== -->
   <section class="section" id="como-funciona">
     <div class="container">
-      <h2 class="section-title">Como funciona</h2>
+      <div class="section-label" style="text-align:center;display:block;">&#128736; Como funciona</div>
+      <h2 class="section-title">Tres passos para comecar</h2>
       <p class="section-subtitle">
-        De uma descrição em linguagem natural a um squad de engenharia completo rodando em minutos.
+        De uma descricao em linguagem natural a um squad de engenharia completo rodando em minutos.
       </p>
 
       <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-icon purple">1</div>
+        <div class="step-card fade-in">
+          <div class="step-num s1">1</div>
           <h3>Descreva o que precisa</h3>
-          <p>Digite em linguagem natural o que seu projeto precisa. Sem configuração, sem YAML manual. O Arquiteto faz as perguntas certas.</p>
+          <p>Digite em linguagem natural o que seu projeto precisa. Sem configuracao, sem YAML manual. O Arquiteto faz as perguntas certas.</p>
         </div>
-        <div class="step-card">
-          <div class="step-icon green">2</div>
+        <div class="step-card fade-in">
+          <div class="step-num s2">2</div>
           <h3>Arquiteto projeta o squad</h3>
-          <p>O agente Arquiteto escolhe os agentes certos, define o pipeline de 10 fases, configura ferramentas e apresenta para sua aprovação.</p>
+          <p>O agente Arquiteto escolhe os agentes certos, define o pipeline de 10 fases, configura ferramentas e apresenta para sua aprovacao.</p>
         </div>
-        <div class="step-card">
-          <div class="step-icon blue">3</div>
+        <div class="step-card fade-in">
+          <div class="step-num s3">3</div>
           <h3>Squad roda automaticamente</h3>
-          <p>Você aprova e o squad executa. Pausa só nos checkpoints onde sua decisão importa. PM gera reports em cada etapa.</p>
+          <p>Voce aprova e o squad executa. Pausa so nos checkpoints onde sua decisao importa. PM gera reports em cada etapa.</p>
         </div>
       </div>
     </div>
   </section>
 
+  <div class="section-divider"></div>
+
   <!-- ===== SQUAD ROLES ===== -->
-  <section class="section roles-section" id="squad">
+  <section class="section section-alt" id="squad">
     <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#129302; Agentes</div>
       <h2 class="section-title">O Squad Completo</h2>
       <p class="section-subtitle">
-        9 agentes especializados que cobrem todos os papéis de uma equipe de engenharia de software.
+        9 agentes especializados que cobrem todos os papeis de uma equipe de engenharia de software.
       </p>
 
       <div class="roles-grid">
-        <div class="role-card">
-          <div class="role-avatar" style="background: #eff6ff;">&#127959;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(99, 102, 241, 0.12);">&#127959;</div>
           <h4>Arq. Sofia Sistemas</h4>
-          <p>Design de sistema, decisões técnicas, ADRs, revisão arquitetural em TODAS as fases.</p>
+          <p>Design de sistema, decisoes tecnicas, ADRs, revisao arquitetural em TODAS as fases.</p>
           <div class="role-tools"><span class="role-tool">Web Search</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #e0f2fe;">&#128203;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(6, 182, 212, 0.12);">&#128203;</div>
           <h4>TL Rafael Review</h4>
-          <p>Coordenação técnica, code review, sprint planning, padrões de código.</p>
+          <p>Coordenacao tecnica, code review, sprint planning, padroes de codigo.</p>
           <div class="role-tools"><span class="role-tool">Copilot</span><span class="role-tool">Devin</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #dbeafe;">&#128202;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(99, 102, 241, 0.12);">&#128202;</div>
           <h4>BA Clara Requisitos</h4>
           <p>Engenharia de requisitos, user stories, criterios de aceite, engenharia reversa.</p>
           <div class="role-tools"><span class="role-tool">Kiro</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #e0f2fe;">&#128295;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(6, 182, 212, 0.12);">&#128295;</div>
           <h4>Dev Bruno Backend</h4>
-          <p>APIs, serviços, banco de dados, integrações, migrations. SOLID e Clean Code.</p>
+          <p>APIs, servicos, banco de dados, integracoes, migrations. SOLID e Clean Code.</p>
           <div class="role-tools"><span class="role-tool">Devin</span><span class="role-tool">Copilot</span><span class="role-tool">StackSpot</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #eff6ff;">&#127912;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(236, 72, 153, 0.12);">&#127912;</div>
           <h4>Dev Fernanda Front</h4>
           <p>UI/UX, componentes, responsividade, acessibilidade WCAG 2.1 AA.</p>
           <div class="role-tools"><span class="role-tool">Devin</span><span class="role-tool">Copilot</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #dbeafe;">&#128269;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(16, 185, 129, 0.12);">&#128269;</div>
           <h4>QA Quesia Quality</h4>
-          <p>Estratégia de testes, automação, regressão, performance, segurança.</p>
+          <p>Estrategia de testes, automacao, regressao, performance, seguranca.</p>
           <div class="role-tools"><span class="role-tool">Devin</span><span class="role-tool">Copilot</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #eff6ff;">&#128221;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(99, 102, 241, 0.12);">&#128221;</div>
           <h4>TW Daniela Docs</h4>
           <p>API docs, runbooks, ADRs, release notes, user guides. Docs as Code.</p>
           <div class="role-tools"><span class="role-tool">Web Search</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #e0f2fe;">&#128200;</div>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(6, 182, 212, 0.12);">&#128200;</div>
           <h4>PM Pedro Progress</h4>
-          <p>Status reports, métricas de velocity, riscos, acompanhamento de stakeholders.</p>
+          <p>Status reports, metricas de velocity, riscos, acompanhamento de stakeholders.</p>
           <div class="role-tools"><span class="role-tool">Jira Sync</span></div>
         </div>
-        <div class="role-card">
-          <div class="role-avatar" style="background: #e0f5f1;">&#127974;</div>
-          <h4>FIN Ricardo Regulação</h4>
+        <div class="role-card fade-in">
+          <div class="role-avatar" style="background: rgba(16, 185, 129, 0.12);">&#127974;</div>
+          <h4>FIN Ricardo Regulacao</h4>
           <p>Compliance financeiro, pareceres Bacen/BIAN, Basel III/IV, Open Finance, Pix, PCI DSS, LGPD.</p>
           <div class="role-tools"><span class="role-tool">Web Search</span><span class="role-tool">Bacen</span><span class="role-tool">BIAN</span></div>
         </div>
@@ -830,35 +1041,36 @@
   <!-- ===== ARCHITECT HIGHLIGHT ===== -->
   <section class="section architect-section">
     <div class="container">
-      <h2 class="section-title">&#127959; O Arquiteto em Todas as Fases</h2>
+      <div class="section-label" style="text-align:center;display:block;">&#127959; Arquitetura</div>
+      <h2 class="section-title">O Arquiteto em Todas as Fases</h2>
       <p class="section-subtitle">
         Diferente de squads tradicionais, o Arquiteto participa de TODAS as fases como guardiao da qualidade arquitetural.
       </p>
 
       <div class="architect-grid">
-        <div class="architect-card">
+        <div class="architect-card fade-in">
           <h4>&#128203; Requisitos</h4>
-          <p>Valida que requisitos não-funcionais (performance, segurança, escalabilidade) estão capturados desde o início.</p>
+          <p>Valida que requisitos nao-funcionais (performance, seguranca, escalabilidade) estao capturados desde o inicio.</p>
         </div>
-        <div class="architect-card">
+        <div class="architect-card fade-in">
           <h4>&#127959; Arquitetura</h4>
-          <p>Projeta o sistema, documenta decisões em ADRs, apresenta trade-offs com clareza.</p>
+          <p>Projeta o sistema, documenta decisoes em ADRs, apresenta trade-offs com clareza.</p>
         </div>
-        <div class="architect-card">
+        <div class="architect-card fade-in">
           <h4>&#128197; Planejamento</h4>
-          <p>Valida que tasks técnicas são viáveis e que a abordagem está alinhada com a arquitetura.</p>
+          <p>Valida que tasks tecnicas sao viaveis e que a abordagem esta alinhada com a arquitetura.</p>
         </div>
-        <div class="architect-card">
-          <h4>&#9881; Implementação</h4>
-          <p>Disponível para decisões técnicas estruturais e desbloqueio de questões arquiteturais.</p>
+        <div class="architect-card fade-in">
+          <h4>&#9881; Implementacao</h4>
+          <p>Disponivel para decisoes tecnicas estruturais e desbloqueio de questoes arquiteturais.</p>
         </div>
-        <div class="architect-card">
+        <div class="architect-card fade-in">
           <h4>&#128270; Code Review</h4>
-          <p>Revisa código para conformidade arquitetural, padrões e guardrails definidos.</p>
+          <p>Revisa codigo para conformidade arquitetural, padroes e guardrails definidos.</p>
         </div>
-        <div class="architect-card">
-          <h4>&#128640; Deploy &amp; Sustentação</h4>
-          <p>Valida infraestrutura, estratégia de deployment e orienta decisões de manutenção.</p>
+        <div class="architect-card fade-in">
+          <h4>&#128640; Deploy &amp; Sustentacao</h4>
+          <p>Valida infraestrutura, estrategia de deployment e orienta decisoes de manutencao.</p>
         </div>
       </div>
     </div>
@@ -867,13 +1079,13 @@
   <!-- ===== PIPELINE ===== -->
   <section class="section" id="pipeline">
     <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#9881; Pipeline</div>
       <h2 class="section-title">Pipeline de Engenharia</h2>
       <p class="section-subtitle">
-        24 steps, 10 fases, 9 checkpoints de decisão. Da estimativa ao deploy com qualidade garantida.
+        24 steps, 10 fases, 9 checkpoints de decisao. Da estimativa ao deploy com qualidade garantida.
       </p>
 
-      <!-- Pipeline Flow -->
-      <div class="pipeline-flow">
+      <div class="pipeline-flow fade-in">
         <div class="phase-pill">&#128202; Estimativa</div>
         <span class="phase-arrow">&rarr;</span>
         <div class="phase-pill">&#128203; Requisitos</div>
@@ -882,46 +1094,45 @@
         <span class="phase-arrow">&rarr;</span>
         <div class="phase-pill">&#128197; Planejamento</div>
         <span class="phase-arrow">&rarr;</span>
-        <div class="phase-pill">&#9881; Implementação</div>
+        <div class="phase-pill">&#9881; Implementacao</div>
         <span class="phase-arrow">&rarr;</span>
         <div class="phase-pill">&#128269; Qualidade</div>
         <span class="phase-arrow">&rarr;</span>
         <div class="phase-pill">&#128064; Code Review</div>
         <span class="phase-arrow">&rarr;</span>
-        <div class="phase-pill">&#128221; Documentação</div>
+        <div class="phase-pill">&#128221; Documentacao</div>
         <span class="phase-arrow">&rarr;</span>
         <div class="phase-pill">&#128640; Deploy</div>
         <span class="phase-arrow">&rarr;</span>
-        <div class="phase-pill">&#128295; Sustentação</div>
+        <div class="phase-pill">&#128295; Sustentacao</div>
       </div>
 
-      <!-- Pipeline Detail Cards -->
       <div class="pipeline-detail">
-        <div class="pipeline-card" data-phase="Requisitos">
-          <h4>Elicitação &amp; User Stories</h4>
+        <div class="pipeline-card fade-in" data-phase="Requisitos">
+          <h4>Elicitacao &amp; User Stories</h4>
           <p>BA elicita requisitos com Kiro, escreve user stories com criterios de aceite. Arquiteto valida NFRs.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#128202; BA Clara</span>
             <span class="pipeline-agent-badge">&#127959; Sofia</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Arquitetura">
+        <div class="pipeline-card fade-in" data-phase="Arquitetura">
           <h4>Design &amp; ADRs</h4>
-          <p>Arquiteto projeta sistema, cria ADRs com trade-offs, define guardrails. Checkpoint de aprovação.</p>
+          <p>Arquiteto projeta sistema, cria ADRs com trade-offs, define guardrails. Checkpoint de aprovacao.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#127959; Sofia</span>
             <span class="pipeline-agent-badge">&#9989; Checkpoint</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Planejamento">
+        <div class="pipeline-card fade-in" data-phase="Planejamento">
           <h4>Sprint &amp; Test Strategy</h4>
-          <p>Tech Lead quebra em tasks, QA define estratégia de testes. Checkpoint de aprovação do plano.</p>
+          <p>Tech Lead quebra em tasks, QA define estrategia de testes. Checkpoint de aprovacao do plano.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#128203; Rafael</span>
             <span class="pipeline-agent-badge">&#128269; Quesia</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Implementação">
+        <div class="pipeline-card fade-in" data-phase="Implementacao">
           <h4>Backend &amp; Frontend</h4>
           <p>Devs implementam com Devin + Copilot + StackSpot. Backend primeiro, frontend integra APIs.</p>
           <div class="pipeline-agents">
@@ -929,7 +1140,7 @@
             <span class="pipeline-agent-badge">&#127912; Fernanda</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Qualidade">
+        <div class="pipeline-card fade-in" data-phase="Qualidade">
           <h4>Testes &amp; Performance</h4>
           <p>QA executa testes automatizados (unit, integration, E2E) e testes de performance com k6.</p>
           <div class="pipeline-agents">
@@ -937,41 +1148,41 @@
             <span class="pipeline-agent-badge">&#128200; SonarQube</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Review">
+        <div class="pipeline-card fade-in" data-phase="Review">
           <h4>Code Review Loop</h4>
-          <p>Tech Lead + Arquiteto revisam. Se rejeitado, volta para implementação com feedback. Max 3 ciclos.</p>
+          <p>Tech Lead + Arquiteto revisam. Se rejeitado, volta para implementacao com feedback. Max 3 ciclos.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#128203; Rafael</span>
             <span class="pipeline-agent-badge">&#127959; Sofia</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Documentação">
+        <div class="pipeline-card fade-in" data-phase="Documentacao">
           <h4>API Docs &amp; Runbook</h4>
-          <p>Tech Writer gera documentação completa: API docs, runbook operacional, release notes.</p>
+          <p>Tech Writer gera documentacao completa: API docs, runbook operacional, release notes.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#128221; Daniela</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Compliance">
-          <h4>Validação Regulatória</h4>
-          <p>Finance Advisor valida compliance Bacen, BIAN, PCI DSS e LGPD. Sign-off regulatório obrigatório.</p>
+        <div class="pipeline-card fade-in" data-phase="Compliance">
+          <h4>Validacao Regulatoria</h4>
+          <p>Finance Advisor valida compliance Bacen, BIAN, PCI DSS e LGPD. Sign-off regulatorio obrigatorio.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#127974; Ricardo</span>
             <span class="pipeline-agent-badge">&#9989; Checkpoint</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Deploy">
-          <h4>Go/No-Go &amp; Produção</h4>
-          <p>Checkpoint Go/No-Go com todas as métricas. Deploy com StackSpot. Validação em produção.</p>
+        <div class="pipeline-card fade-in" data-phase="Deploy">
+          <h4>Go/No-Go &amp; Producao</h4>
+          <p>Checkpoint Go/No-Go com todas as metricas. Deploy com StackSpot. Validacao em producao.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#9989; Checkpoint</span>
             <span class="pipeline-agent-badge">&#127974; Ricardo</span>
             <span class="pipeline-agent-badge">&#128295; Bruno</span>
           </div>
         </div>
-        <div class="pipeline-card" data-phase="Sustentação">
+        <div class="pipeline-card fade-in" data-phase="Sustentacao">
           <h4>Report &amp; Handover</h4>
-          <p>PM gera relatório final com métricas completas. Handover para time de sustentação.</p>
+          <p>PM gera relatorio final com metricas completas. Handover para time de sustentacao.</p>
           <div class="pipeline-agents">
             <span class="pipeline-agent-badge">&#128200; Pedro</span>
             <span class="pipeline-agent-badge">&#9989; Encerramento</span>
@@ -981,47 +1192,177 @@
     </div>
   </section>
 
-  <!-- ===== TOOLS ===== -->
-  <section class="section" id="ferramentas" style="background: #fff;">
+  <!-- ===== RALPH LOOP ===== -->
+  <section class="section" id="ralph">
     <div class="container">
+      <div class="section-badge" style="display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--green);font-weight:500;margin-bottom:32px;padding:6px 16px;border-radius:30px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);">&#128260; RALPH LOOP</div>
+      <h2 class="section-title">Implementacao Autonoma Iterativa</h2>
+      <p class="section-subtitle">Terceiro modo de execucao: Ralph Loop quebra implementacoes complexas em user stories e executa sessoes de IA iterativas ate que todas passem nos quality gates.</p>
+
+      <div class="method-grid" style="margin-bottom:48px;">
+        <div class="glass-card" style="text-align:center;padding:36px 28px;">
+          <div style="font-size:2rem;margin-bottom:12px;">&#9889;</div>
+          <h3>Inline</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Agente executa diretamente na conversa. Ideal para tasks criativas e decisoes arquiteturais.</p>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:36px 28px;">
+          <div style="font-size:2rem;margin-bottom:12px;">&#128269;</div>
+          <h3>Subagent</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Agente trabalha em background. Ideal para pesquisa, analise e tarefas demoradas.</p>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:36px 28px;border-color:var(--accent);box-shadow:0 0 20px rgba(99,102,241,0.2);">
+          <div style="font-size:2rem;margin-bottom:12px;">&#128260;</div>
+          <h3 style="background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Ralph Loop</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Loop autonomo: quebra em stories, itera com contexto limpo, quality gates a cada ciclo. Inspirado em <a href="https://github.com/snarktank/ralph" style="color:var(--cyan);">snarktank/ralph</a>.</p>
+          <span class="tool-badge" style="margin-top:8px;display:inline-block;font-size:0.68rem;padding:3px 8px;background:rgba(99,102,241,0.1);color:var(--accent-light);border-radius:6px;border:1px solid rgba(99,102,241,0.15);">Novo v1.2.0</span>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding:32px;text-align:center;">
+        <h3 style="margin-bottom:20px;">Como funciona o Ralph Loop</h3>
+        <div class="pipeline-flow" style="flex-wrap:wrap;justify-content:center;">
+          <span class="phase-pill">&#128203; Gera prd.json</span>
+          <span class="phase-arrow">&rarr;</span>
+          <span class="phase-pill">&#129302; Sessao IA Fresh</span>
+          <span class="phase-arrow">&rarr;</span>
+          <span class="phase-pill">&#128221; Implementa Story</span>
+          <span class="phase-arrow">&rarr;</span>
+          <span class="phase-pill">&#129514; Quality Gates</span>
+          <span class="phase-arrow">&rarr;</span>
+          <span class="phase-pill">&#9989; Story Passa?</span>
+          <span class="phase-arrow">&rarr;</span>
+          <span class="phase-pill" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);">&#128257; Repete ate completar</span>
+        </div>
+        <p style="color:var(--text-muted);margin-top:20px;font-size:0.85rem;">Cada iteracao recebe contexto limpo. Memoria persiste via git, progress.txt e prd.json.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== METHODOLOGIES ===== -->
+  <section class="section section-alt" id="metodologias">
+    <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#128204; Metodologias</div>
+      <h2 class="section-title">Metodologias Suportadas</h2>
+      <p class="section-subtitle">
+        O ForgeSquad se adapta ao modelo de trabalho do seu time. Escolha a metodologia que faz sentido para o projeto.
+      </p>
+
+      <div class="method-grid">
+        <div class="method-card fade-in">
+          <div class="method-icon" style="background: rgba(99, 102, 241, 0.12);">&#128200;</div>
+          <h3>Waterfall</h3>
+          <p>Pipeline sequencial completo com gates de aprovacao entre fases. Ideal para projetos com escopo bem definido e requisitos estaveis.</p>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(99,102,241,0.1);color:var(--accent-light);border-radius:6px;border:1px solid rgba(99,102,241,0.15);">Phase Gates</span>
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(99,102,241,0.1);color:var(--accent-light);border-radius:6px;border:1px solid rgba(99,102,241,0.15);">Formal Sign-off</span>
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(99,102,241,0.1);color:var(--accent-light);border-radius:6px;border:1px solid rgba(99,102,241,0.15);">Heavy Docs</span>
+          </div>
+        </div>
+        <div class="method-card fade-in">
+          <div class="method-icon" style="background: rgba(6, 182, 212, 0.12);">&#128260;</div>
+          <h3>Scrum</h3>
+          <p>Sprints iterativos com backlog priorizado, daily reports e retrospectivas automatizadas. Perfeito para desenvolvimento agil.</p>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(6,182,212,0.1);color:var(--cyan);border-radius:6px;border:1px solid rgba(6,182,212,0.15);">Sprint Planning</span>
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(6,182,212,0.1);color:var(--cyan);border-radius:6px;border:1px solid rgba(6,182,212,0.15);">Daily Standup</span>
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(6,182,212,0.1);color:var(--cyan);border-radius:6px;border:1px solid rgba(6,182,212,0.15);">Retrospective</span>
+          </div>
+        </div>
+        <div class="method-card fade-in">
+          <div class="method-icon" style="background: rgba(16, 185, 129, 0.12);">&#128203;</div>
+          <h3>Kanban</h3>
+          <p>Fluxo continuo com limites de WIP, metricas de lead time e throughput. Otimo para manutencao e sustentacao.</p>
+          <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(16,185,129,0.1);color:var(--green);border-radius:6px;border:1px solid rgba(16,185,129,0.15);">WIP Limits</span>
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(16,185,129,0.1);color:var(--green);border-radius:6px;border:1px solid rgba(16,185,129,0.15);">Lead Time</span>
+            <span style="font-size:0.68rem;padding:3px 8px;background:rgba(16,185,129,0.1);color:var(--green);border-radius:6px;border:1px solid rgba(16,185,129,0.15);">Flow Metrics</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DEV JOURNEY ===== -->
+  <section class="section" style="border-top:1px solid rgba(255,255,255,0.05);">
+    <div class="container">
+      <div class="section-badge" style="display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--accent-light);font-weight:500;margin-bottom:32px;padding:6px 16px;border-radius:30px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);">&#128205; DEV JOURNEY</div>
+      <h2 class="section-title">Roadmap e Releases Automaticos</h2>
+      <p class="section-subtitle">O ForgeSquad gera automaticamente a jornada de desenvolvimento e o plano de releases baseado na metodologia escolhida.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="glass-card" style="padding:28px;">
+          <h3>&#128196; dev-journey.md</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:8px;">Timeline visual com milestones, alocacao de agentes por fase/sprint, deliverables por release, quality gates e risk checkpoints.</p>
+          <div style="margin-top:16px;padding:16px;background:rgba(0,0,0,0.3);border-radius:8px;font-family:monospace;font-size:0.8rem;color:var(--text-muted);">
+            Sprint 1: Foundation &rarr; v0.1.0-alpha<br>
+            Sprint 2: Core Features &rarr; v0.2.0-alpha<br>
+            Sprint 3: Frontend &rarr; v0.3.0-beta<br>
+            Sprint 4: Quality &rarr; v1.0.0-rc<br>
+            Sprint 5: Release &rarr; v1.0.0 GA
+          </div>
+        </div>
+        <div class="glass-card" style="padding:28px;">
+          <h3>&#128203; release-plan.yaml</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-top:8px;">Plano estruturado de releases com versionamento semantico, triggers, escopo, agentes envolvidos e quality gates por release.</p>
+          <div style="margin-top:16px;padding:16px;background:rgba(0,0,0,0.3);border-radius:8px;font-family:monospace;font-size:0.8rem;color:var(--text-muted);">
+            <span style="color:#6366f1;">releases:</span><br>
+            &nbsp;&nbsp;- <span style="color:#06b6d4;">version:</span> "0.1.0-alpha"<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#06b6d4;">scope:</span> [infra, schema, auth]<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#06b6d4;">gates:</span> [typecheck, lint, test]<br>
+            &nbsp;&nbsp;- <span style="color:#06b6d4;">version:</span> "1.0.0"<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#06b6d4;">scope:</span> "All features"
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== TOOLS ===== -->
+  <section class="section" id="ferramentas">
+    <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#128736; Ferramentas</div>
       <h2 class="section-title">Ferramentas Integradas</h2>
       <p class="section-subtitle">
         Cada agente usa as melhores ferramentas do mercado para maximizar produtividade.
       </p>
 
       <div class="tools-grid">
-        <div class="tool-card">
-          <div class="tool-icon" style="background: #e8f8f5;">&#129302;</div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(16, 185, 129, 0.12);">&#129302;</div>
           <div>
             <h4>Devin</h4>
-            <p>Engenheiro de software autônomo. Implementa features completas, corrige bugs, gera boilerplate.</p>
+            <p>Engenheiro de software autonomo. Implementa features completas, corrige bugs, gera boilerplate.</p>
             <div class="tool-agents">
               <span>Backend</span><span>Frontend</span><span>QA</span><span>Tech Lead</span>
             </div>
           </div>
         </div>
-        <div class="tool-card">
-          <div class="tool-icon" style="background: #eff6ff;">&#9997;</div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(99, 102, 241, 0.12);">&#9997;</div>
           <div>
             <h4>GitHub Copilot</h4>
-            <p>Pair programmer IA. Sugestões inline, code generation, explicação de código.</p>
+            <p>Pair programmer IA. Sugestoes inline, code generation, explicacao de codigo.</p>
             <div class="tool-agents">
               <span>Backend</span><span>Frontend</span><span>QA</span><span>Tech Lead</span>
             </div>
           </div>
         </div>
-        <div class="tool-card">
-          <div class="tool-icon" style="background: #e0f2fe;">&#9729;</div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(6, 182, 212, 0.12);">&#9729;</div>
           <div>
             <h4>StackSpot</h4>
-            <p>Plataforma de infraestrutura cloud. Templates IaC, provisioning de ambientes, stacks pré-construídos.</p>
+            <p>Plataforma de infraestrutura cloud. Templates IaC, provisioning de ambientes, stacks pre-construidos.</p>
             <div class="tool-agents">
               <span>Backend</span><span>Arquiteto</span>
             </div>
           </div>
         </div>
-        <div class="tool-card">
-          <div class="tool-icon" style="background: #dbeafe;">&#128196;</div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(99, 102, 241, 0.12);">&#128196;</div>
           <div>
             <h4>Kiro</h4>
             <p>Ferramenta de requisitos com IA. Gera specs, user stories, task breakdown, criterios de aceite.</p>
@@ -1030,50 +1371,155 @@
             </div>
           </div>
         </div>
-        <div class="tool-card">
-          <div class="tool-icon" style="background: #e0f2fe;">&#128203;</div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(6, 182, 212, 0.12);">&#128203;</div>
           <div>
             <h4>Jira Sync</h4>
-            <p>Sincroniza pipeline com Jira. Status automático, métricas de velocity, lead time e cycle time.</p>
+            <p>Sincroniza pipeline com Jira. Status automatico, metricas de velocity, lead time e cycle time.</p>
             <div class="tool-agents">
               <span>PM</span><span>Tech Lead</span>
             </div>
           </div>
         </div>
-        <div class="tool-card">
-          <div class="tool-icon" style="background: #e8f8f5;">&#128737;</div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(16, 185, 129, 0.12);">&#128737;</div>
           <div>
             <h4>SonarQube</h4>
-            <p>Análise estática de código. Quality gates, security scanning, tech debt tracking.</p>
+            <p>Analise estatica de codigo. Quality gates, security scanning, tech debt tracking.</p>
             <div class="tool-agents">
               <span>QA</span><span>Tech Lead</span><span>Arquiteto</span>
             </div>
           </div>
         </div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(248, 113, 113, 0.12);">&#128276;</div>
+          <div>
+            <h4>SRE Engineering</h4>
+            <p>Monitoring, SLOs, incident response, postmortems, capacity planning, chaos engineering.</p>
+            <div class="tool-agents">
+              <span>QA</span><span>Arquiteto</span><span>Backend</span>
+            </div>
+          </div>
+        </div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(6, 182, 212, 0.12);">&#128260;</div>
+          <div>
+            <h4>DevOps</h4>
+            <p>CI/CD pipelines, IaC, Kubernetes, GitOps, deployment strategies (blue/green, canary, rolling).</p>
+            <div class="tool-agents">
+              <span>Backend</span><span>Arquiteto</span><span>Tech Lead</span>
+            </div>
+          </div>
+        </div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(99, 102, 241, 0.12);">&#127963;&#65039;</div>
+          <div>
+            <h4>Software Architect</h4>
+            <p>Design Patterns (GoF), DDD, SOLID, Clean Architecture, CQRS, Event Sourcing. Inspirado em Martin Fowler.</p>
+            <div class="tool-agents">
+              <span>Arquiteto</span><span>Tech Lead</span><span>Backend</span><span>Frontend</span>
+            </div>
+          </div>
+        </div>
+        <div class="tool-card fade-in">
+          <div class="tool-icon" style="background: rgba(245, 158, 11, 0.12);">&#128272;</div>
+          <div>
+            <h4>Cryptography</h4>
+            <p>Encryption, key management, digital signatures, zero trust, LGPD/PCI-DSS compliance.</p>
+            <div class="tool-agents">
+              <span>Backend</span><span>Arquiteto</span><span>QA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Skills Badges -->
+      <div class="skills-badge-row fade-in">
+        <div style="width:100%;text-align:center;margin-bottom:8px;">
+          <span class="section-label">&#9889; Novas Skills v1.2.0</span>
+        </div>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;text-align:center;width:100%;">Skills adicionais que ampliam as capacidades de cada agente do squad.</p>
+        <span class="skill-badge sre">SRE</span>
+        <span class="skill-badge devops">DevOps</span>
+        <span class="skill-badge architect">Software Architect</span>
+        <span class="skill-badge crypto">Cryptography</span>
+        <span class="skill-badge ralph">Ralph Loop</span>
+        <span class="skill-badge" style="color:var(--cyan);border-color:rgba(6,182,212,0.25);background:rgba(6,182,212,0.06);">&#127959; Production Standard</span>
+        <span class="skill-badge" style="color:var(--accent-light);border-color:rgba(99,102,241,0.25);background:rgba(99,102,241,0.06);">&#128205; Dev Journey</span>
       </div>
     </div>
   </section>
 
-  <!-- ===== INSTALL ===== -->
-  <section class="section install-section" id="instalação">
+  <!-- ===== PRODUCTION READY ===== -->
+  <section class="section prod-section">
     <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#9989; Producao</div>
+      <h2 class="section-title">Production Ready</h2>
+      <p class="section-subtitle">
+        Cada squad gerado segue um checklist rigoroso de qualidade antes do deploy.
+      </p>
+
+      <div class="prod-checklist fade-in">
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Testes unitarios e integracao</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Code review automatizado</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Security scanning</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Quality gates SonarQube</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Compliance regulatorio</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Documentacao completa</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Performance validada</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Runbook operacional</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Go/No-Go checkpoint</div>
+        <div class="prod-item"><span class="prod-check">&#10003;</span> Rollback strategy</div>
+      </div>
+
+      <div class="glass-card" style="margin-top:32px;padding:32px;text-align:left;">
+        <h3 style="margin-bottom:16px;">Estrutura de Projeto Padrao</h3>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">Todo projeto gerado pelo ForgeSquad segue esta estrutura production-ready:</p>
+        <div style="font-family:monospace;font-size:0.8rem;line-height:1.8;color:var(--text-muted);padding:20px;background:rgba(0,0,0,0.3);border-radius:8px;">
+          <span style="color:var(--cyan);">project/</span><br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">src/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Codigo fonte<br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">tests/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Unit + Integration + E2E<br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">infra/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Terraform / Bicep / CF<br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">.github/workflows/</span> # CI/CD pipelines<br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">docker/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Dockerfile.prod + compose<br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">docs/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Architecture + ADRs + Runbook<br>
+          &#9500;&#9472;&#9472; <span style="color:var(--accent);">scripts/</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# setup.sh + migrate.sh<br>
+          &#9500;&#9472;&#9472; .env.example &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Variaveis documentadas<br>
+          &#9500;&#9472;&#9472; Makefile &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# make build test deploy<br>
+          &#9492;&#9472;&#9472; README.md &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Getting started
+        </div>
+        <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:0.68rem;padding:3px 8px;background:rgba(16,185,129,0.1);color:var(--green);border-radius:6px;border:1px solid rgba(16,185,129,0.15);">Score >= 90: Ready &#10003;</span>
+          <span style="font-size:0.68rem;padding:3px 8px;background:rgba(245,158,11,0.1);color:var(--orange);border-radius:6px;border:1px solid rgba(245,158,11,0.15);">75-89: Warnings &#9888;</span>
+          <span style="font-size:0.68rem;padding:3px 8px;background:rgba(248,113,113,0.1);color:#f87171;border-radius:6px;border:1px solid rgba(248,113,113,0.15);">&lt; 75: Blocked &#10060;</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== INSTALL ===== -->
+  <section class="section install-section" id="instalacao">
+    <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#128640; Comecar</div>
       <h2 class="section-title">Pronto para usar em 5 minutos</h2>
       <p class="section-subtitle">
         Precisa de uma IDE com suporte a agentes IA (Claude Code, Cursor, VS Code + Copilot).
       </p>
 
       <div class="install-steps">
-        <div class="install-step">
+        <div class="install-step fade-in">
           <span class="install-num">1</span>
           <div style="flex: 1;">
-            <label>Clone o repositório no seu projeto:</label>
+            <label>Clone o repositorio no seu projeto:</label>
             <div class="install-cmd">
               <span>git clone forgesquad . && cd forgesquad</span>
               <button class="copy-btn" onclick="navigator.clipboard.writeText('git clone forgesquad . && cd forgesquad')">&#128203;</button>
             </div>
           </div>
         </div>
-        <div class="install-step">
+        <div class="install-step fade-in">
           <span class="install-num">2</span>
           <div style="flex: 1;">
             <label>Abra na sua IDE e digite:</label>
@@ -1083,7 +1529,7 @@
             </div>
           </div>
         </div>
-        <div class="install-step">
+        <div class="install-step fade-in">
           <span class="install-num">3</span>
           <div style="flex: 1;">
             <label>Complete o onboarding (empresa, tech stack, ferramentas):</label>
@@ -1093,7 +1539,7 @@
             </div>
           </div>
         </div>
-        <div class="install-step">
+        <div class="install-step fade-in">
           <span class="install-num">4</span>
           <div style="flex: 1;">
             <label>Execute o squad e acompanhe nos checkpoints:</label>
@@ -1106,10 +1552,10 @@
       </div>
 
       <div style="margin-top: 48px;">
-        <h3 style="text-align: left; max-width: 700px; margin: 0 auto 16px; font-size: 1rem; font-weight: 600;">Exemplos do que você pode criar:</h3>
-        <div class="examples-list">
+        <h3 style="text-align: left; max-width: 700px; margin: 0 auto 16px; font-size: 0.95rem; font-weight: 600; color: var(--text-bright);">Exemplos do que voce pode criar:</h3>
+        <div class="examples-list fade-in">
           <div class="example-item">/forgesquad create "E-commerce com React + Node.js + PostgreSQL"</div>
-          <div class="example-item">/forgesquad create "API de microserviços migrando de monolito Java"</div>
+          <div class="example-item">/forgesquad create "API de microservicos migrando de monolito Java"</div>
           <div class="example-item">/forgesquad create "App mobile backend com Python + FastAPI + MongoDB"</div>
           <div class="example-item">/forgesquad create "Plataforma SaaS multi-tenant com Next.js + AWS"</div>
           <div class="example-item">/forgesquad analyze ./sistema-legado</div>
@@ -1119,17 +1565,20 @@
     </div>
   </section>
 
+  <div class="section-divider"></div>
+
   <!-- ===== DIRECTORY STRUCTURE ===== -->
-  <section class="section dir-section">
+  <section class="section section-alt">
     <div class="container">
+      <div class="section-label" style="text-align:center;display:block;">&#128193; Estrutura</div>
       <h2 class="section-title">Estrutura do Framework</h2>
       <p class="section-subtitle">
-        Organização clara e modular. Cada agente, step e skill em seu lugar.
+        Organizacao clara e modular. Cada agente, step e skill em seu lugar.
       </p>
 
-      <div class="dir-tree">
+      <div class="dir-tree fade-in">
 <span class="folder">forgesquad/</span>
-&#9500;&#9472;&#9472; CLAUDE.md                          <span class="comment"># Instruções do projeto</span>
+&#9500;&#9472;&#9472; CLAUDE.md                          <span class="comment"># Instrucoes do projeto</span>
 &#9500;&#9472;&#9472; README.md
 &#9500;&#9472;&#9472; <span class="folder">_forgesquad/</span>                       <span class="comment"># Core do framework</span>
 &#9474;   &#9500;&#9472;&#9472; config.yaml                    <span class="comment"># Model tiers</span>
@@ -1141,19 +1590,24 @@
 &#9474;       &#9500;&#9472;&#9472; <span class="file">architect.agent.yaml</span>       <span class="comment"># Arquiteto core</span>
 &#9474;       &#9500;&#9472;&#9472; <span class="file">runner.pipeline.md</span>         <span class="comment"># Pipeline Runner</span>
 &#9474;       &#9500;&#9472;&#9472; <span class="file">skills.engine.md</span>           <span class="comment"># Skills Engine</span>
-&#9474;       &#9492;&#9472;&#9472; <span class="folder">best-practices/</span>            <span class="comment"># 8 guias de boas práticas</span>
+&#9474;       &#9492;&#9472;&#9472; <span class="folder">best-practices/</span>            <span class="comment"># 8 guias de boas praticas</span>
 &#9500;&#9472;&#9472; <span class="folder">skills/</span>                            <span class="comment"># Integracoes de ferramentas</span>
 &#9474;   &#9500;&#9472;&#9472; <span class="folder">devin/</span>SKILL.md
 &#9474;   &#9500;&#9472;&#9472; <span class="folder">copilot/</span>SKILL.md
 &#9474;   &#9500;&#9472;&#9472; <span class="folder">stackspot/</span>SKILL.md
 &#9474;   &#9500;&#9472;&#9472; <span class="folder">kiro/</span>SKILL.md
 &#9474;   &#9500;&#9472;&#9472; <span class="folder">jira-sync/</span>SKILL.md
-&#9474;   &#9492;&#9472;&#9472; <span class="folder">sonarqube/</span>SKILL.md
+&#9474;   &#9500;&#9472;&#9472; <span class="folder">sonarqube/</span>SKILL.md
+&#9474;   &#9500;&#9472;&#9472; <span class="folder">sre/</span>SKILL.md                    <span class="comment"># NEW v1.2.0</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="folder">devops/</span>SKILL.md                 <span class="comment"># NEW v1.2.0</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="folder">software-architect/</span>SKILL.md   <span class="comment"># NEW v1.2.0</span>
+&#9474;   &#9500;&#9472;&#9472; <span class="folder">cryptography/</span>SKILL.md         <span class="comment"># NEW v1.2.0</span>
+&#9474;   &#9492;&#9472;&#9472; <span class="folder">ralph-loop/</span>SKILL.md           <span class="comment"># NEW v1.2.0</span>
 &#9492;&#9472;&#9472; <span class="folder">squads/</span>
     &#9492;&#9472;&#9472; <span class="folder">forge-engineering/</span>             <span class="comment"># Squad de exemplo</span>
-        &#9500;&#9472;&#9472; <span class="file">squad.yaml</span>                 <span class="comment"># Definição do squad</span>
+        &#9500;&#9472;&#9472; <span class="file">squad.yaml</span>                 <span class="comment"># Definicao do squad</span>
         &#9500;&#9472;&#9472; <span class="file">squad-party.csv</span>            <span class="comment"># 9 agentes e personas</span>
-        &#9500;&#9472;&#9472; <span class="folder">agents/</span>                    <span class="comment"># 9 definições de agentes</span>
+        &#9500;&#9472;&#9472; <span class="folder">agents/</span>                    <span class="comment"># 9 definicoes de agentes</span>
         &#9500;&#9472;&#9472; <span class="folder">pipeline/</span>                  <span class="comment"># 24 steps, 10 fases</span>
         &#9474;   &#9500;&#9472;&#9472; <span class="file">pipeline.yaml</span>
         &#9474;   &#9500;&#9472;&#9472; <span class="folder">steps/</span>                 <span class="comment"># step-00 a step-20 (24 steps)</span>
@@ -1168,7 +1622,9 @@
   <footer>
     <div class="container">
       <div class="footer-brand">
-        <svg viewBox="0 0 32 32" fill="none" width="24" height="24"><rect width="32" height="32" rx="8" fill="#2563eb"/><path d="M8 12l8-5 8 5v10l-8 5-8-5V12z" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="17" r="3" fill="#fff"/></svg>
+        <div class="nav-logo" style="width:26px;height:26px;border-radius:8px;">
+          <svg viewBox="0 0 32 32" fill="none" style="width:16px;height:16px;"><path d="M8 12l8-5 8 5v10l-8 5-8-5V12z" stroke="#fff" stroke-width="2.5" fill="none"/><circle cx="16" cy="17" r="3" fill="#fff"/></svg>
+        </div>
         ForgeSquad
       </div>
       <div class="footer-links">
@@ -1178,10 +1634,25 @@
         <a href="#ferramentas">Ferramentas</a>
       </div>
       <div class="footer-right">
-        Framework &middot; MIT License
+        Framework v1.2.0 &middot; MIT License
       </div>
     </div>
   </footer>
+
+  <!-- ===== SCROLL ANIMATIONS ===== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var els = document.querySelectorAll('.fade-in');
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+      els.forEach(function(el) { observer.observe(el); });
+    });
+  </script>
 
 </body>
 </html>
