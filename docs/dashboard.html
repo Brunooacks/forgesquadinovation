@@ -419,10 +419,10 @@
     /* ===== WORKSTATION GRID ===== */
     .workstations {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: auto;
       gap: 20px;
-      max-width: 900px;
+      max-width: 1100px;
       margin: 0 auto;
       position: relative;
       z-index: 2;
@@ -1056,6 +1056,18 @@ const agents = [
     color: '#a78bfa', tools: ['Jira Sync'],
     hoodie: '#a78bfa', hair: '#1e293b', glasses: true, headphones: false,
     skinTone: '#f59e0b'
+  },
+  {
+    id: 'sre', name: 'Lucas', fullName: 'SRE Lucas Reliability', role: 'SRE',
+    color: '#ef4444', tools: ['Prometheus', 'Grafana', 'PagerDuty'],
+    hoodie: '#ef4444', hair: '#1e293b', glasses: true, headphones: true,
+    skinTone: '#fbbf24'
+  },
+  {
+    id: 'devops', name: 'Marcos', fullName: 'DevOps Marcos Pipeline', role: 'DevOps',
+    color: '#f59e0b', tools: ['Terraform', 'ArgoCD', 'K8s'],
+    hoodie: '#f59e0b', hair: '#292524', glasses: false, headphones: true,
+    skinTone: '#fcd34d'
   }
 ];
 
@@ -1338,7 +1350,7 @@ function switchMode(mode) {
   if (mode === 'demo') {
     document.getElementById('liveBanner').className = 'live-banner';
     addFeedItem('Pipeline <strong>' + squadParam + '</strong> iniciado (demo)', '&#x1F680;');
-    addFeedItem('9 agentes carregados e prontos', '&#x1F916;');
+    addFeedItem('11 agentes carregados e prontos', '&#x1F916;');
     simTimeout = setTimeout(runSimStep, 2000);
   } else {
     document.getElementById('liveBanner').className = 'live-banner visible';
@@ -2007,7 +2019,7 @@ if (modeParam === 'live') {
   switchMode('live');
 } else {
   addFeedItem('Pipeline <strong>' + squadParam + '</strong> iniciado (demo)', '&#x1F680;');
-  addFeedItem('9 agentes carregados e prontos', '&#x1F916;');
+  addFeedItem('11 agentes carregados e prontos', '&#x1F916;');
   simTimeout = setTimeout(runSimStep, 2000);
 }
 
