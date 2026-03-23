@@ -1000,6 +1000,59 @@
     </div>
   </section>
 
+  <!-- RUNNER SECTION -->
+  <section class="section" id="runner">
+    <div class="container">
+      <div class="section-badge">&#9889; RUNNER EXECUTAVEL</div>
+      <h2 class="section-title">O Coracao do Framework</h2>
+      <p class="section-subtitle">O Runner nao e documentacao — e instrucao executavel. Cada checkpoint para. Cada artefato e gerado. Cada decisao e rastreada.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;">
+        <div class="glass-card">
+          <h3 style="color:var(--accent);margin-bottom:16px;">Checkpoints Obrigatorios</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">O pipeline PARA em cada checkpoint. O AI nao pode pular. Voce decide: aprovar, rejeitar ou revisar o artefato.</p>
+          <div style="font-family:monospace;font-size:0.8rem;padding:16px;background:rgba(0,0,0,0.3);border-radius:8px;color:var(--text-muted);">
+            <span style="color:var(--accent);">APROVACAO DE HANDOFF</span><br><br>
+            Agente anterior: Arquiteto<br>
+            Entregavel: architecture-spec.md<br>
+            Status: Concluido<br><br>
+            Proximo: Dev Backend<br><br>
+            <span style="color:var(--green);">Aprovar? [S]im / [N]ao / [R]evisar</span>
+          </div>
+        </div>
+        <div class="glass-card">
+          <h3 style="color:var(--cyan);margin-bottom:16px;">Artefatos Automaticos</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">Cada step gera evidencias rastreavies. Audit trail com SHA-256. State tracking em tempo real.</p>
+          <div style="font-family:monospace;font-size:0.8rem;padding:16px;background:rgba(0,0,0,0.3);border-radius:8px;color:var(--text-muted);">
+            <span style="color:var(--cyan);">.forgesquad/runs/2026-03-23/</span><br>
+            ├── audit-trail.json<br>
+            ├── state.json<br>
+            ├── step-01-briefing.md<br>
+            ├── step-02-requirements.md<br>
+            ├── checkpoint-step-03.md<br>
+            └── final-report.md
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card" style="text-align:center;padding:32px;">
+        <h3 style="margin-bottom:12px;">10 Regras que o AI Nao Pode Violar</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+          <span class="badge green">Nunca pular checkpoint</span>
+          <span class="badge green">Sempre gerar artefatos</span>
+          <span class="badge green">Sempre atualizar state.json</span>
+          <span class="badge green">Sempre logar audit trail</span>
+          <span class="badge green">Sempre pedir aprovacao no handoff</span>
+          <span class="badge green">Nunca modificar artefato aprovado</span>
+          <span class="badge green">Sempre validar veto conditions</span>
+          <span class="badge green">Sempre gerar backup em checkpoint</span>
+          <span class="badge green">Nunca exceder max review cycles</span>
+          <span class="badge green">Sempre gerar final report</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== PRODUCTION READY ===== -->
   <section class="section section-alt" id="production">
     <div class="container">
@@ -1133,6 +1186,63 @@
               <button class="copy-btn" onclick="navigator.clipboard.writeText('/forgesquad create &quot;Descreva seu projeto aqui&quot;')">&#128203;</button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MULTI-IDE SECTION -->
+  <section class="section" style="border-top:1px solid rgba(255,255,255,0.05);" id="compatibilidade">
+    <div class="container">
+      <div class="section-badge">&#128736;&#65039; COMPATIBILIDADE</div>
+      <h2 class="section-title">Funciona em Qualquer IDE</h2>
+      <p class="section-subtitle">ForgeSquad nao depende de vendor. Um framework, multiplos IDEs, qualquer AI provider.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;">
+        <div class="glass-card" style="text-align:center;padding:24px;">
+          <div style="font-size:2rem;margin-bottom:8px;">&#128187;</div>
+          <h4>VS Code</h4>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px;">Copilot, Continue, Cline, Amazon Q</p>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:24px;">
+          <div style="font-size:2rem;margin-bottom:8px;">&#9000;</div>
+          <h4>Cursor</h4>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px;">.cursorrules nativo</p>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:24px;">
+          <div style="font-size:2rem;margin-bottom:8px;">&#9881;</div>
+          <h4>Windsurf</h4>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px;">AGENTS.md nativo</p>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:24px;">
+          <div style="font-size:2rem;margin-bottom:8px;">&#9729;</div>
+          <h4>Terminal / CLI</h4>
+          <p style="color:var(--text-muted);font-size:0.8rem;margin-top:4px;">Claude Code, Codex CLI, Amp</p>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="glass-card">
+          <h3 style="margin-bottom:12px;">Arquivos de Instrucao por IDE</h3>
+          <div style="font-family:monospace;font-size:0.85rem;line-height:2;color:var(--text-muted);">
+            <span style="color:var(--accent);">CLAUDE.md</span> — Claude Code, Cline<br>
+            <span style="color:var(--accent);">AGENTS.md</span> — Codex, Windsurf, Amazon Q<br>
+            <span style="color:var(--accent);">.cursorrules</span> — Cursor IDE<br>
+            <span style="color:var(--accent);">COPILOT.md</span> — GitHub Copilot Chat
+          </div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-top:12px;">Mesmo conteudo, formatos diferentes. O framework se adapta ao IDE do desenvolvedor.</p>
+        </div>
+        <div class="glass-card">
+          <h3 style="margin-bottom:12px;">AI Providers Suportados</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+            <span class="badge purple">Claude (Anthropic)</span>
+            <span class="badge purple">GPT-4o (OpenAI)</span>
+            <span class="badge purple">Codex (OpenAI)</span>
+            <span class="badge purple">Gemini (Google)</span>
+            <span class="badge purple">Llama (Meta)</span>
+            <span class="badge purple">Modelos On-Premise</span>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-top:12px;">O capabilities model abstrai o provider. Troque de AI em uma linha de config.</p>
         </div>
       </div>
     </div>
