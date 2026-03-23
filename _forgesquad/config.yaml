@@ -1,24 +1,38 @@
 # ForgeSquad Framework Configuration
-version: "1.1.0"
-release_date: "2026-03-17"
-codename: "Ricardo"
+version: "2.0.0"
+release_date: "2026-03-22"
+codename: "Prometheus"
 
-# ForgeSquad Model Tier Configuration
-#
-# Tier meanings per environment:
-#   powerful — strongest available model
-#              Claude Code: claude-opus  |  Cursor: claude-opus  |  Copilot: gpt-4o
-#   fast     — fastest/lightest available model
-#              Claude Code: claude-haiku  |  Cursor: claude-haiku  |  Copilot: gpt-4o-mini
-#
-# Rules:
-#   - orchestrator (Architect, Pipeline Runner): always powerful — design decisions need deep reasoning
-#   - architect: always powerful — system design is non-negotiable quality
-#   - developer: powerful for implementation, fast for boilerplate generation
-#   - qa: powerful for test strategy, fast for test generation
-#   - analyst: powerful for requirements, fast for documentation formatting
-#   - techwriter: fast — documentation follows established patterns
-#   - projectmanager: fast — report generation from structured data
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CAMADA 1: GOVERNANCE (invisivel, automatica)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+governance:
+  # Production output standard — enforced automaticamente
+  production_standard: true
+
+  # Audit trail — compliance logging em todos os squads
+  audit_trail: true
+  audit_retention_years: 5
+
+  # Intelligence embedded — injected nos agentes automaticamente
+  # O usuario nao precisa saber que existe; torna os agentes melhores
+  embedded_intelligence:
+    - _forgesquad/core/intelligence/software-architecture.md    # Fowler, GoF, DDD, SOLID
+    - _forgesquad/core/intelligence/cryptography-security.md    # Encryption, zero trust, LGPD
+    - _forgesquad/core/best-practices/                          # 8 dominios de boas praticas
+
+  # Dev Journey — gera roadmap e release plan automaticamente
+  dev_journey: true
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CAMADA 2: SQUAD (o time)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Model Tier Configuration
+# powerful = deep reasoning (Architect, Tech Lead, Devs)
+# fast = pattern-based work (Tech Writer, PM)
+# Adaptavel a qualquer provider de IA
 models:
   orchestrator: powerful
   architect: powerful
@@ -27,6 +41,147 @@ models:
   developer_backend: powerful
   developer_frontend: powerful
   qa_engineer: powerful
+  sre_engineer: powerful
+  devops_engineer: powerful
   tech_writer: fast
   finance_advisor: powerful
   project_manager: fast
+
+# Metodologias de gestao — enforced por politica da empresa
+methodologies:
+  default: default
+  available: [default, waterfall, scrum, kanban]
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CAMADA 3: EXECUTION (como entregam)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+execution:
+  # Ralph Loop — modo padrao dos desenvolvedores
+  # Automatico: devs usam iteracoes com quality gates
+  ralph_loop:
+    enabled: true
+    default_max_iterations: 10
+    default_quality_gates: [typecheck, lint, test]
+    applies_to: [developer_backend, developer_frontend, devops_engineer]
+
+  # Modos de execucao (atribuidos automaticamente por tipo de agente):
+  #   inline    → decisoes e design (Architect, Tech Lead, BA)
+  #   subagent  → pesquisa e analise (BA, QA, Tech Writer)
+  #   ralph-loop → implementacao (Dev Backend, Dev Frontend, DevOps)
+  modes:
+    inline: [architect, tech_lead, business_analyst, finance_advisor]
+    subagent: [qa_engineer, tech_writer, project_manager, sre_engineer]
+    ralph_loop: [developer_backend, developer_frontend, devops_engineer]
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CAPABILITIES (abstracoes de ferramentas)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# O framework define O QUE precisa.
+# A empresa configura QUAL ferramenta usa.
+# Desacoplado de vendors especificos.
+
+capabilities:
+  autonomous_coding:
+    description: "Implementacao autonoma de features completas"
+    default_provider: claude-code
+    supported_providers:
+      - id: claude-code
+        name: "Claude Code"
+        type: cli
+        status: ready
+      - id: devin
+        name: "Devin"
+        type: autonomous
+        status: ready
+      - id: codex
+        name: "OpenAI Codex"
+        type: api
+        status: ready
+      - id: cursor
+        name: "Cursor"
+        type: ide
+        status: ready
+      - id: windsurf
+        name: "Windsurf"
+        type: ide
+        status: ready
+    used_by: [developer_backend, developer_frontend]
+
+  pair_programming:
+    description: "Sugestoes inline, code generation, autocomplete"
+    default_provider: copilot
+    supported_providers:
+      - id: copilot
+        name: "GitHub Copilot"
+        type: ide-extension
+        status: ready
+      - id: cursor
+        name: "Cursor"
+        type: ide
+        status: ready
+      - id: windsurf
+        name: "Windsurf"
+        type: ide
+        status: ready
+      - id: kiro
+        name: "Kiro"
+        type: ide
+        status: ready
+      - id: codeium
+        name: "Codeium"
+        type: ide-extension
+        status: ready
+    used_by: [developer_backend, developer_frontend, tech_lead]
+
+  code_analysis:
+    description: "Analise estatica, quality gates, security scanning"
+    default_provider: sonarqube
+    alternatives: [codeclimate, snyk, semgrep]
+    used_by: [qa_engineer, tech_lead, architect]
+
+  infrastructure:
+    description: "Templates IaC, provisioning, cloud management"
+    default_provider: terraform
+    alternatives: [pulumi, bicep, cloudformation, stackspot]
+    used_by: [devops_engineer, architect]
+
+  project_sync:
+    description: "Sincronizacao de status, metricas, backlog"
+    default_provider: jira
+    alternatives: [linear, azure-devops, github-projects, clickup]
+    used_by: [project_manager, tech_lead]
+
+  requirements:
+    description: "Geracao de specs, user stories, task breakdown"
+    default_provider: native
+    alternatives: [kiro]
+    used_by: [business_analyst, architect]
+
+  monitoring:
+    description: "Observability, alerting, dashboards"
+    default_provider: datadog
+    alternatives: [grafana, cloudwatch, newrelic, prometheus]
+    used_by: [sre_engineer, devops_engineer]
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SCALE (para 3000+ devs)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+scale:
+  # Squad templates — spin up novo squad em minutos
+  templates_dir: _forgesquad/templates/
+
+  # Metrics rollup — lideranca ve progresso de todos os squads
+  metrics:
+    enabled: true
+    rollup: [velocity, quality_score, production_readiness, estimation_accuracy]
+
+  # Governance policies — enforced em todos os squads
+  policies:
+    min_test_coverage: 80
+    require_code_review: true
+    require_security_scan: true
+    require_architecture_review: true
+    max_review_cycles: 3
+    require_production_checklist: true

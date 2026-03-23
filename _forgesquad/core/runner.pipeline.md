@@ -16,14 +16,20 @@ Before starting execution:
    - Squad memory from `squads/{name}/_memory/memories.md`
 
 2. Read `squads/{name}/pipeline/pipeline.yaml` for the pipeline definition
-3. **Resolve skills**: Read `squad.yaml` → `skills` section. For each non-native skill:
-   a. Verify `skills/{skill}/SKILL.md` exists
-      - If missing → ask user: "Skill '{skill}' is not installed. Install now? (y/n)"
-      - If yes → read `_forgesquad/core/skills.engine.md`, follow Install operation
-      - If no → **ERROR**: stop pipeline
-   b. Read SKILL.md, parse frontmatter for type
-   c. If type: mcp, verify MCP is configured
-4. **Load model tier config**: Read `_forgesquad/config.yaml` for model tiers.
+3. **Resolve capabilities**: Read `_forgesquad/config.yaml` → `capabilities` section.
+   For each capability referenced by squad agents:
+   a. Check the configured `default_provider` is available
+   b. If provider has an integration file (`skills/{provider}/SKILL.md`), load it
+   c. If provider unavailable, fall back to `native` (agent uses own AI reasoning)
+4. **Load embedded intelligence**: Read `_forgesquad/config.yaml` → `governance.embedded_intelligence`
+   For each intelligence file:
+   a. Read the file, check `injected_into` in frontmatter
+   b. Queue for injection into matching agents (happens at Agent Loading step)
+5. **Load methodology** (if specified):
+   - Read `squad.yaml` → `methodology` field
+   - If not `default`: load `_forgesquad/methodologies/{methodology}.yaml`
+   - Apply grouping, checkpoints, reporting rules
+6. **Load model tier config**: Read `_forgesquad/config.yaml` for model tiers and execution modes.
 5. Inform the user that the squad is starting:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -87,11 +93,20 @@ Before executing any step that references an agent:
 3. The file uses YAML frontmatter + markdown body (Operational Framework, Output Examples, Anti-Patterns, Voice Guidance)
 4. **Inject best-practice context**: Check step frontmatter for `best_practice:` field
    - If present: read `_forgesquad/core/best-practices/{practice}.md` and append to context
-5. **Inject skill instructions**: Check agent frontmatter for `skills:` field
-   - For each skill: read `skills/{skill}/SKILL.md` and append instructions
-6. **Inject tool context**: If agent uses external tools (Devin, Copilot, StackSpot, Kiro):
-   - Read tool skill file for integration instructions
-   - Apply tool-specific workflow patterns
+5. **Inject embedded intelligence** (automatic — no user configuration needed):
+   - Read each file from `_forgesquad/core/intelligence/`
+   - Check `injected_into` in frontmatter against current agent type
+   - If match: append intelligence content to agent context
+   - This is invisible to the user — the agent simply "knows" these patterns
+6. **Resolve capabilities**: Check agent's `capabilities` field in catalog
+   - For each capability: read the configured provider from `config.yaml`
+   - If provider has a SKILL.md, load integration instructions
+   - If no provider configured or unavailable: agent uses native AI reasoning
+7. **Determine execution mode**: Check agent's `execution` field in catalog
+   - `inline` → agent works in conversation (Architect, Tech Lead, BA)
+   - `subagent` → agent works in background (QA, Tech Writer, PM, SRE)
+   - `ralph-loop` → agent uses iterative implementation with quality gates (Devs, DevOps)
+   - Mode can be overridden per step in pipeline.yaml
 
 ### For each pipeline step:
 
@@ -112,6 +127,17 @@ Before executing any step that references an agent:
 - Follow step instructions
 - Present output in conversation
 - Save output to specified file
+
+#### If `execution: ralph-loop` (default for Dev Backend, Dev Frontend, DevOps)
+- This is the DEFAULT mode for implementation agents — no configuration needed
+- Read `_forgesquad/core/ralph.engine.md` for full execution logic
+- Announce: `🔄 {Agent Name} starting iterative implementation...`
+- Generate prd.json from step requirements (auto story breakdown)
+- Execute iterative loop: fresh AI session → implement one story → quality gates → repeat
+- Update state.json with sub-progress after each iteration
+- On completion: collect outputs, present summary, proceed
+- On max iterations: pause at checkpoint for user decision
+- Fallback: if ralph.engine.md not found, execute as inline
 
 #### If `type: checkpoint`
 - Present checkpoint message with context
