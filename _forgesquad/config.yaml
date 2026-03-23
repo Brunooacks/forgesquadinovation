@@ -22,6 +22,18 @@ governance:
     - _forgesquad/core/intelligence/cryptography-security.md    # Encryption, zero trust, LGPD
     - _forgesquad/core/best-practices/                          # 8 dominios de boas praticas
 
+  # Backup automatico — snapshots e versionamento em cada step/checkpoint
+  backup:
+    enabled: true
+    auto_commit: true
+    auto_snapshot: true
+    max_local_snapshots: 10
+    snapshot_triggers: [checkpoint, phase_complete, sprint_complete, before_destructive]
+    retention:
+      never_delete: [release, final_report]
+    remote:
+      enabled: false
+
   # Dev Journey — gera roadmap e release plan automaticamente
   dev_journey: true
 
