@@ -1,9 +1,0 @@
-id,name,icon,role,path,execution,skills
-architect,Arq. Sofia Sistemas,🏗️,Projeta a arquitetura da plataforma TokenOps. Define padrões de API Gateway e proxy LLM. Toma decisões sobre escalabilidade e roteamento de modelos. Participa de todas as fases.,./agents/architect.agent.md,inline,"web_search,web_fetch"
-tech-lead,TL Rafael Review,📋,Coordena tecnicamente o time. Define padrões NestJS/Next.js. Conduz code reviews. Planeja sprints e desbloqueia desenvolvedores.,./agents/tech-lead.agent.md,inline,""
-business-analyst,BA Clara Requisitos,📊,Engenharia de requisitos do TokenOps. Escreve user stories para os 6 módulos (Gateway/Estimator/Recommendation/Optimization/Remediation/Dashboard). Define critérios de aceite.,./agents/business-analyst.agent.md,inline,"web_search"
-dev-backend,Dev Bruno Backend,🔧,Implementa APIs NestJS do TokenOps — AI Gateway proxy e Token Estimator e Model Recommendation Engine e Cost Engine. Modela PostgreSQL/ClickHouse/Redis.,./agents/dev-backend.agent.md,subagent,""
-dev-frontend,Dev Fernanda Front,🎨,Implementa dashboard Next.js/React/Tailwind do TokenOps — Dashboard de Governança e Cost Explorer e Prompt Analyzer e Token Estimator UI.,./agents/dev-frontend.agent.md,subagent,""
-qa-engineer,QA Quésia Quality,🔍,Define estratégia de testes para TokenOps. Testes de proxy/gateway e estimação de tokens e recomendação de modelos. Unit/integration/e2e/performance.,./agents/qa-engineer.agent.md,inline,""
-tech-writer,TW Daniela Docs,📝,Documenta APIs do TokenOps — Gateway API e SDK e runbooks e ADRs. Cria guias de integração para provedores LLM.,./agents/tech-writer.agent.md,subagent,"web_search"
-project-manager,PM Pedro Progress,📈,Gera relatórios de status do TokenOps. Acompanha progresso do MVP. Identifica riscos e bloqueios. Atualiza stakeholders.,./agents/project-manager.agent.md,inline,""
