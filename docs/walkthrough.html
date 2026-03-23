@@ -275,7 +275,7 @@ const steps = [
           <div class="type-line" style="animation-delay:2.6s"><span class="out">? Integracao de pagamento:</span> <span class="highlight">Stripe + Pix</span></div>
           <br>
           <div class="type-line" style="animation-delay:3.0s"><span class="success">&#10003;</span> Squad criado: <span class="file">squads/ecommerce-modernization/</span></div>
-          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> 9 agentes configurados</div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> 11 agentes configurados</div>
           <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> Pipeline de 10 fases ativado</div>
           <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> Finance Advisor habilitado (LGPD + PCI DSS)</div>
           <br>
@@ -309,7 +309,7 @@ const steps = [
   {
     phase: "config", phaseLabel: "EXECUCAO",
     title: "2. Iniciando o Pipeline",
-    desc: "Com um comando, todos os 9 agentes comecam a trabalhar automaticamente no projeto.",
+    desc: "Com um comando, todos os 11 agentes comecam a trabalhar automaticamente no projeto.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
@@ -400,7 +400,7 @@ const steps = [
   {
     phase: "requisitos", phaseLabel: "FASE 2 — REQUISITOS",
     title: "4. Elicitacao de Requisitos",
-    desc: "O Analista de Negocios (com apoio do Kiro) gera user stories e criterios de aceite automaticamente.",
+    desc: "O Analista de Negocios gera user stories e criterios de aceite automaticamente, utilizando a capability de requirements.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
@@ -409,7 +409,7 @@ const steps = [
         </div>
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#128203; Analista de Negocios:</span> Gerando user stories para e-commerce...</div>
-          <div class="type-line" style="animation-delay:0.6s"><span class="out">Utilizando skill: </span><span class="highlight">Kiro</span> <span class="out">para decomposicao de requisitos</span></div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="out">Capability: </span><span class="highlight">requirements</span> <span class="out">— gerando user stories e criterios</span></div>
           <br>
           <div class="type-line" style="animation-delay:1.0s"><span class="success">&#10003;</span> 28 user stories geradas</div>
           <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> 84 criterios de aceite definidos</div>
@@ -426,7 +426,7 @@ const steps = [
         <div class="wt-card green">
           <h4>user-stories.md</h4>
           <p>28 user stories organizadas em 5 epicos: Catalogo, Carrinho, Checkout, Auth, Admin</p>
-          <span class="tag">Kiro</span><span class="tag">BA</span>
+          <span class="tag">Requirements</span><span class="tag">BA</span>
         </div>
         <div class="wt-card green">
           <h4>acceptance-criteria.md</h4>
@@ -496,7 +496,7 @@ const steps = [
   {
     phase: "implementacao", phaseLabel: "FASE 5 — IMPLEMENTACAO",
     title: "6. Implementacao Automatica",
-    desc: "Dev Backend e Dev Frontend implementam o codigo usando Devin e Copilot como skills.",
+    desc: "Dev Backend e Dev Frontend implementam o codigo via Ralph Loop — iteracoes autonomas com quality gates a cada ciclo.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
@@ -505,7 +505,7 @@ const steps = [
         </div>
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#128295; Dev Backend:</span> Implementando product-service...</div>
-          <div class="type-line" style="animation-delay:0.6s"><span class="out">Skill ativada: </span><span class="highlight">Devin</span> <span class="out">— modo autonomo</span></div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="out">Ralph Loop: </span><span class="highlight">iteracao 1/10</span> <span class="out">— implementando US-001</span></div>
           <div class="type-line" style="animation-delay:1.0s"><span class="success">&#10003;</span> <span class="file">product-service/</span> — 12 arquivos, 1.840 linhas</div>
           <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> <span class="file">cart-service/</span> — 8 arquivos, 920 linhas</div>
           <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> <span class="file">order-service/</span> — 14 arquivos, 2.100 linhas</div>
@@ -513,7 +513,7 @@ const steps = [
           <div class="type-line" style="animation-delay:2.6s"><span class="success">&#10003;</span> <span class="file">auth-service/</span> — 9 arquivos, 1.200 linhas</div>
           <br>
           <div class="type-line" style="animation-delay:3.0s"><span class="agent">&#127912; Dev Frontend:</span> Implementando UI com React + Next.js...</div>
-          <div class="type-line" style="animation-delay:3.4s"><span class="out">Skill ativada: </span><span class="highlight">GitHub Copilot</span> <span class="out">— pair programming</span></div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="out">Quality gates: </span><span class="highlight">typecheck ✓ lint ✓ test ✓</span> <span class="out">— story completa</span></div>
           <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> <span class="file">frontend/</span> — 42 componentes, 6.200 linhas</div>
           <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> Paginas: Home, Catalogo, Produto, Carrinho, Checkout, Login, Admin</div>
           <br>
@@ -649,7 +649,7 @@ const steps = [
           <span class="terminal-title">Pipeline — Fase 9: Compliance</span>
         </div>
         <div class="terminal-body">
-          <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#127974; Finance Advisor (Ricardo Regulacao):</span> Validando compliance...</div>
+          <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#127974; Finance Advisor:</span> Validando compliance...</div>
           <br>
           <div class="type-line" style="animation-delay:0.6s"><span class="out">&#128274; LGPD Validation:</span></div>
           <div class="type-line" style="animation-delay:1.0s">&nbsp;&nbsp;<span class="success">&#10003;</span> Consentimento de dados: implementado</div>
@@ -868,7 +868,7 @@ const steps = [
       </div>
 
       <div style="margin-top:20px;padding:16px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.2);border-radius:10px;text-align:center;">
-        <p style="font-size:1rem;color:#6ee7b7;font-weight:600;">"Do zero a producao com 9 agentes, zero retrabalho e compliance garantido."</p>
+        <p style="font-size:1rem;color:#6ee7b7;font-weight:600;">"Do zero a producao com 11 agentes, zero retrabalho e compliance garantido."</p>
         <p style="font-size:0.8rem;color:#94a3b8;margin-top:8px;">ForgeSquad — NTT DATA | Bruno Oliveira</p>
       </div>
     `
