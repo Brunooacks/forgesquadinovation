@@ -1,7 +1,9 @@
 name: "Pipeline — Forge Engineering Squad"
-version: "1.0.0"
+version: "2.0.0"
 created: "2026-03-16"
+updated: "2026-03-23"
 squad: "forge-engineering"
+methodology: "scrum"  # Herda do squad.yaml — define rituais e governance reports
 
 description: >
   Pipeline completo de engenharia de software cobrindo todo o ciclo de vida —
@@ -10,8 +12,23 @@ description: >
   transições entre agentes diferentes requerem aprovação humana (Human
   Approval Gates). O Arquiteto participa em todas as fases como guardião
   da qualidade arquitetural. Trilha de auditoria completa para rastreabilidade.
+  Metodologia (Scrum/Kanban/Waterfall) define rituais e reports de governance.
 
 mode: "quality-first"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# RITUAIS DA METODOLOGIA (Scrum por padrão)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# O PM e Tech Lead executam automaticamente:
+# - Sprint Planning (inicio)
+# - Daily Standup (por step concluido)
+# - Sprint Review + Retro (ao final)
+# - Backlog Refinement (meio do pipeline)
+# Reports gerados automaticamente:
+# - Burndown por fase
+# - Velocity report
+# - Quality dashboard
+# - Risk register
 
 steps:
   # === FASE 0: ESTIMATIVA ===
@@ -20,6 +37,11 @@ steps:
     type: checkpoint
     file: steps/step-00-estimation.md
     phase: estimation
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 4000
+      cost_usd: 0.42
 
   # === FASE 1: REQUISITOS ===
   - id: step-01
@@ -28,6 +50,11 @@ steps:
     file: steps/step-01-project-briefing.md
     depends_on: step-00
     phase: requirements
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 5000
+      tokens_output: 3000
+      cost_usd: 0.30
 
   - id: step-02
     name: "Elicitação de Requisitos"
@@ -39,6 +66,11 @@ steps:
     file: steps/step-02-requirements.md
     depends_on: step-01
     phase: requirements
+    estimates:
+      duration: "10-20 min"
+      tokens_input: 15000
+      tokens_output: 10000
+      cost_usd: 0.98
 
   - id: step-03
     name: "Aprovação dos Requisitos"
@@ -46,6 +78,11 @@ steps:
     file: steps/step-03-approve-requirements.md
     depends_on: step-02
     phase: requirements
+    estimates:
+      duration: "3-5 min"
+      tokens_input: 3000
+      tokens_output: 1000
+      cost_usd: 0.12
 
   - id: step-03b
     name: "Parecer de Negócios — Setor Financeiro"
@@ -57,6 +94,11 @@ steps:
     file: steps/step-03b-financial-business-review.md
     depends_on: step-03
     phase: requirements
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 10000
+      tokens_output: 6000
+      cost_usd: 0.60
 
   # === FASE 2: ARQUITETURA ===
   - id: step-04
@@ -69,6 +111,11 @@ steps:
     file: steps/step-04-architecture-design.md
     depends_on: step-03b
     phase: architecture
+    estimates:
+      duration: "15-30 min"
+      tokens_input: 25000
+      tokens_output: 15000
+      cost_usd: 1.50
 
   - id: step-05
     name: "Revisão Arquitetural"
@@ -76,6 +123,11 @@ steps:
     file: steps/step-05-architecture-review.md
     depends_on: step-04
     phase: architecture
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 3000
+      cost_usd: 0.35
 
   - id: step-05b
     name: "Validação Regulatória da Arquitetura"
@@ -86,8 +138,14 @@ steps:
     file: steps/step-05b-financial-architecture-review.md
     depends_on: step-05
     phase: architecture
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 4000
+      cost_usd: 0.42
 
   # === FASE 3: PLANEJAMENTO ===
+  # Ritual Scrum: Sprint Planning (Tech Lead conduz)
   - id: step-06
     name: "Sprint Planning"
     type: agent
@@ -97,6 +155,12 @@ steps:
     file: steps/step-06-sprint-planning.md
     depends_on: step-05b
     phase: planning
+    ceremony: "sprint_planning"
+    estimates:
+      duration: "10-15 min"
+      tokens_input: 12000
+      tokens_output: 8000
+      cost_usd: 0.78
 
   - id: step-07
     name: "Definição de Estratégia de Testes"
@@ -107,6 +171,11 @@ steps:
     file: steps/step-07-test-strategy.md
     depends_on: step-06
     phase: planning
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 5000
+      cost_usd: 0.50
 
   - id: step-08
     name: "Aprovação do Plano de Sprint"
@@ -114,12 +183,18 @@ steps:
     file: steps/step-08-approve-plan.md
     depends_on: step-07
     phase: planning
+    estimates:
+      duration: "3-5 min"
+      tokens_input: 3000
+      tokens_output: 1000
+      cost_usd: 0.12
 
   # === FASE 4: IMPLEMENTAÇÃO ===
   - id: step-09
     name: "Implementação Backend"
     type: agent
     agent: dev-backend
+    execution_mode: ralph-loop
     tasks:
       - implement-api
       - model-database
@@ -127,11 +202,18 @@ steps:
     file: steps/step-09-backend-impl.md
     depends_on: step-08
     phase: implementation
+    estimates:
+      duration: "20-60 min"
+      tokens_input: 50000
+      tokens_output: 30000
+      cost_usd: 3.00
+      notes: "Ralph Loop: 2-5 iteracoes com quality gates"
 
   - id: step-10
     name: "Implementação Frontend"
     type: agent
     agent: dev-frontend
+    execution_mode: ralph-loop
     tasks:
       - implement-ui
       - integrate-api
@@ -139,6 +221,12 @@ steps:
     file: steps/step-10-frontend-impl.md
     depends_on: step-09
     phase: implementation
+    estimates:
+      duration: "20-60 min"
+      tokens_input: 40000
+      tokens_output: 25000
+      cost_usd: 2.48
+      notes: "Ralph Loop: 2-5 iteracoes com quality gates"
 
   - id: step-11
     name: "Checkpoint de Implementação"
@@ -146,6 +234,12 @@ steps:
     file: steps/step-11-impl-checkpoint.md
     depends_on: step-10
     phase: implementation
+    ceremony: "daily_standup"
+    estimates:
+      duration: "3-5 min"
+      tokens_input: 5000
+      tokens_output: 2000
+      cost_usd: 0.23
 
   # === FASE 5: QUALIDADE ===
   - id: step-12
@@ -159,6 +253,11 @@ steps:
     file: steps/step-12-automated-tests.md
     depends_on: step-11
     phase: quality
+    estimates:
+      duration: "10-25 min"
+      tokens_input: 20000
+      tokens_output: 12000
+      cost_usd: 1.20
 
   - id: step-13
     name: "Testes de Performance"
@@ -170,6 +269,11 @@ steps:
     depends_on: step-12
     phase: quality
     optional: true
+    estimates:
+      duration: "5-15 min"
+      tokens_input: 10000
+      tokens_output: 5000
+      cost_usd: 0.53
 
   # === FASE 6: CODE REVIEW ===
   - id: step-14
@@ -183,6 +287,11 @@ steps:
     on_reject: step-09
     max_review_cycles: 3
     phase: review
+    estimates:
+      duration: "10-20 min"
+      tokens_input: 15000
+      tokens_output: 6000
+      cost_usd: 0.68
 
   - id: step-15
     name: "Revisão Arquitetural do Código"
@@ -193,6 +302,11 @@ steps:
     file: steps/step-15-arch-code-review.md
     depends_on: step-14
     phase: review
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 10000
+      tokens_output: 4000
+      cost_usd: 0.45
 
   # === FASE 7: DOCUMENTAÇÃO ===
   - id: step-16
@@ -206,6 +320,12 @@ steps:
     file: steps/step-16-documentation.md
     depends_on: step-15
     phase: documentation
+    estimates:
+      duration: "10-20 min"
+      tokens_input: 15000
+      tokens_output: 12000
+      cost_usd: 0.23
+      notes: "Modelo fast — custo reduzido"
 
   # === FASE 8: DEPLOY ===
   - id: step-17
@@ -214,6 +334,11 @@ steps:
     file: steps/step-17-go-nogo.md
     depends_on: step-16
     phase: deployment
+    estimates:
+      duration: "3-5 min"
+      tokens_input: 5000
+      tokens_output: 2000
+      cost_usd: 0.23
 
   - id: step-17b
     name: "Sign-off Regulatório para Produção"
@@ -225,27 +350,67 @@ steps:
     file: steps/step-17b-financial-go-nogo.md
     depends_on: step-17
     phase: deployment
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 4000
+      cost_usd: 0.42
 
   - id: step-18
     name: "Deploy em Produção"
     type: agent
-    agent: dev-backend
+    agent: devops-engineer
     tasks:
-      - create-integration
+      - configure-ci-cd
+      - deploy-production
+      - validate-health-checks
     file: steps/step-18-deploy.md
     depends_on: step-17b
     phase: deployment
+    estimates:
+      duration: "5-15 min"
+      tokens_input: 10000
+      tokens_output: 5000
+      cost_usd: 0.53
+
+  - id: step-18b
+    name: "Setup de Observabilidade e SLOs"
+    type: agent
+    agent: sre-engineer
+    tasks:
+      - configure-monitoring
+      - define-slos
+      - setup-alerting
+      - validate-runbook
+    file: steps/step-18b-sre-setup.md
+    depends_on: step-18
+    phase: deployment
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 4000
+      cost_usd: 0.42
 
   # === FASE 9: SUSTENTAÇÃO ===
+  # Ritual Scrum: Sprint Review + Retrospective
   - id: step-19
     name: "Relatório Final e Handover para Sustentação"
     type: agent
     agent: project-manager
     tasks:
       - generate-status-report
+      - sprint-review
+      - velocity-report
     file: steps/step-19-final-report.md
-    depends_on: step-18
+    depends_on: step-18b
     phase: sustaining
+    ceremony: "sprint_review"
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 10000
+      tokens_output: 5000
+      cost_usd: 0.08
+      notes: "Modelo fast"
 
   - id: step-19b
     name: "Relatório de Auditoria"
@@ -253,9 +418,17 @@ steps:
     agent: project-manager
     tasks:
       - generate-audit-report
+      - sprint-retrospective
     file: steps/step-19b-audit-report.md
     depends_on: step-19
     phase: sustaining
+    ceremony: "sprint_retrospective"
+    estimates:
+      duration: "5-10 min"
+      tokens_input: 8000
+      tokens_output: 4000
+      cost_usd: 0.07
+      notes: "Modelo fast"
 
   - id: step-20
     name: "Encerramento"
@@ -263,6 +436,11 @@ steps:
     file: steps/step-20-closure.md
     depends_on: step-19b
     phase: sustaining
+    estimates:
+      duration: "2-3 min"
+      tokens_input: 3000
+      tokens_output: 1000
+      cost_usd: 0.12
 
 checkpoints:
   - step-00  # Estimativa de projeto (escolha de opção A/B)
@@ -306,6 +484,18 @@ phases:
     label: "Sustentação"
     icon: "🔧"
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ESTIMATIVAS CONSOLIDADAS DO PIPELINE
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+pipeline_estimates:
+  total_steps: 24
+  total_checkpoints: 8
+  estimated_duration: "2-6 horas (projeto medio)"
+  estimated_tokens_total: "~450K input + ~250K output"
+  estimated_cost_total: "$15-25 USD (R$75-125)"
+  methodology_overhead: "+5% (Scrum ceremonies)"
+  ralph_loop_overhead: "+30-100% na fase de implementacao"
+
 output:
   artifacts:
     - output/estimation/project-estimation.md
@@ -331,5 +521,11 @@ output:
     - output/deployment/regulatory-signoff.md
     - output/deployment/compliance-checklist-final.md
     - output/deployment/deploy-report.md
+    - output/deployment/sre-observability-setup.md
+    - output/deployment/slo-definitions.md
     - output/reports/final-report.md
     - output/reports/audit-report.md
+    - output/reports/sprint-review.md
+    - output/reports/sprint-retrospective.md
+    - output/reports/velocity-report.md
+    - output/reports/burndown-chart.md

@@ -60,9 +60,259 @@ models:
   project_manager: fast
 
 # Metodologias de gestao — enforced por politica da empresa
+# O PM e Tech Lead seguem os rituais automaticamente
 methodologies:
-  default: default
+  default: scrum
   available: [default, waterfall, scrum, kanban]
+
+  scrum:
+    sprint_duration_weeks: 2
+    ceremonies:
+      - name: "Sprint Planning"
+        when: "inicio_sprint"
+        agent: tech-lead
+        output: "sprint-backlog.md"
+        duration_minutes: 60
+      - name: "Daily Standup"
+        when: "diario"
+        agent: project-manager
+        output: "daily-report.md"
+        duration_minutes: 15
+        template: |
+          ## Daily Standup — Sprint {sprint_number} | Day {day}
+          ### Por Agente:
+          - **O que fez ontem:** {done}
+          - **O que fara hoje:** {todo}
+          - **Impedimentos:** {blockers}
+      - name: "Sprint Review"
+        when: "fim_sprint"
+        agent: project-manager
+        output: "sprint-review.md"
+        duration_minutes: 45
+        includes: [demo, metrics, stakeholder_feedback]
+      - name: "Sprint Retrospective"
+        when: "fim_sprint"
+        agent: tech-lead
+        output: "sprint-retro.md"
+        duration_minutes: 30
+        template: |
+          ## Retrospectiva — Sprint {sprint_number}
+          ### O que foi bem:
+          ### O que pode melhorar:
+          ### Acoes para proximo sprint:
+      - name: "Backlog Refinement"
+        when: "meio_sprint"
+        agent: business-analyst
+        output: "refinement-notes.md"
+        duration_minutes: 45
+    governance_reports:
+      - name: "Sprint Burndown"
+        frequency: "diario"
+        agent: project-manager
+      - name: "Velocity Report"
+        frequency: "fim_sprint"
+        agent: project-manager
+      - name: "Quality Dashboard"
+        frequency: "fim_sprint"
+        agent: qa-engineer
+      - name: "Risk Register"
+        frequency: "semanal"
+        agent: project-manager
+
+  kanban:
+    wip_limits:
+      backlog: 20
+      in_progress: 3
+      review: 2
+      done: unlimited
+    ceremonies:
+      - name: "Standup"
+        when: "diario"
+        agent: project-manager
+        output: "daily-report.md"
+        duration_minutes: 15
+      - name: "Replenishment Meeting"
+        when: "semanal"
+        agent: tech-lead
+        output: "replenishment-notes.md"
+        duration_minutes: 30
+      - name: "Delivery Review"
+        when: "quinzenal"
+        agent: project-manager
+        output: "delivery-review.md"
+        duration_minutes: 45
+    governance_reports:
+      - name: "Cumulative Flow Diagram"
+        frequency: "diario"
+        agent: project-manager
+      - name: "Lead Time Report"
+        frequency: "semanal"
+        agent: project-manager
+      - name: "Throughput Report"
+        frequency: "semanal"
+        agent: project-manager
+
+  waterfall:
+    phases: [requirements, design, implementation, testing, deployment, maintenance]
+    ceremonies:
+      - name: "Phase Gate Review"
+        when: "fim_fase"
+        agent: project-manager
+        output: "phase-gate-report.md"
+        duration_minutes: 60
+        requires_approval: true
+      - name: "Status Report"
+        when: "semanal"
+        agent: project-manager
+        output: "weekly-status.md"
+        duration_minutes: 30
+      - name: "Steering Committee"
+        when: "quinzenal"
+        agent: project-manager
+        output: "steering-report.md"
+        duration_minutes: 60
+    governance_reports:
+      - name: "Gantt Progress"
+        frequency: "semanal"
+        agent: project-manager
+      - name: "Milestone Tracker"
+        frequency: "semanal"
+        agent: project-manager
+      - name: "Budget Burn Report"
+        frequency: "quinzenal"
+        agent: finance-advisor
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ESTIMATIVAS DE TEMPO E CUSTO DE TOKENS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Baseado em projetos reais executados com Claude Opus/Sonnet
+# Precos referencia: Opus $15/1M input, $75/1M output
+#                    Sonnet $3/1M input, $15/1M output
+
+token_estimates:
+  # Por fase do pipeline (projeto medio ~fullstack)
+  phases:
+    estimation:
+      duration_minutes: 5-10
+      tokens_input: 8000
+      tokens_output: 4000
+      estimated_cost_usd: 0.42
+      model: powerful
+
+    requirements:
+      duration_minutes: 15-30
+      tokens_input: 25000
+      tokens_output: 15000
+      estimated_cost_usd: 1.50
+      model: powerful
+
+    architecture:
+      duration_minutes: 20-40
+      tokens_input: 35000
+      tokens_output: 20000
+      estimated_cost_usd: 2.03
+      model: powerful
+
+    planning:
+      duration_minutes: 10-20
+      tokens_input: 18000
+      tokens_output: 10000
+      estimated_cost_usd: 1.02
+      model: powerful
+
+    implementation:
+      duration_minutes: 30-90
+      tokens_input: 80000
+      tokens_output: 50000
+      estimated_cost_usd: 4.95
+      model: powerful
+      notes: "Ralph Loop pode multiplicar por 2-3x dependendo das iteracoes"
+
+    quality:
+      duration_minutes: 15-30
+      tokens_input: 30000
+      tokens_output: 18000
+      estimated_cost_usd: 1.80
+      model: powerful
+
+    review:
+      duration_minutes: 10-20
+      tokens_input: 20000
+      tokens_output: 8000
+      estimated_cost_usd: 0.90
+      model: powerful
+
+    documentation:
+      duration_minutes: 10-20
+      tokens_input: 15000
+      tokens_output: 12000
+      estimated_cost_usd: 1.13
+      model: fast
+      notes: "Usa modelo fast — custo reduzido"
+
+    deployment:
+      duration_minutes: 10-15
+      tokens_input: 12000
+      tokens_output: 6000
+      estimated_cost_usd: 0.63
+      model: powerful
+
+    sustaining:
+      duration_minutes: 5-10
+      tokens_input: 10000
+      tokens_output: 5000
+      estimated_cost_usd: 0.53
+      model: fast
+
+  # Totais estimados por complexidade de projeto
+  project_totals:
+    small:
+      description: "Landing page, API simples, CRUD"
+      total_duration: "1-3 horas"
+      total_tokens: "~300K"
+      estimated_cost: "$5-15 USD"
+      estimated_cost_brl: "R$25-75"
+
+    medium:
+      description: "Fullstack app, microservicos, integracao"
+      total_duration: "3-8 horas"
+      total_tokens: "~800K"
+      estimated_cost: "$15-40 USD"
+      estimated_cost_brl: "R$75-200"
+
+    large:
+      description: "Enterprise, multi-modulo, compliance"
+      total_duration: "8-24 horas"
+      total_tokens: "~2M"
+      estimated_cost: "$40-120 USD"
+      estimated_cost_brl: "R$200-600"
+
+    enterprise:
+      description: "Plataforma completa, regulatorio, multi-squad"
+      total_duration: "24-80 horas"
+      total_tokens: "~5M+"
+      estimated_cost: "$120-400 USD"
+      estimated_cost_brl: "R$600-2000"
+
+  # Custo de ceremonias por metodologia (por sprint/ciclo)
+  methodology_overhead:
+    scrum:
+      ceremonies_per_sprint: 5
+      tokens_per_ceremony: 5000
+      overhead_cost_per_sprint: "$1.50 USD"
+      overhead_percentage: "~5%"
+
+    kanban:
+      ceremonies_per_week: 3
+      tokens_per_ceremony: 3000
+      overhead_cost_per_week: "$0.70 USD"
+      overhead_percentage: "~3%"
+
+    waterfall:
+      ceremonies_per_phase: 2
+      tokens_per_ceremony: 8000
+      overhead_cost_per_phase: "$2.00 USD"
+      overhead_percentage: "~4%"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # CAMADA 3: EXECUTION (como entregam)
