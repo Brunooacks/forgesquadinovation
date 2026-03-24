@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForgeSquad v2.0 — Demo Executivo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #050a18;
+      --bg: #0a0f1e;
+      --bg-card: #0d1326;
+      --bg-panel: #0b1025;
+      --bg-elevated: #111833;
+      --bg-terminal: #0d1117;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #475569;
+      --neon-blue: #00d4ff;
+      --neon-cyan: #22d3ee;
+      --neon-purple: #a855f7;
+      --neon-magenta: #e879f9;
+      --neon-green: #00ff88;
+      --neon-amber: #fbbf24;
+      --neon-red: #ff4466;
+      --neon-pink: #f472b6;
+      --glow-blue: rgba(0, 212, 255, 0.15);
+      --glow-cyan: rgba(34, 211, 238, 0.12);
+      --glow-purple: rgba(168, 85, 247, 0.12);
+      --glow-green: rgba(0, 255, 136, 0.15);
+      --border: rgba(0, 212, 255, 0.08);
+      --border-bright: rgba(0, 212, 255, 0.2);
+      --radius: 12px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    /* === KEYFRAMES === */
+    @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+    @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes typing-cursor { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    @keyframes border-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+    @keyframes glow-breathe { 0%, 100% { filter: drop-shadow(0 0 4px currentColor); } 50% { filter: drop-shadow(0 0 12px currentColor); } }
+    @keyframes hex-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes slide-in { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slide-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scale-in { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes robot-eye-blink { 0%, 45%, 55%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
+    @keyframes robot-antenna { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+    @keyframes status-working {
+      0%, 100% { box-shadow: 0 0 8px rgba(0,255,136,0.3), inset 0 0 8px rgba(0,255,136,0.05); }
+      50% { box-shadow: 0 0 20px rgba(0,255,136,0.6), inset 0 0 15px rgba(0,255,136,0.1); }
+    }
+    @keyframes status-checkpoint {
+      0%, 100% { box-shadow: 0 0 8px rgba(251,191,36,0.3), inset 0 0 8px rgba(251,191,36,0.05); }
+      50% { box-shadow: 0 0 20px rgba(251,191,36,0.6), inset 0 0 15px rgba(251,191,36,0.1); }
+    }
+    @keyframes progress-stripe {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+    @keyframes flicker { 0%, 97%, 100% { opacity: 1; } 98% { opacity: 0.8; } 99% { opacity: 0.9; } }
+    @keyframes counter-grow {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes bar-fill { from { width: 0; } }
+    @keyframes multiply-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); filter: brightness(1.4); }
+      100% { transform: scale(1); }
+    }
+    @keyframes neon-flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 7px currentColor, 0 0 10px currentColor, 0 0 21px currentColor; }
+      20%, 24%, 55% { text-shadow: none; }
+    }
+    @keyframes code-scroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+    @keyframes visor-scan {
+      0% { top: 0; }
+      100% { top: 100%; }
+    }
+
+    html { font-size: 14px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-deep);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* === BACKGROUND === */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,212,255,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168,85,247,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,255,136,0.01) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .scanline-overlay {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; overflow: hidden;
+    }
+    .scanline-overlay::before {
+      content: '';
+      position: absolute; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(180deg, transparent, rgba(0,212,255,0.04), transparent);
+      animation: scanline 8s linear infinite;
+    }
+
+    .grid-bg {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    #particles-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === PROGRESS BAR TOP === */
+    .progress-bar-top {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 3px; z-index: 10000;
+      background: rgba(0,0,0,0.5);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-cyan), var(--neon-green));
+      background-size: 300% 100%;
+      animation: border-flow 3s linear infinite;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px var(--neon-blue), 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    /* === APP LAYOUT === */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === TOP BAR === */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: linear-gradient(180deg, rgba(10,15,30,0.98), rgba(10,15,30,0.92));
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .top-bar::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 5%; right: 5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+      opacity: 0.3;
+    }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .logo-mark { position: relative; width: 36px; height: 36px; }
+    .logo-mark .hex {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; color: #fff;
+      animation: glow-breathe 3s ease infinite;
+    }
+    .logo-mark .ring {
+      position: absolute; inset: -4px;
+      border: 1px solid var(--neon-blue);
+      border-radius: 50%;
+      animation: hex-rotate 20s linear infinite;
+      opacity: 0.3;
+    }
+    .brand h1 {
+      font-size: 1rem; font-weight: 800; letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand .version {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--neon-purple); font-weight: 600; letter-spacing: 0.1em;
+    }
+    .demo-badge {
+      font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+      color: var(--neon-amber); padding: 4px 12px;
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 6px; background: rgba(251,191,36,0.08);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .top-center { display: flex; align-items: center; gap: 16px; }
+    .step-counter {
+      font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
+      color: var(--neon-cyan); letter-spacing: 0.05em;
+    }
+    .step-counter .dim { color: var(--text-dim); }
+    .timer {
+      font-family: var(--mono); font-size: 0.8rem;
+      color: var(--neon-purple); font-weight: 600; letter-spacing: 0.05em;
+    }
+    .top-right { display: flex; align-items: center; gap: 14px; }
+    .autoplay-toggle {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-muted); cursor: pointer; user-select: none;
+    }
+    .autoplay-toggle input[type="checkbox"] {
+      appearance: none; width: 32px; height: 16px;
+      background: rgba(255,255,255,0.08); border-radius: 8px;
+      position: relative; cursor: pointer; transition: background 0.3s;
+    }
+    .autoplay-toggle input[type="checkbox"]::after {
+      content: ''; position: absolute;
+      top: 2px; left: 2px; width: 12px; height: 12px;
+      background: var(--text-dim); border-radius: 50%;
+      transition: all 0.3s;
+    }
+    .autoplay-toggle input[type="checkbox"]:checked {
+      background: rgba(0,255,136,0.2);
+    }
+    .autoplay-toggle input[type="checkbox"]:checked::after {
+      left: 18px; background: var(--neon-green);
+      box-shadow: 0 0 6px var(--neon-green);
+    }
+    .ntt-badge {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--text-dim); letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      flex: 1; overflow: hidden; position: relative;
+    }
+    .step {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 30px 40px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .step.active {
+      opacity: 1; transform: translateY(0);
+      pointer-events: auto;
+    }
+    .step-title {
+      font-size: 1.8rem; font-weight: 800;
+      text-align: center; margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff 30%, var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1.3;
+    }
+    .step-subtitle {
+      font-family: var(--mono); font-size: 0.85rem;
+      color: var(--text-muted); text-align: center;
+      margin-bottom: 30px; max-width: 700px;
+    }
+    .step-badge {
+      display: inline-block; font-family: var(--mono); font-size: 0.65rem;
+      font-weight: 600; padding: 4px 14px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px;
+    }
+    .step-badge.cyan { background: rgba(0,212,255,0.1); color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.3); }
+    .step-badge.green { background: rgba(0,255,136,0.1); color: var(--neon-green); border: 1px solid rgba(0,255,136,0.3); }
+    .step-badge.purple { background: rgba(168,85,247,0.1); color: var(--neon-purple); border: 1px solid rgba(168,85,247,0.3); }
+    .step-badge.amber { background: rgba(251,191,36,0.1); color: var(--neon-amber); border: 1px solid rgba(251,191,36,0.3); }
+    .step-badge.red { background: rgba(255,68,102,0.1); color: var(--neon-red); border: 1px solid rgba(255,68,102,0.3); }
+
+    /* === STEP 1: COMPARISON COLUMNS === */
+    .compare-columns {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 20px; max-width: 900px; width: 100%;
+      margin-bottom: 24px;
+    }
+    .compare-col {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative; overflow: hidden;
+      transition: all 0.4s ease;
+      animation: scale-in 0.6s ease backwards;
+    }
+    .compare-col::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .compare-col.col-red { border-color: rgba(255,68,102,0.2); }
+    .compare-col.col-red::before { background: var(--neon-red); opacity: 0.6; }
+    .compare-col.col-blue { border-color: rgba(0,212,255,0.2); }
+    .compare-col.col-blue::before { background: var(--neon-blue); opacity: 0.6; }
+    .compare-col-title {
+      font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-col.col-red .compare-col-title { color: var(--neon-red); }
+    .compare-col.col-blue .compare-col-title { color: var(--neon-blue); }
+    .compare-item {
+      font-family: var(--mono); font-size: 0.7rem;
+      color: var(--text-muted); padding: 5px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .compare-item .icon { font-size: 0.7rem; }
+    .compare-col.col-red .compare-item .icon { color: var(--neon-red); }
+    .compare-col.col-blue .compare-item .icon { color: var(--neon-blue); }
+    .compare-label {
+      display: inline-block; font-family: var(--mono);
+      font-size: 0.55rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 10px; margin-top: 12px;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .compare-label.label-red {
+      background: rgba(255,68,102,0.1); color: var(--neon-red);
+      border: 1px solid rgba(255,68,102,0.3);
+    }
+    .compare-label.label-blue {
+      background: rgba(0,212,255,0.1); color: var(--neon-blue);
+      border: 1px solid rgba(0,212,255,0.3);
+    }
+    .gap-box {
+      max-width: 900px; width: 100%;
+      background: var(--bg-card);
+      border: 1px solid rgba(255,68,102,0.2);
+      border-radius: var(--radius);
+      padding: 20px 24px; text-align: center;
+    }
+    .gap-box::before {
+      content: ''; display: block;
+      width: 60px; height: 2px;
+      background: var(--neon-red);
+      margin: 0 auto 14px;
+    }
+    .gap-title {
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--neon-amber); margin-bottom: 8px;
+    }
+    .gap-desc {
+      font-family: var(--mono); font-size: 0.75rem;
+      color: var(--text-dim); line-height: 1.6;
+    }
+
+    /* === STEP 2: DIFFERENTIATOR CARDS === */
+    .diff-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; max-width: 900px; width: 100%;
+      margin-bottom: 20px;
+    }
+    .diff-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      position: relative; overflow: hidden;
+      transition: all 0.4s ease;
+      animation: scale-in 0.6s ease backwards;
+    }
+    .diff-card:hover {
+      border-color: rgba(0,255,136,0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .diff-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: var(--neon-green); opacity: 0.5;
+    }
+    .diff-card-icon {
+      font-size: 1.8rem; margin-bottom: 10px;
+    }
+    .diff-card-title {
+      font-weight: 700; font-size: 0.85rem;
+      color: var(--neon-green); margin-bottom: 8px;
+    }
+    .diff-card-desc {
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-muted); line-height: 1.6;
+    }
+
+    /* === STEP 3: COMPARISON TABLE === */
+    .compare-table-wrap {
+      max-width: 920px; width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono); font-size: 0.7rem;
+    }
+    .compare-table thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border-bright);
+      background: rgba(0,0,0,0.3);
+    }
+    .compare-table thead th:first-child { color: var(--text-muted); }
+    .compare-table thead th.th-devin { color: var(--neon-blue); }
+    .compare-table thead th.th-forge { color: var(--neon-green); }
+    .compare-table tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text-muted);
+    }
+    .compare-table tbody tr:hover {
+      background: rgba(0,212,255,0.03);
+    }
+    .compare-table tbody td.td-cap {
+      color: var(--text); font-weight: 600;
+    }
+    .compare-table tbody td.td-devin { color: var(--neon-blue); }
+    .compare-table tbody td.td-forge { color: var(--neon-green); font-weight: 600; }
+    .compare-table tbody td.td-forge-advantage {
+      color: var(--neon-green); font-weight: 700;
+      background: rgba(0,255,136,0.04);
+    }
+    .compare-table tbody td.td-devin-advantage {
+      color: var(--neon-blue); font-weight: 700;
+      background: rgba(0,212,255,0.04);
+    }
+    .key-message {
+      max-width: 900px; width: 100%;
+      text-align: center; padding: 14px 20px;
+      background: rgba(0,255,136,0.05);
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius: 8px;
+      font-family: var(--mono); font-size: 0.8rem;
+      color: var(--neon-green); font-weight: 600;
+    }
+
+    /* === TERMINAL === */
+    .terminal {
+      background: var(--bg-terminal);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 10px;
+      width: 100%; max-width: 720px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    .terminal-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .terminal-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27c93f; }
+    .terminal-title {
+      flex: 1; text-align: center;
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-dim); letter-spacing: 0.05em;
+    }
+    .terminal-body {
+      padding: 16px 20px;
+      font-family: var(--mono); font-size: 0.75rem;
+      line-height: 1.7; color: #8b949e;
+      min-height: 200px; max-height: 400px;
+      overflow-y: auto;
+    }
+    .terminal-body .prompt { color: var(--neon-green); }
+    .terminal-body .cmd { color: #e6edf3; }
+    .terminal-body .highlight { color: var(--neon-cyan); }
+    .terminal-body .success { color: var(--neon-green); }
+    .terminal-body .warning { color: var(--neon-amber); }
+    .terminal-body .box-line { color: var(--neon-blue); }
+    .terminal-body .dim { color: #484f58; }
+    .terminal-line {
+      opacity: 0;
+      animation: fade-in 0.3s ease forwards;
+    }
+    .typing-cursor-inline {
+      display: inline-block; width: 7px; height: 14px;
+      background: var(--neon-green);
+      animation: typing-cursor 0.8s step-end infinite;
+      vertical-align: middle; margin-left: 2px;
+    }
+    .local-badge {
+      display: inline-block; font-family: var(--mono);
+      font-size: 0.7rem; font-weight: 600;
+      color: var(--neon-green); padding: 6px 18px;
+      border: 1px solid rgba(0,255,136,0.3);
+      border-radius: 20px; margin-top: 18px;
+      background: rgba(0,255,136,0.08);
+      letter-spacing: 0.06em;
+    }
+
+    /* === STEP 4: ROBOT DASHBOARD === */
+    .robot-dashboard {
+      width: 100%; max-width: 1060px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .rd-pipeline {
+      display: flex; align-items: center;
+      padding: 10px 16px; gap: 4px;
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .rd-phase {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; flex: 1; min-width: 60px;
+    }
+    .rd-phase-dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--border-bright);
+      background: var(--bg-card);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; transition: all 0.5s ease;
+    }
+    .rd-phase.completed .rd-phase-dot {
+      background: var(--neon-cyan); border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(34,211,238,0.4); color: #000;
+    }
+    .rd-phase.active .rd-phase-dot {
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 12px rgba(0,212,255,0.5);
+      animation: pulse-glow 2s ease infinite;
+    }
+    .rd-phase-name {
+      font-family: var(--mono); font-size: 0.45rem;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.06em; white-space: nowrap;
+    }
+    .rd-phase.completed .rd-phase-name { color: var(--neon-cyan); }
+    .rd-phase.active .rd-phase-name { color: var(--neon-blue); font-weight: 600; }
+
+    .rd-body {
+      display: grid; grid-template-columns: 200px 1fr 180px;
+      gap: 0; min-height: 340px;
+    }
+    .rd-log {
+      border-right: 1px solid var(--border);
+      padding: 10px; font-family: var(--mono);
+      font-size: 0.55rem; color: var(--text-dim);
+      overflow-y: auto; max-height: 340px;
+    }
+    .rd-log-entry {
+      padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.02);
+      animation: slide-in 0.4s ease backwards;
+    }
+    .rd-log-entry .time { color: var(--text-dim); margin-right: 4px; font-size: 0.5rem; }
+    .rd-log-entry .msg { color: var(--text-muted); }
+    .rd-log-entry .agent { color: var(--neon-cyan); font-weight: 600; }
+
+    .rd-agents-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 8px; padding: 10px; align-content: start;
+    }
+    .rd-agent-card {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      transition: all 0.5s ease;
+      position: relative; overflow: hidden;
+      min-height: 110px;
+    }
+    .rd-agent-card.idle {
+      border-color: rgba(100,116,139,0.2);
+    }
+    .rd-agent-card.working {
+      border-color: rgba(0,255,136,0.3);
+      animation: status-working 2s ease infinite;
+    }
+    .rd-agent-card.working .rd-robot-body { animation: float 1.5s ease infinite; }
+    .rd-agent-card.checkpoint {
+      border-color: rgba(251,191,36,0.3);
+      animation: status-checkpoint 2s ease infinite;
+    }
+    .rd-agent-card.completed {
+      border-color: rgba(34,211,238,0.3);
+      box-shadow: 0 0 8px rgba(34,211,238,0.1);
+    }
+
+    /* Robot avatar */
+    .rd-robot-avatar { position: relative; width: 36px; height: 36px; margin-bottom: 4px; }
+    .rd-robot-body { width: 36px; height: 36px; position: relative; transition: all 0.3s; }
+    .rd-robot-head {
+      width: 28px; height: 24px;
+      border-radius: 7px 7px 5px 5px;
+      position: absolute; top: 6px; left: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .rd-robot-eye {
+      width: 5px; height: 5px;
+      background: #fff; border-radius: 2px;
+      box-shadow: 0 0 4px #fff;
+      animation: robot-eye-blink 4s ease infinite;
+    }
+    .rd-robot-eye:nth-child(2) { animation-delay: 0.1s; }
+    .rd-robot-antenna {
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 2px; height: 7px;
+      border-radius: 2px;
+      transform-origin: bottom center;
+      animation: robot-antenna 3s ease infinite;
+    }
+    .rd-robot-antenna::after {
+      content: ''; position: absolute;
+      top: -3px; left: -2px;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+    }
+    /* Visor scan effect for working state */
+    .rd-agent-card.working .rd-robot-head::after {
+      content: '';
+      position: absolute; left: 0; right: 0;
+      height: 2px; top: 0;
+      background: rgba(0,255,136,0.6);
+      animation: visor-scan 1.5s ease-in-out infinite alternate;
+    }
+
+    .rd-agent-name {
+      font-weight: 700; font-size: 0.6rem;
+      color: var(--text); margin-bottom: 1px;
+      white-space: nowrap;
+    }
+    .rd-agent-role {
+      font-family: var(--mono); font-size: 0.45rem;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.04em; margin-bottom: 3px;
+    }
+    .rd-agent-status {
+      font-family: var(--mono); font-size: 0.45rem;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 1px 6px; border-radius: 3px;
+    }
+    .rd-agent-card.idle .rd-agent-status { color: var(--text-dim); background: rgba(100,116,139,0.1); }
+    .rd-agent-card.working .rd-agent-status { color: var(--neon-green); background: rgba(0,255,136,0.1); }
+    .rd-agent-card.checkpoint .rd-agent-status { color: var(--neon-amber); background: rgba(251,191,36,0.1); }
+    .rd-agent-card.completed .rd-agent-status { color: var(--neon-cyan); background: rgba(34,211,238,0.1); }
+
+    /* Code scroll animation inside working cards */
+    .rd-code-scroll {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 24px; overflow: hidden;
+      font-family: var(--mono); font-size: 0.4rem;
+      color: rgba(0,255,136,0.3); line-height: 1.4;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .rd-agent-card.working .rd-code-scroll { opacity: 1; }
+    .rd-code-scroll-inner {
+      animation: code-scroll 4s linear infinite;
+    }
+
+    .rd-agent-task {
+      font-family: var(--mono); font-size: 0.4rem;
+      color: var(--text-dim); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .rd-agent-card.working .rd-agent-task { color: var(--neon-green); }
+
+    .rd-metrics {
+      border-left: 1px solid var(--border);
+      padding: 10px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .rd-metric {
+      background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px;
+    }
+    .rd-metric-label {
+      font-family: var(--mono); font-size: 0.5rem;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.06em; margin-bottom: 4px;
+    }
+    .rd-metric-value {
+      font-family: var(--mono); font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .rd-metric-value.blue { color: var(--neon-blue); }
+    .rd-metric-value.purple { color: var(--neon-purple); }
+    .rd-metric-value.green { color: var(--neon-green); }
+    .rd-metric-value.amber { color: var(--neon-amber); }
+
+    /* === STEP 5: CHECKPOINT === */
+    .checkpoint-display {
+      width: 100%; max-width: 720px;
+    }
+    .checkpoint-gate {
+      background: var(--bg-terminal);
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 10px; padding: 20px 24px;
+      font-family: var(--mono); font-size: 0.75rem;
+      line-height: 1.8; color: #8b949e;
+      box-shadow: 0 0 20px rgba(251,191,36,0.1);
+      margin-bottom: 16px;
+    }
+    .checkpoint-gate .amber { color: var(--neon-amber); }
+    .checkpoint-gate .green { color: var(--neon-green); }
+    .checkpoint-gate .cyan { color: var(--neon-cyan); }
+    .checkpoint-gate .dim { color: #484f58; }
+    .audit-json {
+      background: var(--bg-terminal);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 10px; padding: 16px 20px;
+      font-family: var(--mono); font-size: 0.7rem;
+      line-height: 1.7; color: #8b949e;
+      box-shadow: 0 0 15px rgba(0,255,136,0.08);
+      opacity: 0; animation: fade-in 0.5s ease forwards;
+      animation-delay: 2s;
+    }
+    .audit-json .key { color: var(--neon-cyan); }
+    .audit-json .str { color: var(--neon-green); }
+
+    /* === STEP 6: DELIVERABLES === */
+    .deliverables-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; max-width: 900px; width: 100%;
+    }
+    .deliverable-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+      display: flex; align-items: flex-start; gap: 10px;
+      transition: all 0.3s ease;
+      opacity: 0; animation: scale-in 0.4s ease forwards;
+      position: relative;
+    }
+    .deliverable-card:hover {
+      border-color: rgba(0,255,136,0.3);
+      transform: translateY(-2px);
+    }
+    .deliverable-card.exclusive {
+      border-color: rgba(168,85,247,0.3);
+      background: rgba(168,85,247,0.03);
+    }
+    .deliverable-card.exclusive:hover {
+      border-color: rgba(168,85,247,0.5);
+    }
+    .deliverable-check {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--neon-green); font-size: 11px;
+    }
+    .deliverable-info { flex: 1; min-width: 0; }
+    .deliverable-name {
+      font-size: 0.75rem; font-weight: 600; color: var(--text);
+      margin-bottom: 3px;
+    }
+    .deliverable-agent {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .exclusive-badge {
+      position: absolute; top: 6px; right: 6px;
+      font-family: var(--mono); font-size: 0.45rem;
+      font-weight: 700; padding: 2px 6px;
+      border-radius: 4px; letter-spacing: 0.04em;
+      color: var(--neon-purple);
+      background: rgba(168,85,247,0.12);
+      border: 1px solid rgba(168,85,247,0.3);
+      text-transform: uppercase;
+    }
+
+    /* === STEP 7: ROADMAP PHASES === */
+    .scale-visual {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 20px; max-width: 900px; width: 100%;
+    }
+    .roadmap-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 14px; width: 100%;
+    }
+    .roadmap-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      text-align: center;
+      position: relative; overflow: hidden;
+      transition: all 0.4s ease;
+      opacity: 0; animation: scale-in 0.5s ease forwards;
+    }
+    .roadmap-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .roadmap-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .roadmap-card:nth-child(1)::before { background: var(--neon-cyan); }
+    .roadmap-card:nth-child(2)::before { background: var(--neon-purple); }
+    .roadmap-card:nth-child(3)::before { background: var(--neon-green); }
+    .roadmap-card:nth-child(4)::before { background: var(--neon-amber); }
+    .roadmap-phase {
+      font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .roadmap-card:nth-child(1) .roadmap-phase { color: var(--neon-cyan); }
+    .roadmap-card:nth-child(2) .roadmap-phase { color: var(--neon-purple); }
+    .roadmap-card:nth-child(3) .roadmap-phase { color: var(--neon-green); }
+    .roadmap-card:nth-child(4) .roadmap-phase { color: var(--neon-amber); }
+    .roadmap-title {
+      font-size: 1.1rem; font-weight: 800;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .roadmap-desc {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--text-dim); line-height: 1.5;
+    }
+
+    /* === STEP 8: FINAL BLOCKS === */
+    .final-blocks {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; max-width: 900px; width: 100%;
+      margin-bottom: 20px;
+    }
+    .final-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 18px;
+      text-align: center;
+      position: relative; overflow: hidden;
+      transition: all 0.4s ease;
+      animation: scale-in 0.6s ease backwards;
+    }
+    .final-block:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .final-block::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .final-block:nth-child(1) { border-color: rgba(0,212,255,0.2); }
+    .final-block:nth-child(1)::before { background: var(--neon-blue); }
+    .final-block:nth-child(2) { border-color: rgba(0,255,136,0.2); }
+    .final-block:nth-child(2)::before { background: var(--neon-green); }
+    .final-block:nth-child(3) { border-color: rgba(168,85,247,0.2); }
+    .final-block:nth-child(3)::before { background: var(--neon-purple); }
+    .final-block-label {
+      font-family: var(--mono); font-size: 0.6rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .final-block:nth-child(1) .final-block-label { color: var(--neon-blue); }
+    .final-block:nth-child(2) .final-block-label { color: var(--neon-green); }
+    .final-block:nth-child(3) .final-block-label { color: var(--neon-purple); }
+    .final-block-text {
+      font-size: 0.85rem; color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .cta-button {
+      display: inline-block; padding: 14px 40px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      border: none; border-radius: 8px;
+      font-family: var(--font); font-size: 1rem; font-weight: 700;
+      color: #fff; cursor: pointer;
+      text-decoration: none; margin-top: 16px;
+      box-shadow: 0 0 20px rgba(0,212,255,0.3), 0 0 40px rgba(168,85,247,0.2);
+      transition: all 0.3s ease;
+      animation: glow-breathe 3s ease infinite;
+    }
+    .cta-button:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 30px rgba(0,212,255,0.5), 0 0 60px rgba(168,85,247,0.3);
+    }
+    .cta-note {
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-dim); margin-top: 10px;
+    }
+
+    /* === BOTTOM BAR === */
+    .bottom-bar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: linear-gradient(0deg, rgba(10,15,30,0.98), rgba(10,15,30,0.92));
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      flex-shrink: 0; position: relative;
+    }
+    .bottom-bar::before {
+      content: ''; position: absolute;
+      top: 0; left: 5%; right: 5%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+      opacity: 0.2;
+    }
+    .nav-btn {
+      font-family: var(--mono); font-size: 0.75rem; font-weight: 600;
+      padding: 8px 20px; border-radius: 6px;
+      border: 1px solid var(--border-bright);
+      background: rgba(0,212,255,0.05);
+      color: var(--neon-cyan); cursor: pointer;
+      transition: all 0.3s ease; letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .nav-btn:hover {
+      background: rgba(0,212,255,0.1);
+      box-shadow: 0 0 12px rgba(0,212,255,0.2);
+      transform: translateY(-1px);
+    }
+    .nav-btn:disabled {
+      opacity: 0.3; cursor: not-allowed;
+      transform: none; box-shadow: none;
+    }
+    .timeline-dots {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .timeline-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 2px solid var(--border-bright);
+      background: transparent;
+      cursor: pointer; transition: all 0.3s ease;
+      position: relative;
+    }
+    .timeline-dot.visited {
+      background: var(--neon-cyan); border-color: var(--neon-cyan);
+    }
+    .timeline-dot.active {
+      background: var(--neon-blue); border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0,212,255,0.5);
+      transform: scale(1.2);
+    }
+    .timeline-dot.active::after {
+      content: ''; position: absolute;
+      inset: -4px; border-radius: 50%;
+      border: 1px solid var(--neon-blue);
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    .timeline-dot-label {
+      position: absolute; bottom: -18px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono); font-size: 0.45rem;
+      color: var(--text-dim); white-space: nowrap;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .timeline-dot:hover .timeline-dot-label { opacity: 1; }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 900px) {
+      .compare-columns { grid-template-columns: 1fr; }
+      .diff-cards { grid-template-columns: 1fr; }
+      .compare-table-wrap { overflow-x: auto; }
+      .deliverables-grid { grid-template-columns: repeat(2, 1fr); }
+      .rd-body { grid-template-columns: 1fr; }
+      .rd-log, .rd-metrics { border: none; border-bottom: 1px solid var(--border); }
+      .rd-agents-grid { grid-template-columns: repeat(3, 1fr); }
+      .roadmap-grid { grid-template-columns: repeat(2, 1fr); }
+      .final-blocks { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .deliverables-grid { grid-template-columns: 1fr; }
+      .rd-agents-grid { grid-template-columns: repeat(2, 1fr); }
+      .step-title { font-size: 1.3rem; }
+      .roadmap-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles-canvas"></canvas>
+  <div class="grid-bg"></div>
+  <div class="scanline-overlay"></div>
+  <div class="progress-bar-top"><div class="progress-bar-fill" id="progressFill" style="width: 12.5%"></div></div>
+
+  <div class="app">
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="top-left">
+        <div class="logo-mark">
+          <div class="hex">F</div>
+          <div class="ring"></div>
+        </div>
+        <div class="brand">
+          <h1>ForgeSquad</h1>
+          <span class="version">v2.0 PROMETHEUS</span>
+        </div>
+        <span class="demo-badge">Demo Executivo</span>
+      </div>
+      <div class="top-center">
+        <div class="step-counter">STEP <span id="stepNum">1</span><span class="dim"> / 8</span></div>
+        <div class="timer" id="timer">00:00</div>
+      </div>
+      <div class="top-right">
+        <label class="autoplay-toggle">
+          <input type="checkbox" id="autoplayCheck" checked>
+          AUTO-PLAY
+        </label>
+        <span class="ntt-badge">NTT DATA | Confidencial</span>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- STEP 1: O CENARIO ATUAL -->
+      <div class="step active" id="step1">
+        <span class="step-badge red">O Cenario Atual</span>
+        <div class="step-title">Devin esta mudando o jogo. E o seu time?</div>
+        <div class="step-subtitle">O banco ja adotou AI autonoma. Sua operacao precisa acompanhar.</div>
+        <div class="compare-columns" id="compareColumns"></div>
+        <div class="gap-box" id="gapBox">
+          <div class="gap-title">A questao nao e SE o banco vai exigir mais produtividade. E QUANDO.</div>
+          <div class="gap-desc"></div>
+        </div>
+      </div>
+
+      <!-- STEP 2: A RESPOSTA -->
+      <div class="step" id="step2">
+        <span class="step-badge green">A Resposta</span>
+        <div class="step-title">ForgeSquad: nao e uma plataforma. E conhecimento embarcado.</div>
+        <div class="step-subtitle">Entra como metodologia, nao como ferramenta. Sem aprovacao de plataforma.</div>
+        <div class="diff-cards" id="diffCards"></div>
+      </div>
+
+      <!-- STEP 3: FORGESQUAD VS DEVIN -->
+      <div class="step" id="step3">
+        <span class="step-badge purple">ForgeSquad vs Devin</span>
+        <div class="step-title">11 Agentes Especializados vs 1 Agente Generalista.</div>
+        <div class="step-subtitle">ForgeSquad nao compete com Devin — supera em escala e governance.</div>
+        <div class="compare-table-wrap" id="compareTableWrap"></div>
+        <div class="key-message">Devin e otimo para tarefas isoladas. ForgeSquad e para engenharia enterprise.</div>
+      </div>
+
+      <!-- STEP 4: O SQUAD EM ACAO -->
+      <div class="step" id="step4">
+        <span class="step-badge cyan">O Squad em Acao</span>
+        <div class="step-title">11 Agentes trabalhando juntos. Em tempo real.</div>
+        <div class="step-subtitle">Cada agente e especialista. Juntos, cobrem o ciclo completo.</div>
+        <div class="robot-dashboard" id="robotDashboard"></div>
+      </div>
+
+      <!-- STEP 5: A GOVERNANCA -->
+      <div class="step" id="step5">
+        <span class="step-badge amber">A Governanca</span>
+        <div class="step-title">Governanca que o Devin nao oferece.</div>
+        <div class="step-subtitle">Cada decisao registrada. Cada aprovacao rastreavel. Compliance ready.</div>
+        <div class="checkpoint-display">
+          <div class="checkpoint-gate" id="checkpointGate"></div>
+          <div class="audit-json" id="auditJson"></div>
+        </div>
+        <div class="local-badge" style="margin-top:16px;">Devin executa. ForgeSquad executa COM rastreabilidade.</div>
+      </div>
+
+      <!-- STEP 6: OS ENTREGAVEIS -->
+      <div class="step" id="step6">
+        <span class="step-badge green">Os Entregaveis</span>
+        <div class="step-title">14 artefatos por ciclo. Padronizados.</div>
+        <div class="step-subtitle">O que o Devin nao gera: documentacao, compliance, audit trail.</div>
+        <div class="deliverables-grid" id="deliverablesGrid"></div>
+      </div>
+
+      <!-- STEP 7: COMO ENTRA NO BANCO -->
+      <div class="step" id="step7">
+        <span class="step-badge amber">Como Entra no Banco</span>
+        <div class="step-title">Estrategia de implantacao. Sem friccao.</div>
+        <div class="step-subtitle">Nao e uma plataforma para aprovar. E a forma como o time trabalha.</div>
+        <div class="scale-visual">
+          <div class="roadmap-grid" id="roadmapGrid"></div>
+        </div>
+      </div>
+
+      <!-- STEP 8: O DIFERENCIAL -->
+      <div class="step" id="step8">
+        <span class="step-badge purple">O Diferencial</span>
+        <div class="step-title">NTT DATA + ForgeSquad = Diferencial competitivo.</div>
+        <div class="step-subtitle">Nao apenas acompanhamos o Devin. Vamos alem.</div>
+        <div class="scale-visual">
+          <div class="final-blocks" id="finalBlocks"></div>
+          <button class="cta-button" onclick="return false;">Agende uma POC</button>
+          <div class="cta-note">Investimento: zero — incluso no contrato BAU existente</div>
+          <span class="ntt-badge" style="margin-top: 8px;">NTT DATA | Confidencial</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <button class="nav-btn" id="prevBtn" disabled onclick="navigate(-1)">&#9664; Anterior</button>
+      <div class="timeline-dots" id="timelineDots"></div>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Proximo &#9654;</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // STATE
+    // ============================================================
+    let currentStep = 1;
+    const totalSteps = 8;
+    let startTime = Date.now();
+    let autoplayTimer = null;
+    let stepAnimated = {};
+    let step4AnimTimer = null;
+
+    // ============================================================
+    // PARTICLES
+    // ============================================================
+    (function startParticles() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resize();
+      window.addEventListener('resize', resize);
+      function createParticle() {
+        return {
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+          size: Math.random() * 1.5 + 0.5, opacity: Math.random() * 0.3 + 0.1,
+          color: ['#00d4ff', '#a855f7', '#22d3ee', '#00ff88'][Math.floor(Math.random() * 4)]
+        };
+      }
+      for (let i = 0; i < 60; i++) particles.push(createParticle());
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color; ctx.globalAlpha = p.opacity; ctx.fill();
+        });
+        ctx.globalAlpha = 0.03; ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 0.5;
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ============================================================
+    // TIMER
+    // ============================================================
+    setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = m + ':' + s;
+    }, 1000);
+
+    // ============================================================
+    // TIMELINE DOTS
+    // ============================================================
+    (function buildTimeline() {
+      const labels = ['Cenario', 'Resposta', 'vs Devin', 'Squad', 'Governanca', 'Entregaveis', 'Estrategia', 'Diferencial'];
+      const container = document.getElementById('timelineDots');
+      labels.forEach((l, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'timeline-dot' + (i === 0 ? ' active visited' : '');
+        dot.onclick = () => goToStep(i + 1);
+        dot.innerHTML = '<span class="timeline-dot-label">' + l + '</span>';
+        container.appendChild(dot);
+      });
+    })();
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function navigate(dir) {
+      const next = currentStep + dir;
+      if (next < 1 || next > totalSteps) return;
+      goToStep(next);
+    }
+
+    function goToStep(n) {
+      if (n === currentStep) return;
+      document.getElementById('step' + currentStep).classList.remove('active');
+      currentStep = n;
+      document.getElementById('step' + currentStep).classList.add('active');
+      document.getElementById('stepNum').textContent = currentStep;
+      document.getElementById('progressFill').style.width = (currentStep / totalSteps * 100) + '%';
+      document.getElementById('prevBtn').disabled = currentStep === 1;
+      document.getElementById('nextBtn').disabled = currentStep === totalSteps;
+
+      // Update timeline
+      document.querySelectorAll('.timeline-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentStep - 1);
+        if (i < currentStep) d.classList.add('visited');
+      });
+
+      // Animate step
+      if (!stepAnimated[currentStep]) {
+        stepAnimated[currentStep] = true;
+        animateStep(currentStep);
+      }
+
+      resetAutoplay();
+    }
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') navigate(1);
+      else if (e.key === 'ArrowLeft') navigate(-1);
+      else if (e.key === ' ') {
+        e.preventDefault();
+        const cb = document.getElementById('autoplayCheck');
+        cb.checked = !cb.checked;
+        resetAutoplay();
+      }
+    });
+
+    // Autoplay
+    function resetAutoplay() {
+      clearTimeout(autoplayTimer);
+      if (document.getElementById('autoplayCheck').checked && currentStep < totalSteps) {
+        const delay = currentStep === 4 ? 12000 : 10000;
+        autoplayTimer = setTimeout(() => navigate(1), delay);
+      }
+    }
+    document.getElementById('autoplayCheck').addEventListener('change', resetAutoplay);
+
+    // ============================================================
+    // COUNTER ANIMATION
+    // ============================================================
+    function animateCounter(el, target, duration, suffix) {
+      const start = 0;
+      const startTime = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(start + (target - start) * eased);
+        el.textContent = current + (suffix || '');
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // ============================================================
+    // TERMINAL TYPING
+    // ============================================================
+    function typeTerminal(containerId, lines, baseDelay) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      lines.forEach((line, i) => {
+        const div = document.createElement('div');
+        div.className = 'terminal-line';
+        div.style.animationDelay = (baseDelay + i * 0.15) + 's';
+        div.innerHTML = line;
+        container.appendChild(div);
+      });
+    }
+
+    // ============================================================
+    // AGENT DATA
+    // ============================================================
+    const allAgents = [
+      { name: 'Sofia', role: 'Architect', color: '#a855f7' },
+      { name: 'Pedro', role: 'PM', color: '#34d399' },
+      { name: 'Clara', role: 'BA', color: '#f472b6' },
+      { name: 'Rafael', role: 'Tech Lead', color: '#00d4ff' },
+      { name: 'Bruno', role: 'Dev Backend', color: '#00ff88' },
+      { name: 'Fernanda', role: 'Dev Frontend', color: '#22d3ee' },
+      { name: 'Quesia', role: 'QA', color: '#fbbf24' },
+      { name: 'Marcos', role: 'DevOps', color: '#f97316' },
+      { name: 'Lucas', role: 'SRE', color: '#60a5fa' },
+      { name: 'Daniela', role: 'Tech Writer', color: '#e879f9' },
+      { name: 'Ricardo', role: 'Finance', color: '#ff4466' },
+    ];
+
+    // ============================================================
+    // STEP ANIMATIONS
+    // ============================================================
+    function animateStep(step) {
+      switch (step) {
+        case 1: animateStep1(); break;
+        case 2: animateStep2(); break;
+        case 3: animateStep3(); break;
+        case 4: animateStep4(); break;
+        case 5: animateStep5(); break;
+        case 6: animateStep6(); break;
+        case 7: animateStep7(); break;
+        case 8: animateStep8(); break;
+      }
+    }
+
+    // STEP 1: O CENARIO ATUAL
+    function animateStep1() {
+      const container = document.getElementById('compareColumns');
+      container.innerHTML = '';
+
+      const leftItems = [
+        'Dev escreve codigo manualmente',
+        'Code review entre pares',
+        'Documentacao manual',
+        'Deploy manual com checklist',
+        'Sem audit trail automatico',
+        'Tempo medio: 4 semanas por entrega',
+      ];
+      const rightItems = [
+        'AI autonoma escreve codigo',
+        'Executa tarefas end-to-end',
+        'Alta velocidade de entrega',
+        '1 agente generalista',
+        'Sem governance de squad',
+        'Sem metodologia de gestao',
+      ];
+
+      // Left column — NTT DATA atual
+      let leftHTML = '<div class="compare-col col-red" style="animation-delay:0.1s">';
+      leftHTML += '<div class="compare-col-title">Modelo Atual (NTT DATA)</div>';
+      leftItems.forEach(item => {
+        leftHTML += '<div class="compare-item"><span class="icon">\u2022</span> ' + item + '</div>';
+      });
+      leftHTML += '<div class="compare-label label-red">Em desvantagem competitiva</div>';
+      leftHTML += '</div>';
+
+      // Right column — Devin
+      let rightHTML = '<div class="compare-col col-blue" style="animation-delay:0.3s">';
+      rightHTML += '<div class="compare-col-title">Devin (Interno Itau)</div>';
+      rightItems.forEach(item => {
+        rightHTML += '<div class="compare-item"><span class="icon">\u2022</span> ' + item + '</div>';
+      });
+      rightHTML += '<div class="compare-label label-blue">Produtividade superior</div>';
+      rightHTML += '</div>';
+
+      container.innerHTML = leftHTML + rightHTML;
+
+      // Animate gap box
+      const gapBox = document.getElementById('gapBox');
+      gapBox.style.opacity = '0';
+      gapBox.style.animation = 'slide-up 0.6s ease forwards';
+      gapBox.style.animationDelay = '0.8s';
+    }
+
+    // STEP 2: A RESPOSTA
+    function animateStep2() {
+      const cards = [
+        {
+          icon: '\uD83D\uDCC1',
+          title: 'Nao e plataforma',
+          desc: 'Arquivos markdown + YAML que vivem no repositorio do projeto. Nenhum binario, nenhum servidor, nenhum SaaS. Roda na IDE que o dev ja usa.'
+        },
+        {
+          icon: '\uD83E\uDDE0',
+          title: 'Conhecimento, nao ferramenta',
+          desc: 'Padroes de arquitetura (Martin Fowler), criptografia, compliance BACEN — tudo embarcado como inteligencia nos agentes. O dev fica melhor sem perceber.'
+        },
+        {
+          icon: '\uD83D\uDE80',
+          title: 'Estrategia de entrada',
+          desc: 'Nao precisa de aprovacao do comite de plataformas. Entra como processo de engenharia da NTT DATA. E a forma como seu time trabalha, nao uma ferramenta que precisa instalar.'
+        },
+      ];
+
+      const container = document.getElementById('diffCards');
+      container.innerHTML = '';
+      cards.forEach((c, i) => {
+        const card = document.createElement('div');
+        card.className = 'diff-card';
+        card.style.animationDelay = (0.1 + i * 0.15) + 's';
+        card.innerHTML = `
+          <div class="diff-card-icon">${c.icon}</div>
+          <div class="diff-card-title">${c.title}</div>
+          <div class="diff-card-desc">${c.desc}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // STEP 3: FORGESQUAD VS DEVIN
+    function animateStep3() {
+      const rows = [
+        { cap: 'Agentes', devin: '1 generalista', forge: '11 especializados', forgeWins: true },
+        { cap: 'Escopo', devin: 'Codigo', forge: 'Ciclo completo (req \u2192 deploy)', forgeWins: true },
+        { cap: 'Governance', devin: 'Nenhuma', forge: 'Audit trail SHA-256', forgeWins: true },
+        { cap: 'Metodologia', devin: 'Nenhuma', forge: 'Scrum/Kanban/Waterfall', forgeWins: true },
+        { cap: 'Checkpoints', devin: 'Nenhum', forge: '9 gates de aprovacao', forgeWins: true },
+        { cap: 'Compliance', devin: 'Manual', forge: 'BACEN/LGPD/PCI-DSS auto', forgeWins: true },
+        { cap: 'Arquitetura', devin: 'Ad-hoc', forge: 'Fowler/DDD/SOLID embarcado', forgeWins: true },
+        { cap: 'Escala', devin: '1 dev por vez', forge: '375+ squads simultaneos', forgeWins: true },
+        { cap: 'Custo', devin: '$500/mes por dev', forge: '~$15 por projeto', forgeWins: true },
+        { cap: 'Rastreabilidade', devin: 'Nenhuma', forge: '100% auditavel', forgeWins: true },
+      ];
+
+      const wrap = document.getElementById('compareTableWrap');
+      let html = '<table class="compare-table"><thead><tr>';
+      html += '<th>Capacidade</th>';
+      html += '<th class="th-devin">Devin</th>';
+      html += '<th class="th-forge">ForgeSquad</th>';
+      html += '</tr></thead><tbody>';
+      rows.forEach((r, i) => {
+        html += '<tr style="opacity:0;animation:fade-in 0.3s ease forwards;animation-delay:' + (0.1 + i * 0.08) + 's">';
+        html += '<td class="td-cap">' + r.cap + '</td>';
+        html += '<td class="' + (r.forgeWins ? 'td-devin' : 'td-devin-advantage') + '">' + r.devin + '</td>';
+        html += '<td class="' + (r.forgeWins ? 'td-forge-advantage' : 'td-forge') + '">' + r.forge + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    // STEP 4: ROBOT DASHBOARD
+    function animateStep4() {
+      const phases = [
+        { icon: '\uD83D\uDCCA', name: 'Estimativa' },
+        { icon: '\uD83D\uDCCB', name: 'Planning' },
+        { icon: '\uD83C\uDFD7', name: 'Arquitetura' },
+        { icon: '\uD83D\uDCE6', name: 'Backlog' },
+        { icon: '\uD83D\uDDA5', name: 'Dev Backend' },
+        { icon: '\uD83C\uDFA8', name: 'Dev Frontend' },
+        { icon: '\uD83E\uDDEA', name: 'QA' },
+        { icon: '\uD83D\uDD0D', name: 'Code Review' },
+        { icon: '\uD83D\uDCDA', name: 'Docs' },
+        { icon: '\uD83D\uDE80', name: 'Deploy' },
+      ];
+
+      const codeSnippets = [
+        'const api = express();',
+        'app.use(cors());',
+        'router.get("/pix")',
+        'async validate(req)',
+        'return res.json(data)',
+        'describe("test", ()=>{',
+        'expect(result).toBe()',
+        'pipeline { stage("build")',
+        'terraform apply -auto',
+        'kubectl rollout status',
+        'SELECT * FROM accounts',
+        'INSERT INTO audit_log',
+      ];
+
+      const db = document.getElementById('robotDashboard');
+
+      // Pipeline bar
+      let pipelineHTML = '<div class="rd-pipeline">';
+      phases.forEach((p, i) => {
+        pipelineHTML += '<div class="rd-phase" id="rdPhase' + i + '"><div class="rd-phase-dot">' + p.icon + '</div><div class="rd-phase-name">' + p.name + '</div></div>';
+      });
+      pipelineHTML += '</div>';
+
+      // Body: log | agents grid | metrics
+      let bodyHTML = '<div class="rd-body">';
+
+      // Activity log
+      bodyHTML += '<div class="rd-log" id="rdLog"></div>';
+
+      // Agent cards grid
+      bodyHTML += '<div class="rd-agents-grid">';
+      allAgents.forEach((a, i) => {
+        const codeLines = codeSnippets.map(c => c).join('<br>');
+        bodyHTML += `
+          <div class="rd-agent-card idle" id="rdAgent${a.name}">
+            <div class="rd-robot-avatar">
+              <div class="rd-robot-body" style="animation-delay:${i * 0.3}s">
+                <div class="rd-robot-antenna" style="background:${a.color};animation-delay:${i * 0.2}s"></div>
+                <div class="rd-robot-head" style="background:linear-gradient(135deg, ${a.color}, color-mix(in srgb, ${a.color} 60%, #000));box-shadow:0 0 8px color-mix(in srgb, ${a.color} 30%, transparent);">
+                  <div class="rd-robot-eye" style="animation-delay:${i * 0.5}s"></div>
+                  <div class="rd-robot-eye" style="animation-delay:${i * 0.5 + 0.1}s"></div>
+                </div>
+              </div>
+            </div>
+            <div class="rd-agent-name">${a.name}</div>
+            <div class="rd-agent-role">${a.role}</div>
+            <div class="rd-agent-status">IDLE</div>
+            <div class="rd-agent-task" id="rdTask${a.name}"></div>
+            <div class="rd-code-scroll"><div class="rd-code-scroll-inner">${codeLines}<br>${codeLines}</div></div>
+          </div>`;
+      });
+      bodyHTML += '</div>';
+
+      // Metrics panel
+      bodyHTML += '<div class="rd-metrics">';
+      bodyHTML += '<div class="rd-metric"><div class="rd-metric-label">Tokens</div><div class="rd-metric-value blue" id="rdTokens">0</div></div>';
+      bodyHTML += '<div class="rd-metric"><div class="rd-metric-label">Tempo</div><div class="rd-metric-value purple" id="rdTime">00:00</div></div>';
+      bodyHTML += '<div class="rd-metric"><div class="rd-metric-label">Custo</div><div class="rd-metric-value green" id="rdCost">$0.00</div></div>';
+      bodyHTML += '<div class="rd-metric"><div class="rd-metric-label">Fases</div><div class="rd-metric-value amber" id="rdPhases">0/10</div></div>';
+      bodyHTML += '<div class="rd-metric"><div class="rd-metric-label">Agentes</div><div class="rd-metric-value blue" id="rdActiveAgents">0/11</div></div>';
+      bodyHTML += '</div>';
+      bodyHTML += '</div>';
+
+      db.innerHTML = pipelineHTML + bodyHTML;
+
+      // Auto-animation sequence
+      function setAgentState(name, state, task) {
+        const card = document.getElementById('rdAgent' + name);
+        if (!card) return;
+        card.className = 'rd-agent-card ' + state;
+        card.querySelector('.rd-agent-status').textContent = state.toUpperCase();
+        const taskEl = document.getElementById('rdTask' + name);
+        if (taskEl) taskEl.textContent = task || '';
+      }
+
+      function addLog(time, agentName, msg) {
+        const log = document.getElementById('rdLog');
+        if (!log) return;
+        const entry = document.createElement('div');
+        entry.className = 'rd-log-entry';
+        entry.innerHTML = '<span class="time">' + time + '</span> <span class="agent">' + agentName + '</span> <span class="msg">' + msg + '</span>';
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function updateMetrics(tokens, minutes, cost, phasesCount, activeCount) {
+        const tkEl = document.getElementById('rdTokens');
+        const tmEl = document.getElementById('rdTime');
+        const csEl = document.getElementById('rdCost');
+        const phEl = document.getElementById('rdPhases');
+        const agEl = document.getElementById('rdActiveAgents');
+        if (tkEl) tkEl.textContent = tokens.toLocaleString();
+        if (tmEl) tmEl.textContent = String(Math.floor(minutes / 60)).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0');
+        if (csEl) csEl.textContent = '$' + cost.toFixed(2);
+        if (phEl) phEl.textContent = phasesCount + '/10';
+        if (agEl) agEl.textContent = activeCount + '/11';
+      }
+
+      function setPhase(idx, state) {
+        const el = document.getElementById('rdPhase' + idx);
+        if (!el) return;
+        el.classList.remove('active', 'completed');
+        if (state) el.classList.add(state);
+      }
+
+      // Second 0: all idle
+      updateMetrics(0, 0, 0, 0, 0);
+
+      // Second 1: Sofia + Pedro start
+      step4AnimTimer = setTimeout(() => {
+        setAgentState('Sofia', 'working', 'Analyzing complexity...');
+        setAgentState('Pedro', 'working', 'Coordinating sprint...');
+        addLog('10:00', 'Sofia', 'Analyzing project complexity');
+        addLog('10:00', 'Pedro', 'Initializing coordination');
+        setPhase(0, 'active');
+        updateMetrics(3200, 2, 0.42, 1, 2);
+      }, 1000);
+
+      // Second 2: Clara starts
+      setTimeout(() => {
+        setAgentState('Clara', 'working', 'Eliciting requirements...');
+        addLog('10:02', 'Clara', 'Eliciting requirements from context');
+        setPhase(0, 'completed'); setPhase(1, 'active');
+        updateMetrics(8400, 5, 1.10, 2, 3);
+      }, 2000);
+
+      // Second 3: Sofia -> CHECKPOINT, Rafael starts
+      setTimeout(() => {
+        setAgentState('Sofia', 'checkpoint', 'Awaiting approval...');
+        setAgentState('Rafael', 'working', 'Reviewing architecture...');
+        addLog('10:05', 'Sofia', 'Architecture ready for review');
+        addLog('10:05', 'Rafael', 'Starting code standards check');
+        setPhase(1, 'completed'); setPhase(2, 'active');
+        updateMetrics(15600, 8, 2.05, 3, 4);
+      }, 3000);
+
+      // Second 4: Bruno + Fernanda start coding
+      setTimeout(() => {
+        setAgentState('Sofia', 'completed', 'Architecture approved');
+        setAgentState('Clara', 'completed', '12 stories created');
+        setAgentState('Bruno', 'working', 'Implementing APIs...');
+        setAgentState('Fernanda', 'working', 'Building components...');
+        addLog('10:08', 'Bruno', 'API endpoints implementation');
+        addLog('10:08', 'Fernanda', 'React components scaffolding');
+        setPhase(2, 'completed'); setPhase(3, 'completed'); setPhase(4, 'active');
+        updateMetrics(28900, 12, 3.80, 5, 4);
+      }, 4000);
+
+      // Second 5: Quesia + Ricardo start
+      setTimeout(() => {
+        setAgentState('Pedro', 'completed', 'Sprint planned');
+        setAgentState('Quesia', 'working', 'Running tests...');
+        setAgentState('Ricardo', 'working', 'Compliance check...');
+        addLog('10:15', 'Quesia', 'Executing test suite (142 tests)');
+        addLog('10:15', 'Ricardo', 'BACEN compliance validation');
+        setPhase(4, 'completed'); setPhase(5, 'completed'); setPhase(6, 'active');
+        updateMetrics(45200, 18, 5.95, 7, 4);
+      }, 5000);
+
+      // Second 6: Marcos + Lucas + Daniela start
+      setTimeout(() => {
+        setAgentState('Bruno', 'completed', 'APIs implemented');
+        setAgentState('Fernanda', 'completed', 'UI complete');
+        setAgentState('Rafael', 'completed', 'Review approved');
+        setAgentState('Marcos', 'working', 'Deploying...');
+        setAgentState('Lucas', 'working', 'Setting SLOs...');
+        setAgentState('Daniela', 'working', 'Generating docs...');
+        addLog('10:22', 'Marcos', 'CI/CD pipeline + deploy');
+        addLog('10:22', 'Lucas', 'SLO definitions and monitoring');
+        addLog('10:22', 'Daniela', 'API docs generation');
+        setPhase(6, 'completed'); setPhase(7, 'completed'); setPhase(8, 'active');
+        updateMetrics(68500, 25, 9.02, 9, 5);
+      }, 6000);
+
+      // Second 7: All completed
+      setTimeout(() => {
+        allAgents.forEach(a => setAgentState(a.name, 'completed', 'Done'));
+        addLog('10:30', 'Pedro', 'Pipeline complete. All artifacts ready.');
+        setPhase(8, 'completed'); setPhase(9, 'completed');
+        updateMetrics(82300, 30, 10.85, 10, 0);
+
+        // Update active agents to show 11/11 completed
+        const agEl = document.getElementById('rdActiveAgents');
+        if (agEl) agEl.textContent = '11/11 \u2713';
+      }, 7000);
+    }
+
+    // STEP 5: A GOVERNANCA
+    function animateStep5() {
+      const gate = document.getElementById('checkpointGate');
+      const gateLines = [
+        '<span class="dim">\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550</span>',
+        '  <span class="amber">\u26a0\ufe0f  CHECKPOINT 5/9 \u2014 Revisao Arquitetural</span>',
+        '<span class="dim">\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550</span>',
+        '',
+        '  Arquiteto <span class="cyan">Sofia</span> validou:',
+        '  <span class="green">\u2714</span> Microservicos com DDD',
+        '  <span class="green">\u2714</span> Event-Driven Architecture',
+        '  <span class="green">\u2714</span> Compliance BACEN',
+        '',
+        '  <span class="amber">[S]</span>im   <span class="amber">[N]</span>ao   <span class="amber">[R]</span>evisar',
+        '',
+        '  <span class="dim">\u23f3 Aguardando sua decisao...</span><span class="typing-cursor-inline"></span>',
+      ];
+      gate.innerHTML = '';
+      gateLines.forEach((line, i) => {
+        const div = document.createElement('div');
+        div.className = 'terminal-line';
+        div.style.animationDelay = (0.1 + i * 0.12) + 's';
+        div.innerHTML = line;
+        gate.appendChild(div);
+      });
+
+      const audit = document.getElementById('auditJson');
+      audit.innerHTML = `{
+  <span class="key">"action"</span>: <span class="str">"checkpoint_approved"</span>,
+  <span class="key">"hash"</span>: <span class="str">"sha256:a3f8e2c91b..."</span>,
+  <span class="key">"reviewer"</span>: <span class="str">"user"</span>,
+  <span class="key">"timestamp"</span>: <span class="str">"2026-03-24T10:25:00Z"</span>,
+  <span class="key">"immutable"</span>: <span class="str">true</span>,
+  <span class="key">"compliance"</span>: <span class="str">"BACEN/LGPD/PCI-DSS"</span>
+}`;
+    }
+
+    // STEP 6: OS ENTREGAVEIS
+    function animateStep6() {
+      const deliverables = [
+        { name: 'Estimativa de Projeto', agent: 'Finance Advisor', exclusive: false },
+        { name: 'User Stories + Criterios de Aceite', agent: 'Business Analyst', exclusive: false },
+        { name: 'Parecer Regulatorio BACEN/LGPD', agent: 'Finance Advisor', exclusive: true },
+        { name: 'Arquitetura + ADRs', agent: 'Architect', exclusive: false },
+        { name: 'Sprint Backlog', agent: 'Tech Lead', exclusive: false },
+        { name: 'Estrategia de Testes', agent: 'QA Engineer', exclusive: false },
+        { name: 'Codigo Backend + Unit Tests', agent: 'Dev Backend', exclusive: false },
+        { name: 'Codigo Frontend + Component Tests', agent: 'Dev Frontend', exclusive: false },
+        { name: 'Relatorio de Qualidade', agent: 'QA Engineer', exclusive: false },
+        { name: 'Code Review Report', agent: 'Tech Lead', exclusive: true },
+        { name: 'API Docs + Runbook', agent: 'Tech Writer', exclusive: false },
+        { name: 'CI/CD Pipeline', agent: 'DevOps', exclusive: false },
+        { name: 'SLOs + Observabilidade', agent: 'SRE', exclusive: true },
+        { name: 'Audit Trail SHA-256', agent: 'Project Manager', exclusive: true },
+      ];
+      const grid = document.getElementById('deliverablesGrid');
+      grid.innerHTML = '';
+      deliverables.forEach((d, i) => {
+        const card = document.createElement('div');
+        card.className = 'deliverable-card' + (d.exclusive ? ' exclusive' : '');
+        card.style.animationDelay = (0.1 + i * 0.08) + 's';
+        let inner = `
+          <div class="deliverable-check">\u2713</div>
+          <div class="deliverable-info">
+            <div class="deliverable-name">${d.name}</div>
+            <div class="deliverable-agent">${d.agent}</div>
+          </div>
+        `;
+        if (d.exclusive) {
+          inner += '<div class="exclusive-badge">Exclusivo ForgeSquad</div>';
+        }
+        card.innerHTML = inner;
+        grid.appendChild(card);
+      });
+    }
+
+    // STEP 7: COMO ENTRA NO BANCO
+    function animateStep7() {
+      const roadmap = [
+        {
+          phase: 'Fase 1 — Sem Visibilidade',
+          title: 'Invisivel',
+          desc: 'ForgeSquad vive no repositorio como arquivos .md e .yaml. Nenhum comite de plataforma precisa aprovar. O time NTT DATA simplesmente passa a usar.'
+        },
+        {
+          phase: 'Fase 2 — POC Silenciosa (Q2)',
+          title: 'Validacao',
+          desc: '1 squad, 1 projeto real, 8 semanas. Metricas comparativas: com ForgeSquad vs sem. Investimento: zero adicional (incluso no BAU).'
+        },
+        {
+          phase: 'Fase 3 — Resultados (Q3)',
+          title: 'Escala',
+          desc: 'Apresentar metricas ao banco. 5 squads operando com governance. Audit trail demonstrando compliance.'
+        },
+        {
+          phase: 'Fase 4 — Padrao (Q4)',
+          title: 'Enterprise',
+          desc: 'ForgeSquad como padrao de engenharia NTT DATA no Itau. Escalavel para toda a operacao. Diferencial competitivo vs outros fornecedores.'
+        },
+      ];
+
+      const grid = document.getElementById('roadmapGrid');
+      grid.innerHTML = '';
+      roadmap.forEach((r, i) => {
+        const card = document.createElement('div');
+        card.className = 'roadmap-card';
+        card.style.animationDelay = (0.2 + i * 0.2) + 's';
+        card.innerHTML = `
+          <div class="roadmap-phase">${r.phase}</div>
+          <div class="roadmap-title">${r.title}</div>
+          <div class="roadmap-desc">${r.desc}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // STEP 8: O DIFERENCIAL
+    function animateStep8() {
+      const blocks = [
+        {
+          label: 'O que o Devin faz',
+          text: 'Codigo rapido para tarefas isoladas'
+        },
+        {
+          label: 'O que ForgeSquad adiciona',
+          text: 'Governance, compliance, metodologia, escala, audit trail, 11 agentes especializados'
+        },
+        {
+          label: 'O resultado',
+          text: 'NTT DATA entrega com a velocidade da AI E com a maturidade que o banco exige'
+        },
+      ];
+
+      const container = document.getElementById('finalBlocks');
+      container.innerHTML = '';
+      blocks.forEach((b, i) => {
+        const block = document.createElement('div');
+        block.className = 'final-block';
+        block.style.animationDelay = (0.2 + i * 0.2) + 's';
+        block.innerHTML = `
+          <div class="final-block-label">${b.label}</div>
+          <div class="final-block-text">${b.text}</div>
+        `;
+        container.appendChild(block);
+      });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    stepAnimated[1] = true;
+    animateStep(1);
+    resetAutoplay();
+  </script>
+</body>
+</html>
