@@ -1,15 +1,12 @@
 {
-  "// ForgeSquad v2.0 — Recommended VS Code Extensions": "",
   "recommendations": [
     "github.copilot",
     "github.copilot-chat",
     "continue.continue",
     "saoudrizwan.claude-dev",
-    "amazonwebservices.amazon-q-vscode",
     "redhat.vscode-yaml",
     "esbenp.prettier-vscode",
     "yzhang.markdown-all-in-one",
     "bierner.markdown-mermaid"
-  ],
-  "unwantedRecommendations": []
+  ]
 }

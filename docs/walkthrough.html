@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ForgeSquad — Walkthrough: E-Commerce Project</title>
+<title>ForgeSquad v2.0 — Walkthrough: E-Commerce Project</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
@@ -21,6 +21,7 @@
   .top-bar .brand { display:flex; align-items:center; gap:10px; }
   .top-bar .brand span { font-size:1.1rem; font-weight:700; color:#8b5cf6; }
   .top-bar .badge { padding:3px 10px; border-radius:12px; font-size:0.65rem; background:rgba(52,211,153,0.15); color:#6ee7b7; border:1px solid rgba(52,211,153,0.3); font-weight:600; }
+  .top-bar .version { padding:3px 10px; border-radius:12px; font-size:0.65rem; background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); font-weight:600; }
   .top-bar .step-label { color:#94a3b8; font-size:0.8rem; }
 
   /* Progress Timeline */
@@ -62,6 +63,7 @@
   .step-phase.qualidade { background:rgba(236,72,153,0.15); color:#f9a8d4; border:1px solid rgba(236,72,153,0.3); }
   .step-phase.deploy { background:rgba(52,211,153,0.15); color:#6ee7b7; border:1px solid rgba(52,211,153,0.3); }
   .step-phase.dashboard { background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); }
+  .step-phase.governance { background:rgba(251,191,36,0.15); color:#fbbf24; border:1px solid rgba(251,191,36,0.3); }
 
   .step-title { font-size:1.6rem; font-weight:700; color:#e2e8f0; margin-bottom:6px; }
   .step-desc { font-size:0.9rem; color:#94a3b8; line-height:1.5; }
@@ -92,6 +94,7 @@
   .terminal-body .file { color:#d2a8ff; }
   .terminal-body .highlight { color:#ffa657; }
   .terminal-body .prompt { color:#6e7681; }
+  .terminal-body .layer { color:#fbbf24; font-weight:600; }
 
   /* Typing animation */
   .type-line { opacity:0; animation:typeFade 0.3s ease forwards; }
@@ -134,6 +137,15 @@
   .agent-badge .dot.active { background:#34d399; animation:pulse 1.5s infinite; }
   .agent-badge span { font-size:0.72rem; color:#a5b4fc; font-weight:500; }
   @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* Layer Badge */
+  .layer-badge {
+    display:inline-flex; align-items:center; gap:6px; padding:4px 10px;
+    border-radius:6px; font-size:0.65rem; font-weight:600; margin:4px 4px 4px 0;
+  }
+  .layer-badge.governance { background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.25); color:#fbbf24; }
+  .layer-badge.squad { background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); color:#a5b4fc; }
+  .layer-badge.execution { background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.25); color:#6ee7b7; }
 
   /* Dashboard Mock */
   .dashboard-mock {
@@ -230,6 +242,7 @@
 <div class="top-bar">
   <div class="brand">
     <span>ForgeSquad</span>
+    <div class="version">v2.0</div>
     <div class="badge">WALKTHROUGH</div>
   </div>
   <div class="step-label" id="stepLabel">Etapa 1 de 12</div>
@@ -256,7 +269,7 @@ const steps = [
   {
     phase: "config", phaseLabel: "CONFIGURACAO",
     title: "1. Configuracao Inicial do Projeto",
-    desc: "Vamos configurar um novo projeto de e-commerce usando o ForgeSquad. Tudo comeca com um unico comando.",
+    desc: "ForgeSquad v2.0 — Arquitetura Enterprise com 3 camadas (Governance, Squad, Execution), 11 agentes e capabilities model. Suporta 375+ squads simultaneos.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
@@ -266,39 +279,62 @@ const steps = [
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="prompt">$</span> <span class="cmd">/forgesquad create</span></div>
           <br>
-          <div class="type-line" style="animation-delay:0.6s"><span class="agent">&#9881; Arquiteto:</span> Iniciando criacao de novo squad...</div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="layer">&#9670; Governance Layer:</span> Validando contexto organizacional...</div>
+          <div class="type-line" style="animation-delay:1.0s"><span class="agent">&#9881; Architect:</span> Iniciando criacao de novo squad...</div>
           <br>
-          <div class="type-line" style="animation-delay:1.0s"><span class="out">? Nome do projeto:</span> <span class="highlight">ecommerce-modernization</span></div>
-          <div class="type-line" style="animation-delay:1.4s"><span class="out">? Descricao:</span> <span class="highlight">Plataforma de e-commerce com catalogo, carrinho, checkout e pagamentos</span></div>
-          <div class="type-line" style="animation-delay:1.8s"><span class="out">? Stack preferida:</span> <span class="highlight">React + Node.js + PostgreSQL</span></div>
-          <div class="type-line" style="animation-delay:2.2s"><span class="out">? Compliance:</span> <span class="highlight">LGPD, PCI DSS</span></div>
-          <div class="type-line" style="animation-delay:2.6s"><span class="out">? Integracao de pagamento:</span> <span class="highlight">Stripe + Pix</span></div>
+          <div class="type-line" style="animation-delay:1.4s"><span class="out">? Nome do projeto:</span> <span class="highlight">ecommerce-modernization</span></div>
+          <div class="type-line" style="animation-delay:1.8s"><span class="out">? Descricao:</span> <span class="highlight">Plataforma de e-commerce com catalogo, carrinho, checkout e pagamentos</span></div>
+          <div class="type-line" style="animation-delay:2.2s"><span class="out">? Stack preferida:</span> <span class="highlight">React + Node.js + PostgreSQL</span></div>
+          <div class="type-line" style="animation-delay:2.6s"><span class="out">? Compliance:</span> <span class="highlight">LGPD, PCI DSS</span></div>
+          <div class="type-line" style="animation-delay:3.0s"><span class="out">? Integracao de pagamento:</span> <span class="highlight">Stripe + Pix</span></div>
           <br>
-          <div class="type-line" style="animation-delay:3.0s"><span class="success">&#10003;</span> Squad criado: <span class="file">squads/ecommerce-modernization/</span></div>
-          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> 11 agentes configurados</div>
-          <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> Pipeline de 10 fases ativado</div>
-          <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> Finance Advisor habilitado (LGPD + PCI DSS)</div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> Squad criado: <span class="file">squads/ecommerce-modernization/</span></div>
+          <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> 11 agentes configurados (capabilities model)</div>
+          <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> Pipeline de 10 fases, 24 steps, 9 checkpoints ativado</div>
+          <div class="type-line" style="animation-delay:4.6s"><span class="success">&#10003;</span> 3-layer architecture: Governance | Squad | Execution</div>
+          <div class="type-line" style="animation-delay:5.0s"><span class="success">&#10003;</span> Embedded intelligence: Software Architect (Fowler) + Cryptography</div>
           <br>
-          <div class="type-line" style="animation-delay:4.6s"><span class="agent">&#9881; Arquiteto:</span> Squad pronto! Execute <span class="cmd">/forgesquad run ecommerce-modernization</span> para iniciar.</div>
+          <div class="type-line" style="animation-delay:5.4s"><span class="agent">&#9881; Architect:</span> Squad pronto! Execute <span class="cmd">/forgesquad run ecommerce-modernization</span> para iniciar.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:0.95rem;color:#a5b4fc;margin:16px 0 8px;">Arquitetura v2.0 — 3 Camadas:</h3>
+      <div class="cards-grid" style="grid-template-columns:repeat(3, 1fr);">
+        <div class="wt-card amber">
+          <h4>&#9670; Governance Layer</h4>
+          <p>Invisivel e automatica. Valida compliance, quality gates e audit trail sem intervencao manual.</p>
+          <span class="tag">Invisivel</span><span class="tag">Automatica</span>
+        </div>
+        <div class="wt-card purple">
+          <h4>&#9670; Squad Layer</h4>
+          <p>11 agentes especializados: Architect, Tech Lead, BA, Dev Backend, Dev Frontend, QA, Tech Writer, PM, Finance Advisor, SRE, DevOps.</p>
+          <span class="tag">11 Agentes</span>
+        </div>
+        <div class="wt-card green">
+          <h4>&#9670; Execution Layer</h4>
+          <p>3 modos: inline, subagent, ralph-loop. Capabilities model resolve agentes para providers.</p>
+          <span class="tag">Inline</span><span class="tag">Subagent</span><span class="tag">Ralph Loop</span>
         </div>
       </div>
 
       <h3 style="font-size:0.95rem;color:#a5b4fc;margin:16px 0 8px;">Arquivos Gerados:</h3>
       <div class="file-tree">
         <span class="folder">squads/ecommerce-modernization/</span><br>
-        ├── <span class="new-file">squad.yaml</span> &nbsp;&nbsp;<span style="color:#6e7681;font-size:0.65rem;">// Configuracao do squad</span><br>
+        ├── <span class="new-file">squad.yaml</span> &nbsp;&nbsp;<span style="color:#6e7681;font-size:0.65rem;">// Configuracao do squad + capabilities</span><br>
         ├── <span class="folder">agents/</span><br>
         │&nbsp;&nbsp; ├── <span class="new-file">architect.agent.yaml</span><br>
         │&nbsp;&nbsp; ├── <span class="new-file">tech-lead.agent.yaml</span><br>
         │&nbsp;&nbsp; ├── <span class="new-file">ba.agent.yaml</span><br>
-        │&nbsp;&nbsp; ├── <span class="new-file">dev-backend.agent.yaml</span><br>
-        │&nbsp;&nbsp; ├── <span class="new-file">dev-frontend.agent.yaml</span><br>
-        │&nbsp;&nbsp; ├── <span class="new-file">qa.agent.yaml</span><br>
+        │&nbsp;&nbsp; ├── <span class="new-file">dev-backend.agent.yaml</span> &nbsp;<span style="color:#ffa657;font-size:0.65rem;">// Ralph Loop embedded</span><br>
+        │&nbsp;&nbsp; ├── <span class="new-file">dev-frontend.agent.yaml</span> &nbsp;<span style="color:#ffa657;font-size:0.65rem;">// Ralph Loop embedded</span><br>
+        │&nbsp;&nbsp; ├── <span class="new-file">qa-engineer.agent.yaml</span><br>
         │&nbsp;&nbsp; ├── <span class="new-file">tech-writer.agent.yaml</span><br>
         │&nbsp;&nbsp; ├── <span class="new-file">pm.agent.yaml</span><br>
-        │&nbsp;&nbsp; └── <span class="new-file">finance-advisor.agent.yaml</span><br>
+        │&nbsp;&nbsp; ├── <span class="new-file">finance-advisor.agent.yaml</span><br>
+        │&nbsp;&nbsp; ├── <span class="new-file">sre-engineer.agent.yaml</span><br>
+        │&nbsp;&nbsp; └── <span class="new-file">devops-engineer.agent.yaml</span><br>
         ├── <span class="folder">pipeline/</span><br>
-        │&nbsp;&nbsp; └── <span class="new-file">pipeline.yaml</span> &nbsp;&nbsp;<span style="color:#6e7681;font-size:0.65rem;">// 10 fases, 24 steps</span><br>
+        │&nbsp;&nbsp; └── <span class="new-file">pipeline.yaml</span> &nbsp;&nbsp;<span style="color:#6e7681;font-size:0.65rem;">// 10 fases, 24 steps, 9 checkpoints</span><br>
         ├── <span class="folder">output/</span> &nbsp;&nbsp;<span style="color:#6e7681;font-size:0.65rem;">// Artefatos serao gerados aqui</span><br>
         └── <span class="folder">reports/</span> &nbsp;&nbsp;<span style="color:#6e7681;font-size:0.65rem;">// Status reports do PM</span>
       </div>
@@ -308,42 +344,53 @@ const steps = [
   // ═══════════════ STEP 2: Execucao do Pipeline ═══════════════
   {
     phase: "config", phaseLabel: "EXECUCAO",
-    title: "2. Iniciando o Pipeline",
-    desc: "Com um comando, todos os 11 agentes comecam a trabalhar automaticamente no projeto.",
+    title: "2. Iniciando o Pipeline v2.0",
+    desc: "Com um comando, os 11 agentes iniciam via Execution Layer. A Governance Layer opera invisivelmente validando cada passo.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
           <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
-          <span class="terminal-title">Terminal — Pipeline Runner</span>
+          <span class="terminal-title">Terminal — Pipeline Runner v2.0</span>
         </div>
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="prompt">$</span> <span class="cmd">/forgesquad run ecommerce-modernization</span></div>
           <br>
-          <div class="type-line" style="animation-delay:0.6s"><span class="agent">&#128640; Pipeline Runner:</span> Iniciando pipeline para ecommerce-modernization...</div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="layer">&#9670; Governance Layer:</span> Inicializando validacao automatica...</div>
+          <div class="type-line" style="animation-delay:1.0s"><span class="agent">&#128640; Pipeline Runner:</span> Iniciando pipeline v2.0 — 10 fases, 24 steps, 9 checkpoints</div>
           <br>
-          <div class="type-line" style="animation-delay:1.0s">&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617; <span class="out">Carregando contexto da empresa...</span></div>
-          <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> _memory/company.md carregado</div>
-          <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> _memory/tech-stack.md carregado</div>
-          <div class="type-line" style="animation-delay:2.2s"><span class="success">&#10003;</span> _memory/preferences.md carregado</div>
+          <div class="type-line" style="animation-delay:1.4s">&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617;&#9617; <span class="out">Carregando contexto da empresa...</span></div>
+          <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> _memory/company.md carregado</div>
+          <div class="type-line" style="animation-delay:2.2s"><span class="success">&#10003;</span> _memory/tech-stack.md carregado</div>
+          <div class="type-line" style="animation-delay:2.6s"><span class="success">&#10003;</span> _memory/preferences.md carregado</div>
           <br>
-          <div class="type-line" style="animation-delay:2.6s"><span class="agent">&#127974; Finance Advisor:</span> Iniciando Fase 1 — <span class="highlight">Estimativa</span></div>
-          <div class="type-line" style="animation-delay:3.0s"><span class="out">Analisando escopo do projeto...</span></div>
-          <div class="type-line" style="animation-delay:3.4s"><span class="out">Calculando esforco por modulo...</span></div>
-          <div class="type-line" style="animation-delay:3.8s"><span class="out">Validando compliance LGPD + PCI DSS...</span></div>
+          <div class="type-line" style="animation-delay:3.0s"><span class="out">&#9670; Capabilities Model:</span> <span class="highlight">Resolving agents to providers...</span></div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> 11 agents resolved | Execution modes: inline, subagent, ralph-loop</div>
+          <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> Embedded intelligence: Fowler (architecture) + Cryptography (security)</div>
+          <br>
+          <div class="type-line" style="animation-delay:4.2s"><span class="agent">&#127974; Finance Advisor:</span> Iniciando Fase 1 — <span class="highlight">Estimativa</span></div>
+          <div class="type-line" style="animation-delay:4.6s"><span class="out">Execution mode: </span><span class="highlight">inline</span> <span class="out">| Analisando escopo...</span></div>
         </div>
       </div>
 
-      <h3 style="font-size:0.95rem;color:#a5b4fc;margin:16px 0 8px;">Agentes Ativados:</h3>
+      <h3 style="font-size:0.95rem;color:#a5b4fc;margin:16px 0 8px;">Squad Layer — 11 Agentes Ativados:</h3>
       <div style="display:flex;flex-wrap:wrap;gap:4px;">
-        <div class="agent-badge"><div class="dot active"></div><span>Arquiteto</span></div>
+        <div class="agent-badge"><div class="dot active"></div><span>Architect</span></div>
         <div class="agent-badge"><div class="dot active"></div><span>Finance Advisor</span></div>
-        <div class="agent-badge"><div class="dot"></div><span>Analista de Negocios</span></div>
+        <div class="agent-badge"><div class="dot"></div><span>Business Analyst</span></div>
         <div class="agent-badge"><div class="dot"></div><span>Tech Lead</span></div>
         <div class="agent-badge"><div class="dot"></div><span>Dev Backend</span></div>
         <div class="agent-badge"><div class="dot"></div><span>Dev Frontend</span></div>
         <div class="agent-badge"><div class="dot"></div><span>QA Engineer</span></div>
         <div class="agent-badge"><div class="dot"></div><span>Tech Writer</span></div>
-        <div class="agent-badge"><div class="dot"></div><span>Gerente de Projeto</span></div>
+        <div class="agent-badge"><div class="dot"></div><span>Project Manager</span></div>
+        <div class="agent-badge"><div class="dot"></div><span>SRE Engineer</span></div>
+        <div class="agent-badge"><div class="dot"></div><span>DevOps Engineer</span></div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="layer-badge governance">&#9670; Governance — Invisivel</div>
+        <div class="layer-badge squad">&#9670; Squad — 11 Agentes</div>
+        <div class="layer-badge execution">&#9670; Execution — 3 Modos</div>
       </div>
     `
   },
@@ -352,7 +399,7 @@ const steps = [
   {
     phase: "estimativa", phaseLabel: "FASE 1 — ESTIMATIVA",
     title: "3. Estimativa de Custo e Esforco",
-    desc: "O Finance Advisor analisa o escopo e gera estimativas detalhadas com validacao de compliance.",
+    desc: "O Finance Advisor analisa o escopo e gera estimativas detalhadas. 11 agentes serao alocados. Governance Layer valida automaticamente.",
     content: `
       <div class="cols-2">
         <div>
@@ -362,7 +409,7 @@ const steps = [
               <span class="size">3.2 KB</span>
             </div>
             <div class="artifact-body">
-              <strong style="color:#fbbf24;">Estimativa — E-Commerce Platform</strong><br><br>
+              <strong style="color:#fbbf24;">Estimativa — E-Commerce Platform (v2.0)</strong><br><br>
               <strong style="color:#e2e8f0;">Modulos:</strong><br>
               &#9670; Catalogo de Produtos: 120h<br>
               &#9670; Carrinho de Compras: 80h<br>
@@ -372,6 +419,7 @@ const steps = [
               &#9670; Compliance LGPD: 40h<br>
               &#9670; Integracao PCI DSS: 50h<br><br>
               <strong style="color:#e2e8f0;">Total: 610h estimadas</strong><br>
+              <strong style="color:#e2e8f0;">Squad: 11 agentes (3-layer architecture)</strong><br>
               <span style="color:#3fb950;">Custo squad IA: ~R$ 45.000</span><br>
               <span style="color:#f87171;">Custo consultoria tradicional: ~R$ 180.000</span><br><br>
               <strong style="color:#6ee7b7;">Economia: 75% (R$ 135.000)</strong>
@@ -380,8 +428,8 @@ const steps = [
         </div>
         <div>
           <div class="approval-gate">
-            <h3>&#128276; CHECKPOINT — Aprovacao de Orcamento</h3>
-            <p>O Finance Advisor gerou a estimativa. Deseja aprovar o orcamento para iniciar o projeto?</p>
+            <h3>&#128276; CHECKPOINT 1/9 — Aprovacao de Orcamento</h3>
+            <p>O Finance Advisor gerou a estimativa para 11 agentes. Governance Layer registrou o checkpoint. Deseja aprovar?</p>
             <div class="approval-btns">
               <button class="btn-approve yes" onclick="next()">&#10003; Aprovar</button>
               <button class="btn-approve edit">&#9998; Ajustar</button>
@@ -389,7 +437,7 @@ const steps = [
             </div>
           </div>
           <div style="margin-top:12px;padding:10px;background:rgba(52,211,153,0.05);border-radius:8px;border:1px solid rgba(52,211,153,0.15);">
-            <p style="font-size:0.72rem;color:#6ee7b7;"><strong>Audit Trail:</strong> Decisao registrada com SHA-256. Reviewer: bruno.oliveira | Timestamp: 2026-03-18T10:15:00Z</p>
+            <p style="font-size:0.72rem;color:#6ee7b7;"><strong>Governance Layer:</strong> Checkpoint registrado com SHA-256. Reviewer: bruno.oliveira | Timestamp: 2026-03-18T10:15:00Z</p>
           </div>
         </div>
       </div>
@@ -400,24 +448,26 @@ const steps = [
   {
     phase: "requisitos", phaseLabel: "FASE 2 — REQUISITOS",
     title: "4. Elicitacao de Requisitos",
-    desc: "O Analista de Negocios gera user stories e criterios de aceite automaticamente, utilizando a capability de requirements.",
+    desc: "O Business Analyst declara capability 'requirements' — o Execution Layer resolve para o provider correto e executa via modo inline.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
           <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
-          <span class="terminal-title">Pipeline — Fase 2: Requisitos</span>
+          <span class="terminal-title">Pipeline v2.0 — Fase 2: Requisitos</span>
         </div>
         <div class="terminal-body">
-          <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#128203; Analista de Negocios:</span> Gerando user stories para e-commerce...</div>
-          <div class="type-line" style="animation-delay:0.6s"><span class="out">Capability: </span><span class="highlight">requirements</span> <span class="out">— gerando user stories e criterios</span></div>
+          <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#128203; Business Analyst:</span> Gerando user stories para e-commerce...</div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="out">Capability: </span><span class="highlight">requirements</span> <span class="out">| Execution mode: </span><span class="highlight">inline</span></div>
+          <div class="type-line" style="animation-delay:1.0s"><span class="layer">&#9670; Governance:</span> Validando formato de artefatos...</div>
           <br>
-          <div class="type-line" style="animation-delay:1.0s"><span class="success">&#10003;</span> 28 user stories geradas</div>
-          <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> 84 criterios de aceite definidos</div>
-          <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> 5 epicos mapeados</div>
+          <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> 28 user stories geradas</div>
+          <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> 84 criterios de aceite definidos</div>
+          <div class="type-line" style="animation-delay:2.2s"><span class="success">&#10003;</span> 5 epicos mapeados</div>
           <br>
-          <div class="type-line" style="animation-delay:2.2s"><span class="agent">&#9881; Arquiteto:</span> Validando requisitos contra restricoes tecnicas...</div>
-          <div class="type-line" style="animation-delay:2.6s"><span class="success">&#10003;</span> Todos os requisitos sao viaveis com a stack selecionada</div>
-          <div class="type-line" style="animation-delay:3.0s"><span class="warn">&#9888;</span> Recomendacao: Adicionar cache Redis para catalogo (>10k produtos)</div>
+          <div class="type-line" style="animation-delay:2.6s"><span class="agent">&#9881; Architect:</span> Validando requisitos contra restricoes tecnicas...</div>
+          <div class="type-line" style="animation-delay:3.0s"><span class="out">Embedded intelligence: </span><span class="highlight">Software Architect (Fowler)</span> <span class="out">— auto-injected</span></div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> Todos os requisitos sao viaveis com a stack selecionada</div>
+          <div class="type-line" style="animation-delay:3.8s"><span class="warn">&#9888;</span> Recomendacao: Adicionar cache Redis para catalogo (>10k produtos)</div>
         </div>
       </div>
 
@@ -426,17 +476,17 @@ const steps = [
         <div class="wt-card green">
           <h4>user-stories.md</h4>
           <p>28 user stories organizadas em 5 epicos: Catalogo, Carrinho, Checkout, Auth, Admin</p>
-          <span class="tag">Requirements</span><span class="tag">BA</span>
+          <span class="tag">Requirements</span><span class="tag">BA</span><span class="tag">Inline</span>
         </div>
         <div class="wt-card green">
           <h4>acceptance-criteria.md</h4>
           <p>84 criterios de aceite com formato Given/When/Then para cada user story</p>
-          <span class="tag">BA</span>
+          <span class="tag">BA</span><span class="tag">Capabilities</span>
         </div>
         <div class="wt-card green">
           <h4>domain-model.md</h4>
           <p>Modelo de dominio: Product, Cart, Order, Payment, User, Address, Review</p>
-          <span class="tag">Arquiteto</span><span class="tag">BA</span>
+          <span class="tag">Architect</span><span class="tag">Fowler Intelligence</span>
         </div>
       </div>
     `
@@ -446,7 +496,7 @@ const steps = [
   {
     phase: "arquitetura", phaseLabel: "FASE 3 — ARQUITETURA",
     title: "5. Design de Arquitetura",
-    desc: "O Arquiteto projeta a solucao completa: microservicos, banco de dados, APIs e ADRs.",
+    desc: "O Architect projeta a solucao com Software Architect (Fowler) intelligence auto-injetada. Padroes enterprise aplicados automaticamente.",
     content: `
       <div class="cols-2">
         <div>
@@ -456,7 +506,8 @@ const steps = [
               <span class="size">8.7 KB</span>
             </div>
             <div class="artifact-body">
-              <strong style="color:#c4b5fd;">Arquitetura — E-Commerce Platform</strong><br><br>
+              <strong style="color:#c4b5fd;">Arquitetura — E-Commerce Platform (v2.0)</strong><br><br>
+              <span style="color:#ffa657;font-size:0.65rem;">&#9670; Embedded: Software Architect (Fowler) intelligence</span><br><br>
               <strong style="color:#e2e8f0;">Microservicos:</strong><br>
               &#9670; product-service (Node.js + PostgreSQL)<br>
               &#9670; cart-service (Node.js + Redis)<br>
@@ -467,25 +518,32 @@ const steps = [
               <strong style="color:#e2e8f0;">Frontend:</strong> React + Next.js + Tailwind<br>
               <strong style="color:#e2e8f0;">API Gateway:</strong> Kong / Express Gateway<br>
               <strong style="color:#e2e8f0;">Infra:</strong> Docker + Kubernetes (EKS)<br>
-              <strong style="color:#e2e8f0;">CI/CD:</strong> GitHub Actions
+              <strong style="color:#e2e8f0;">CI/CD:</strong> GitHub Actions<br>
+              <strong style="color:#e2e8f0;">Observability:</strong> Prometheus + Grafana (SRE)
             </div>
           </div>
         </div>
         <div>
-          <h3 style="font-size:0.95rem;color:#a5b4fc;margin-bottom:8px;">ADRs Gerados:</h3>
+          <h3 style="font-size:0.95rem;color:#a5b4fc;margin-bottom:8px;">ADRs Gerados (Fowler Patterns):</h3>
           <div class="cards-grid" style="grid-template-columns:1fr;">
             <div class="wt-card purple">
               <h4>ADR-001: Microservicos vs Monolito</h4>
-              <p>Decisao: Microservicos. Razao: Escalabilidade independente por modulo, times autonomos.</p>
+              <p>Decisao: Microservicos. Razao: Escalabilidade independente por modulo, times autonomos. Fowler: Strangler Fig Pattern.</p>
+              <span class="tag">Fowler Intelligence</span>
             </div>
             <div class="wt-card purple">
               <h4>ADR-002: PostgreSQL + Redis</h4>
-              <p>Decisao: PostgreSQL para persistencia, Redis para cache e sessoes. Razao: Performance.</p>
+              <p>Decisao: PostgreSQL para persistencia, Redis para cache e sessoes. Razao: Performance. Fowler: CQRS para catalogo.</p>
+              <span class="tag">Fowler Intelligence</span>
             </div>
             <div class="wt-card purple">
               <h4>ADR-003: Stripe + Pix Nativo</h4>
-              <p>Decisao: Stripe para cartoes, API Pix direta para pagamentos instantaneos. PCI DSS via Stripe.</p>
+              <p>Decisao: Stripe para cartoes, API Pix direta para pagamentos instantaneos. PCI DSS via Stripe. Cryptography intelligence auto-applied.</p>
+              <span class="tag">Crypto Intelligence</span>
             </div>
+          </div>
+          <div style="margin-top:8px;padding:8px;background:rgba(251,191,36,0.05);border-radius:6px;border:1px solid rgba(251,191,36,0.15);">
+            <p style="font-size:0.68rem;color:#fbbf24;">&#9670; Governance Layer: Architecture checkpoint validado. SRE Engineer alocado para observability.</p>
           </div>
         </div>
       </div>
@@ -495,33 +553,40 @@ const steps = [
   // ═══════════════ STEP 6: Fase 5 - Implementacao ═══════════════
   {
     phase: "implementacao", phaseLabel: "FASE 5 — IMPLEMENTACAO",
-    title: "6. Implementacao Automatica",
-    desc: "Dev Backend e Dev Frontend implementam o codigo via Ralph Loop — iteracoes autonomas com quality gates a cada ciclo.",
+    title: "6. Implementacao com Ralph Loop Embedded",
+    desc: "Dev Backend e Dev Frontend implementam via Ralph Loop — agora embedded diretamente nos agentes developers. Iteracoes autonomas com quality gates a cada ciclo.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
           <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
-          <span class="terminal-title">Pipeline — Fase 5: Implementacao</span>
+          <span class="terminal-title">Pipeline v2.0 — Fase 5: Implementacao (Ralph Loop)</span>
         </div>
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#128295; Dev Backend:</span> Implementando product-service...</div>
-          <div class="type-line" style="animation-delay:0.6s"><span class="out">Ralph Loop: </span><span class="highlight">iteracao 1/10</span> <span class="out">— implementando US-001</span></div>
-          <div class="type-line" style="animation-delay:1.0s"><span class="success">&#10003;</span> <span class="file">product-service/</span> — 12 arquivos, 1.840 linhas</div>
-          <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> <span class="file">cart-service/</span> — 8 arquivos, 920 linhas</div>
-          <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> <span class="file">order-service/</span> — 14 arquivos, 2.100 linhas</div>
-          <div class="type-line" style="animation-delay:2.2s"><span class="success">&#10003;</span> <span class="file">payment-service/</span> — 10 arquivos, 1.560 linhas (PCI DSS compliant)</div>
-          <div class="type-line" style="animation-delay:2.6s"><span class="success">&#10003;</span> <span class="file">auth-service/</span> — 9 arquivos, 1.200 linhas</div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="out">Execution mode: </span><span class="highlight">ralph-loop</span> <span class="out">(embedded in developer agent)</span></div>
+          <div class="type-line" style="animation-delay:1.0s"><span class="out">Ralph Loop: </span><span class="highlight">iteracao 1/10</span> <span class="out">— write &#8594; test &#8594; fix &#8594; validate</span></div>
+          <div class="type-line" style="animation-delay:1.4s"><span class="success">&#10003;</span> <span class="file">product-service/</span> — 12 arquivos, 1.840 linhas</div>
+          <div class="type-line" style="animation-delay:1.8s"><span class="success">&#10003;</span> <span class="file">cart-service/</span> — 8 arquivos, 920 linhas</div>
+          <div class="type-line" style="animation-delay:2.2s"><span class="success">&#10003;</span> <span class="file">order-service/</span> — 14 arquivos, 2.100 linhas</div>
+          <div class="type-line" style="animation-delay:2.6s"><span class="success">&#10003;</span> <span class="file">payment-service/</span> — 10 arquivos, 1.560 linhas (PCI DSS compliant)</div>
+          <div class="type-line" style="animation-delay:3.0s"><span class="success">&#10003;</span> <span class="file">auth-service/</span> — 9 arquivos, 1.200 linhas</div>
           <br>
-          <div class="type-line" style="animation-delay:3.0s"><span class="agent">&#127912; Dev Frontend:</span> Implementando UI com React + Next.js...</div>
-          <div class="type-line" style="animation-delay:3.4s"><span class="out">Quality gates: </span><span class="highlight">typecheck ✓ lint ✓ test ✓</span> <span class="out">— story completa</span></div>
-          <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> <span class="file">frontend/</span> — 42 componentes, 6.200 linhas</div>
-          <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> Paginas: Home, Catalogo, Produto, Carrinho, Checkout, Login, Admin</div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="agent">&#127912; Dev Frontend:</span> Implementando UI com React + Next.js...</div>
+          <div class="type-line" style="animation-delay:3.8s"><span class="out">Ralph Loop embedded: </span><span class="highlight">write &#8594; typecheck &#8594; lint &#8594; test &#8594; validate</span></div>
+          <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> <span class="file">frontend/</span> — 42 componentes, 6.200 linhas</div>
+          <div class="type-line" style="animation-delay:4.6s"><span class="success">&#10003;</span> Paginas: Home, Catalogo, Produto, Carrinho, Checkout, Login, Admin</div>
           <br>
-          <div class="type-line" style="animation-delay:4.6s"><span class="success">&#128640;</span> <strong style="color:#e2e8f0;">Total: 13.820 linhas de codigo em 95 arquivos</strong></div>
+          <div class="type-line" style="animation-delay:5.0s"><span class="layer">&#9670; Governance:</span> Implementation checkpoint validated</div>
+          <div class="type-line" style="animation-delay:5.4s"><span class="success">&#128640;</span> <strong style="color:#e2e8f0;">Total: 13.820 linhas de codigo em 95 arquivos</strong></div>
         </div>
       </div>
 
-      <h3 style="font-size:0.95rem;color:#a5b4fc;margin:16px 0 8px;">Estrutura do Codigo Gerado:</h3>
+      <h3 style="font-size:0.95rem;color:#a5b4fc;margin:16px 0 8px;">Ralph Loop — Embedded nos Developers:</h3>
+      <div style="padding:12px;background:rgba(255,166,87,0.05);border:1px solid rgba(255,166,87,0.2);border-radius:8px;margin-bottom:12px;">
+        <p style="font-size:0.78rem;color:#ffa657;margin-bottom:6px;font-weight:600;">v2.0: Ralph Loop nao e mais uma skill separada — esta embedded diretamente nos agentes Dev Backend e Dev Frontend.</p>
+        <p style="font-size:0.72rem;color:#8b949e;">Ciclo: Write Code &#8594; Run Tests &#8594; Fix Failures &#8594; Validate Quality Gates &#8594; Next Story</p>
+      </div>
+
       <div class="file-tree">
         <span class="folder">output/code/</span><br>
         ├── <span class="folder">services/</span><br>
@@ -544,31 +609,34 @@ const steps = [
   // ═══════════════ STEP 7: Fase 6 - Qualidade ═══════════════
   {
     phase: "qualidade", phaseLabel: "FASE 6 — QUALIDADE",
-    title: "7. Testes e Qualidade",
-    desc: "O QA Engineer executa testes automaticos, analise de seguranca e valida cobertura.",
+    title: "7. Testes, Qualidade e SRE Validation",
+    desc: "QA Engineer executa testes automaticos. SRE Engineer valida observability, resilience e performance. Governance Layer monitora quality gates.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
           <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
-          <span class="terminal-title">Pipeline — Fase 6: Qualidade</span>
+          <span class="terminal-title">Pipeline v2.0 — Fase 6: Qualidade + SRE</span>
         </div>
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#128269; QA Engineer:</span> Executando suite completa de testes...</div>
+          <div class="type-line" style="animation-delay:0.4s"><span class="out">Execution mode: </span><span class="highlight">subagent</span></div>
           <br>
-          <div class="type-line" style="animation-delay:0.6s"><span class="out">&#9654; Testes Unitarios........</span> <span class="success">187 passed</span> <span class="out">| 0 failed</span></div>
-          <div class="type-line" style="animation-delay:1.0s"><span class="out">&#9654; Testes de Integracao....</span> <span class="success">42 passed</span> <span class="out">| 0 failed</span></div>
-          <div class="type-line" style="animation-delay:1.4s"><span class="out">&#9654; Testes E2E (Cypress)...</span> <span class="success">28 passed</span> <span class="out">| 0 failed</span></div>
-          <div class="type-line" style="animation-delay:1.8s"><span class="out">&#9654; Testes de Contrato.....</span> <span class="success">15 passed</span> <span class="out">| 0 failed</span></div>
-          <div class="type-line" style="animation-delay:2.2s"><span class="out">&#9654; Security Scan...........</span> <span class="success">0 vulnerabilities</span></div>
-          <div class="type-line" style="animation-delay:2.6s"><span class="out">&#9654; Performance (k6).......</span> <span class="success">p95 &lt; 200ms</span></div>
+          <div class="type-line" style="animation-delay:0.8s"><span class="out">&#9654; Testes Unitarios........</span> <span class="success">187 passed</span> <span class="out">| 0 failed</span></div>
+          <div class="type-line" style="animation-delay:1.2s"><span class="out">&#9654; Testes de Integracao....</span> <span class="success">42 passed</span> <span class="out">| 0 failed</span></div>
+          <div class="type-line" style="animation-delay:1.6s"><span class="out">&#9654; Testes E2E (Cypress)...</span> <span class="success">28 passed</span> <span class="out">| 0 failed</span></div>
+          <div class="type-line" style="animation-delay:2.0s"><span class="out">&#9654; Testes de Contrato.....</span> <span class="success">15 passed</span> <span class="out">| 0 failed</span></div>
+          <div class="type-line" style="animation-delay:2.4s"><span class="out">&#9654; Security Scan...........</span> <span class="success">0 vulnerabilities</span></div>
+          <div class="type-line" style="animation-delay:2.8s"><span class="out">&#9654; Performance (k6).......</span> <span class="success">p95 &lt; 200ms</span></div>
           <br>
-          <div class="type-line" style="animation-delay:3.0s"><span class="out">Skill ativada: </span><span class="highlight">SonarQube</span></div>
-          <div class="type-line" style="animation-delay:3.4s"><span class="success">&#10003;</span> Code coverage: <strong style="color:#e2e8f0;">89%</strong></div>
-          <div class="type-line" style="animation-delay:3.8s"><span class="success">&#10003;</span> Code smells: <strong style="color:#e2e8f0;">3</strong> (minor)</div>
-          <div class="type-line" style="animation-delay:4.2s"><span class="success">&#10003;</span> Security hotspots: <strong style="color:#e2e8f0;">0</strong></div>
-          <div class="type-line" style="animation-delay:4.6s"><span class="success">&#10003;</span> Duplicacao: <strong style="color:#e2e8f0;">1.2%</strong></div>
+          <div class="type-line" style="animation-delay:3.2s"><span class="agent">&#128736; SRE Engineer:</span> Validando observability e resilience...</div>
+          <div class="type-line" style="animation-delay:3.6s"><span class="success">&#10003;</span> Health checks configurados em todos os servicos</div>
+          <div class="type-line" style="animation-delay:4.0s"><span class="success">&#10003;</span> Prometheus metrics endpoints: <strong style="color:#e2e8f0;">6/6 servicos</strong></div>
+          <div class="type-line" style="animation-delay:4.4s"><span class="success">&#10003;</span> Grafana dashboards: latency, errors, throughput, saturation</div>
+          <div class="type-line" style="animation-delay:4.8s"><span class="success">&#10003;</span> Circuit breakers: Hystrix pattern em payment-service</div>
+          <div class="type-line" style="animation-delay:5.2s"><span class="success">&#10003;</span> SLOs definidos: 99.9% availability, p99 &lt; 500ms</div>
           <br>
-          <div class="type-line" style="animation-delay:5.0s"><span class="success">&#128640;</span> <strong style="color:#3fb950;">Quality Gate: PASSED</strong></div>
+          <div class="type-line" style="animation-delay:5.6s"><span class="layer">&#9670; Governance:</span> Quality checkpoint 5/9 validated</div>
+          <div class="type-line" style="animation-delay:6.0s"><span class="success">&#128640;</span> <strong style="color:#3fb950;">Quality Gate: PASSED</strong></div>
         </div>
       </div>
 
@@ -576,7 +644,7 @@ const steps = [
         <div class="wt-card pink">
           <h4>272 Testes</h4>
           <p>Unitarios (187), Integracao (42), E2E (28), Contrato (15)</p>
-          <span class="tag">100% pass</span>
+          <span class="tag">100% pass</span><span class="tag">QA Engineer</span>
         </div>
         <div class="wt-card green">
           <h4>89% Cobertura</h4>
@@ -588,6 +656,11 @@ const steps = [
           <p>SAST + DAST + dependency audit. Zero issues criticos ou altos.</p>
           <span class="tag">Security</span>
         </div>
+        <div class="wt-card blue">
+          <h4>SRE Validated</h4>
+          <p>Health checks, Prometheus, Grafana, circuit breakers, SLOs definidos.</p>
+          <span class="tag">SRE Engineer</span><span class="tag">Observability</span>
+        </div>
       </div>
     `
   },
@@ -596,23 +669,23 @@ const steps = [
   {
     phase: "deploy", phaseLabel: "FASE 8 — DOCUMENTACAO",
     title: "8. Documentacao Automatica",
-    desc: "O Tech Writer gera toda a documentacao tecnica automaticamente a partir do codigo e decisoes.",
+    desc: "O Tech Writer gera toda a documentacao tecnica automaticamente. DevOps Engineer gera runbooks de infra. Execution mode: inline.",
     content: `
       <div class="cards-grid">
         <div class="wt-card purple">
           <h4>api-docs.md</h4>
-          <p>OpenAPI 3.0 spec para todos os 5 microservicos. 47 endpoints documentados com exemplos.</p>
-          <span class="tag">OpenAPI</span><span class="tag">Swagger</span>
+          <p>OpenAPI 3.0 spec para todos os 6 microservicos. 52 endpoints documentados com exemplos.</p>
+          <span class="tag">OpenAPI</span><span class="tag">Tech Writer</span>
         </div>
         <div class="wt-card green">
           <h4>runbook.md</h4>
           <p>Guia de operacoes: deploy, rollback, monitoring, alertas, escalacao, disaster recovery.</p>
-          <span class="tag">DevOps</span>
+          <span class="tag">DevOps Engineer</span><span class="tag">SRE Engineer</span>
         </div>
         <div class="wt-card blue">
           <h4>architecture-guide.md</h4>
-          <p>Guia de arquitetura com diagramas C4, decisoes (ADRs), padroes, e trade-offs.</p>
-          <span class="tag">C4 Model</span>
+          <p>Guia de arquitetura com diagramas C4, ADRs, Fowler patterns e trade-offs.</p>
+          <span class="tag">C4 Model</span><span class="tag">Fowler Intelligence</span>
         </div>
         <div class="wt-card amber">
           <h4>onboarding-guide.md</h4>
@@ -620,19 +693,19 @@ const steps = [
           <span class="tag">Onboarding</span>
         </div>
         <div class="wt-card pink">
-          <h4>release-notes.md</h4>
-          <p>Changelog detalhado com todas as features, fixes e breaking changes da v1.0.</p>
-          <span class="tag">Changelog</span>
+          <h4>sre-handbook.md</h4>
+          <p>SLOs, SLIs, alerting rules, incident response playbooks, runbooks de escalacao.</p>
+          <span class="tag">SRE Engineer</span><span class="tag">Observability</span>
         </div>
         <div class="wt-card purple">
           <h4>compliance-report.md</h4>
-          <p>Relatorio de conformidade LGPD e PCI DSS com checklist de validacao.</p>
-          <span class="tag">LGPD</span><span class="tag">PCI DSS</span>
+          <p>Relatorio de conformidade LGPD e PCI DSS com checklist de validacao e cryptography audit.</p>
+          <span class="tag">LGPD</span><span class="tag">PCI DSS</span><span class="tag">Crypto Intelligence</span>
         </div>
       </div>
 
       <div style="margin-top:12px;padding:12px;background:rgba(99,102,241,0.05);border-radius:8px;border:1px solid rgba(99,102,241,0.15);">
-        <p style="font-size:0.8rem;color:#a5b4fc;"><strong>Total:</strong> 6 documentos, 142 paginas geradas automaticamente pelo Tech Writer sem intervencao humana.</p>
+        <p style="font-size:0.8rem;color:#a5b4fc;"><strong>Total:</strong> 6 documentos, 158 paginas geradas por Tech Writer + DevOps Engineer + SRE Engineer. Governance Layer validou completude.</p>
       </div>
     `
   },
@@ -640,37 +713,44 @@ const steps = [
   // ═══════════════ STEP 9: Fase 9 - Compliance ═══════════════
   {
     phase: "estimativa", phaseLabel: "FASE 9 — COMPLIANCE",
-    title: "9. Validacao de Compliance",
-    desc: "O Finance Advisor valida LGPD e PCI DSS em todo o codigo e documentacao gerados.",
+    title: "9. Validacao de Compliance + Cryptography",
+    desc: "Finance Advisor valida LGPD e PCI DSS. Embedded Cryptography intelligence auto-injetada verifica criptografia em todo o codigo.",
     content: `
       <div class="terminal">
         <div class="terminal-header">
           <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
-          <span class="terminal-title">Pipeline — Fase 9: Compliance</span>
+          <span class="terminal-title">Pipeline v2.0 — Fase 9: Compliance + Crypto</span>
         </div>
         <div class="terminal-body">
           <div class="type-line" style="animation-delay:0.2s"><span class="agent">&#127974; Finance Advisor:</span> Validando compliance...</div>
+          <div class="type-line" style="animation-delay:0.6s"><span class="out">Embedded intelligence: </span><span class="highlight">Cryptography</span> <span class="out">— auto-injected para validacao</span></div>
           <br>
-          <div class="type-line" style="animation-delay:0.6s"><span class="out">&#128274; LGPD Validation:</span></div>
-          <div class="type-line" style="animation-delay:1.0s">&nbsp;&nbsp;<span class="success">&#10003;</span> Consentimento de dados: implementado</div>
-          <div class="type-line" style="animation-delay:1.4s">&nbsp;&nbsp;<span class="success">&#10003;</span> Direito ao esquecimento: endpoint DELETE /users/:id</div>
-          <div class="type-line" style="animation-delay:1.8s">&nbsp;&nbsp;<span class="success">&#10003;</span> Portabilidade de dados: endpoint GET /users/:id/export</div>
-          <div class="type-line" style="animation-delay:2.2s">&nbsp;&nbsp;<span class="success">&#10003;</span> Criptografia de dados sensiveis: AES-256</div>
-          <div class="type-line" style="animation-delay:2.6s">&nbsp;&nbsp;<span class="success">&#10003;</span> Log de acesso a dados pessoais: ativo</div>
+          <div class="type-line" style="animation-delay:1.0s"><span class="out">&#128274; LGPD Validation:</span></div>
+          <div class="type-line" style="animation-delay:1.4s">&nbsp;&nbsp;<span class="success">&#10003;</span> Consentimento de dados: implementado</div>
+          <div class="type-line" style="animation-delay:1.8s">&nbsp;&nbsp;<span class="success">&#10003;</span> Direito ao esquecimento: endpoint DELETE /users/:id</div>
+          <div class="type-line" style="animation-delay:2.2s">&nbsp;&nbsp;<span class="success">&#10003;</span> Portabilidade de dados: endpoint GET /users/:id/export</div>
+          <div class="type-line" style="animation-delay:2.6s">&nbsp;&nbsp;<span class="success">&#10003;</span> Criptografia de dados sensiveis: AES-256-GCM (Crypto validated)</div>
+          <div class="type-line" style="animation-delay:3.0s">&nbsp;&nbsp;<span class="success">&#10003;</span> Log de acesso a dados pessoais: ativo</div>
           <br>
-          <div class="type-line" style="animation-delay:3.0s"><span class="out">&#128179; PCI DSS Validation:</span></div>
-          <div class="type-line" style="animation-delay:3.4s">&nbsp;&nbsp;<span class="success">&#10003;</span> Dados de cartao: tokenizados via Stripe (nunca armazenados)</div>
-          <div class="type-line" style="animation-delay:3.8s">&nbsp;&nbsp;<span class="success">&#10003;</span> TLS 1.3: forcado em todos os endpoints</div>
-          <div class="type-line" style="animation-delay:4.2s">&nbsp;&nbsp;<span class="success">&#10003;</span> Audit trail de transacoes: ativo</div>
-          <div class="type-line" style="animation-delay:4.6s">&nbsp;&nbsp;<span class="success">&#10003;</span> Segregacao de ambiente: prod isolado</div>
+          <div class="type-line" style="animation-delay:3.4s"><span class="out">&#128179; PCI DSS Validation:</span></div>
+          <div class="type-line" style="animation-delay:3.8s">&nbsp;&nbsp;<span class="success">&#10003;</span> Dados de cartao: tokenizados via Stripe (nunca armazenados)</div>
+          <div class="type-line" style="animation-delay:4.2s">&nbsp;&nbsp;<span class="success">&#10003;</span> TLS 1.3: forcado em todos os endpoints (Crypto validated)</div>
+          <div class="type-line" style="animation-delay:4.6s">&nbsp;&nbsp;<span class="success">&#10003;</span> Audit trail de transacoes: ativo</div>
+          <div class="type-line" style="animation-delay:5.0s">&nbsp;&nbsp;<span class="success">&#10003;</span> Segregacao de ambiente: prod isolado</div>
           <br>
-          <div class="type-line" style="animation-delay:5.0s"><span class="success">&#128640;</span> <strong style="color:#3fb950;">Compliance Gate: APPROVED</strong></div>
+          <div class="type-line" style="animation-delay:5.4s"><span class="out">&#128272; Cryptography Intelligence:</span></div>
+          <div class="type-line" style="animation-delay:5.8s">&nbsp;&nbsp;<span class="success">&#10003;</span> Key rotation: configurado (90 dias)</div>
+          <div class="type-line" style="animation-delay:6.2s">&nbsp;&nbsp;<span class="success">&#10003;</span> Secrets management: AWS KMS integrado</div>
+          <div class="type-line" style="animation-delay:6.6s">&nbsp;&nbsp;<span class="success">&#10003;</span> JWT signing: RS256 com key rotation automatica</div>
+          <br>
+          <div class="type-line" style="animation-delay:7.0s"><span class="layer">&#9670; Governance:</span> Compliance checkpoint 8/9 validated</div>
+          <div class="type-line" style="animation-delay:7.4s"><span class="success">&#128640;</span> <strong style="color:#3fb950;">Compliance Gate: APPROVED</strong></div>
         </div>
       </div>
 
       <div class="approval-gate">
-        <h3>&#128276; CHECKPOINT — Aprovacao de Compliance</h3>
-        <p>O Finance Advisor validou conformidade total com LGPD e PCI DSS. Aprovar para deploy?</p>
+        <h3>&#128276; CHECKPOINT 8/9 — Aprovacao de Compliance</h3>
+        <p>Finance Advisor + Cryptography intelligence validaram LGPD, PCI DSS e criptografia. Governance Layer registrou. Aprovar para deploy?</p>
         <div class="approval-btns">
           <button class="btn-approve yes" onclick="next()">&#10003; Aprovar para Deploy</button>
           <button class="btn-approve edit">&#9998; Solicitar Ajustes</button>
@@ -682,16 +762,17 @@ const steps = [
   // ═══════════════ STEP 10: Dashboard ═══════════════
   {
     phase: "dashboard", phaseLabel: "DASHBOARD",
-    title: "10. Dashboard — Visao do Projeto",
-    desc: "O Gerente de Projeto acompanha o progresso em tempo real pelo dashboard.",
+    title: "10. Dashboard — Visao do Projeto v2.0",
+    desc: "O Project Manager acompanha o progresso em tempo real. Governance Layer fornece metricas de compliance e audit automaticamente.",
     content: `
       <div class="dashboard-mock">
         <div class="dash-nav">
-          <span class="logo">&#9881;&#65039; ForgeSquad</span>
+          <span class="logo">&#9881;&#65039; ForgeSquad v2.0</span>
           <div class="dash-tabs">
             <div class="dash-tab active">Progresso</div>
             <div class="dash-tab">Agentes</div>
             <div class="dash-tab">Artefatos</div>
+            <div class="dash-tab">Governance</div>
             <div class="dash-tab">Audit Trail</div>
           </div>
         </div>
@@ -700,6 +781,7 @@ const steps = [
             <div>
               <h3 style="font-size:1rem;color:#e2e8f0;">E-Commerce Modernization</h3>
               <p style="font-size:0.75rem;color:#6ee7b7;">&#9679; Pipeline em execucao — Fase 10 de 10</p>
+              <p style="font-size:0.65rem;color:#fbbf24;margin-top:4px;">&#9670; Governance: 8/9 checkpoints validated | 3-layer active</p>
             </div>
             <div style="text-align:right;">
               <span style="font-size:2rem;font-weight:800;color:#8b5cf6;">95%</span>
@@ -719,7 +801,7 @@ const steps = [
             <div style="text-align:center;padding:8px;background:rgba(99,102,241,0.1);border-radius:6px;border:1px solid rgba(99,102,241,0.3);animation:pulse 1.5s infinite;"><span style="font-size:0.6rem;color:#a5b4fc;">&#9654; Deploy</span></div>
           </div>
 
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;">
             <div style="padding:12px;background:#161b22;border-radius:8px;text-align:center;">
               <span style="font-size:1.5rem;font-weight:800;color:#34d399;">272</span>
               <p style="font-size:0.65rem;color:#94a3b8;">Testes Passando</p>
@@ -732,6 +814,10 @@ const steps = [
               <span style="font-size:1.5rem;font-weight:800;color:#fbbf24;">89%</span>
               <p style="font-size:0.65rem;color:#94a3b8;">Cobertura</p>
             </div>
+            <div style="padding:12px;background:#161b22;border-radius:8px;text-align:center;">
+              <span style="font-size:1.5rem;font-weight:800;color:#f472b6;">8/9</span>
+              <p style="font-size:0.65rem;color:#94a3b8;">Checkpoints</p>
+            </div>
           </div>
         </div>
       </div>
@@ -740,69 +826,80 @@ const steps = [
 
   // ═══════════════ STEP 11: Audit Trail ═══════════════
   {
-    phase: "dashboard", phaseLabel: "AUDIT TRAIL",
-    title: "11. Audit Trail Completo",
-    desc: "Cada acao, decisao e artefato e rastreado com hash SHA-256 e timestamp.",
+    phase: "governance", phaseLabel: "GOVERNANCE — AUDIT TRAIL",
+    title: "11. Governance Layer — Audit Trail",
+    desc: "A Governance Layer registra automaticamente cada acao, decisao e artefato com hash SHA-256. Invisivel para o squad, total para auditoria.",
     content: `
       <div class="dashboard-mock">
         <div class="dash-nav">
-          <span class="logo">&#9881;&#65039; ForgeSquad</span>
+          <span class="logo">&#9881;&#65039; ForgeSquad v2.0</span>
           <div class="dash-tabs">
             <div class="dash-tab">Progresso</div>
             <div class="dash-tab">Agentes</div>
             <div class="dash-tab">Artefatos</div>
+            <div class="dash-tab">Governance</div>
             <div class="dash-tab active">Audit Trail</div>
           </div>
         </div>
         <div class="dash-content">
+          <div style="margin-bottom:12px;display:flex;gap:8px;">
+            <div class="layer-badge governance">&#9670; Governance Layer — Automatic</div>
+            <div class="layer-badge squad">&#9670; 9 Mandatory Checkpoints</div>
+          </div>
+
           <div class="audit-entry">
             <span class="time">10:15:00</span>
-            <span class="event"><span style="color:#fbbf24;">&#127974;</span> Finance Advisor gerou cost-estimate.md</span>
+            <span class="event"><span style="color:#fbbf24;">&#127974;</span> Finance Advisor gerou cost-estimate.md | Checkpoint 1/9</span>
             <span class="hash">sha256:a3f8b2c...</span>
           </div>
           <div class="audit-entry">
             <span class="time">10:15:42</span>
-            <span class="event"><span style="color:#34d399;">&#10003;</span> bruno.oliveira <strong>aprovou</strong> orcamento</span>
+            <span class="event"><span style="color:#34d399;">&#10003;</span> bruno.oliveira <strong>aprovou</strong> orcamento | Governance validated</span>
             <span class="hash">sha256:7d1e4f9...</span>
           </div>
           <div class="audit-entry">
             <span class="time">10:22:15</span>
-            <span class="event"><span style="color:#6ee7b7;">&#128203;</span> BA gerou user-stories.md (28 stories)</span>
+            <span class="event"><span style="color:#6ee7b7;">&#128203;</span> BA gerou user-stories.md (28 stories) | Capability: requirements</span>
             <span class="hash">sha256:b5c92a1...</span>
           </div>
           <div class="audit-entry">
             <span class="time">10:28:03</span>
-            <span class="event"><span style="color:#c4b5fd;">&#9881;</span> Arquiteto gerou system-design.md</span>
+            <span class="event"><span style="color:#c4b5fd;">&#9881;</span> Architect gerou system-design.md | Fowler intelligence auto-injected</span>
             <span class="hash">sha256:e8f3d7c...</span>
           </div>
           <div class="audit-entry">
             <span class="time">10:28:45</span>
-            <span class="event"><span style="color:#34d399;">&#10003;</span> bruno.oliveira <strong>aprovou</strong> arquitetura</span>
+            <span class="event"><span style="color:#34d399;">&#10003;</span> bruno.oliveira <strong>aprovou</strong> arquitetura | Checkpoint 3/9</span>
             <span class="hash">sha256:1a2b3c4...</span>
           </div>
           <div class="audit-entry">
             <span class="time">10:45:30</span>
-            <span class="event"><span style="color:#93c5fd;">&#128295;</span> Dev Backend implementou 5 servicos (13.8k linhas)</span>
+            <span class="event"><span style="color:#93c5fd;">&#128295;</span> Dev Backend implementou 5 servicos via Ralph Loop (embedded)</span>
             <span class="hash">sha256:f4e5d6c...</span>
           </div>
           <div class="audit-entry">
             <span class="time">11:02:18</span>
-            <span class="event"><span style="color:#f9a8d4;">&#128269;</span> QA executou 272 testes — 100% passed</span>
+            <span class="event"><span style="color:#f9a8d4;">&#128269;</span> QA + SRE executaram 272 testes + observability validation</span>
             <span class="hash">sha256:9a8b7c6...</span>
           </div>
           <div class="audit-entry">
             <span class="time">11:15:00</span>
-            <span class="event"><span style="color:#fbbf24;">&#127974;</span> Finance Advisor validou LGPD + PCI DSS</span>
+            <span class="event"><span style="color:#fbbf24;">&#127974;</span> Finance Advisor + Crypto intelligence validou LGPD + PCI DSS</span>
             <span class="hash">sha256:d5e6f7a...</span>
           </div>
           <div class="audit-entry">
             <span class="time">11:15:30</span>
-            <span class="event"><span style="color:#34d399;">&#10003;</span> bruno.oliveira <strong>aprovou</strong> compliance para deploy</span>
+            <span class="event"><span style="color:#34d399;">&#10003;</span> bruno.oliveira <strong>aprovou</strong> compliance | Checkpoint 8/9</span>
             <span class="hash">sha256:8b9c0d1...</span>
           </div>
+          <div class="audit-entry">
+            <span class="time">11:20:00</span>
+            <span class="event"><span style="color:#6ee7b7;">&#128736;</span> DevOps Engineer executou deploy pipeline | Checkpoint 9/9</span>
+            <span class="hash">sha256:2c3d4e5...</span>
+          </div>
 
-          <div style="margin-top:12px;padding:10px;background:rgba(99,102,241,0.05);border-radius:8px;border:1px solid rgba(99,102,241,0.15);">
-            <p style="font-size:0.72rem;color:#a5b4fc;"><strong>42 eventos</strong> registrados | Log append-only | Cada artefato com hash SHA-256 | Totalmente auditavel</p>
+          <div style="margin-top:12px;padding:10px;background:rgba(251,191,36,0.05);border-radius:8px;border:1px solid rgba(251,191,36,0.15);">
+            <p style="font-size:0.72rem;color:#fbbf24;"><strong>Governance Layer:</strong> 48 eventos registrados | 9/9 checkpoints | Log append-only | SHA-256 em cada artefato | Enterprise-grade audit</p>
           </div>
         </div>
       </div>
@@ -812,45 +909,45 @@ const steps = [
   // ═══════════════ STEP 12: Resultado Final ═══════════════
   {
     phase: "deploy", phaseLabel: "RESULTADO FINAL",
-    title: "12. Projeto Concluido!",
-    desc: "O pipeline completo foi executado. Veja o resumo de tudo que foi gerado.",
+    title: "12. Projeto Concluido — ForgeSquad v2.0",
+    desc: "Pipeline enterprise completo: 3 camadas, 11 agentes, 10 fases, 24 steps, 9 checkpoints. Escalavel para 375+ squads simultaneos.",
     content: `
       <div style="text-align:center;margin-bottom:24px;">
         <span style="font-size:3rem;">&#128640;</span>
         <h2 style="font-size:1.5rem;color:#34d399;margin:8px 0;">E-Commerce Platform — Pronta para Producao</h2>
-        <p style="color:#94a3b8;font-size:0.9rem;">Pipeline completo em tempo recorde. Todos os artefatos gerados, testados e documentados.</p>
+        <p style="color:#94a3b8;font-size:0.9rem;">ForgeSquad v2.0 Enterprise Architecture — 3-Layer, 11 Agents, Capabilities Model</p>
       </div>
 
       <div class="cards-grid">
         <div class="wt-card green">
           <h4>&#128187; 13.820 linhas de codigo</h4>
-          <p>5 microservicos + frontend React + infra Kubernetes</p>
+          <p>5 microservicos + frontend React + infra Kubernetes. Ralph Loop embedded nos devs.</p>
         </div>
         <div class="wt-card purple">
           <h4>&#128203; 28 user stories</h4>
-          <p>Com 84 criterios de aceite em formato Given/When/Then</p>
+          <p>Com 84 criterios de aceite. Capabilities model resolveu BA para provider correto.</p>
         </div>
         <div class="wt-card blue">
-          <h4>&#9881;&#65039; 3 ADRs documentados</h4>
-          <p>Decisoes arquiteturais rastreadas e justificadas</p>
+          <h4>&#9881;&#65039; 3 ADRs + Fowler Patterns</h4>
+          <p>Decisoes arquiteturais com Software Architect (Fowler) intelligence auto-injetada.</p>
         </div>
         <div class="wt-card pink">
-          <h4>&#128269; 272 testes automaticos</h4>
-          <p>89% cobertura. Zero vulnerabilidades. p95 < 200ms.</p>
+          <h4>&#128269; 272 testes + SRE validation</h4>
+          <p>89% cobertura. Zero vulnerabilidades. SRE validou observability e SLOs.</p>
         </div>
         <div class="wt-card amber">
           <h4>&#128221; 6 documentos tecnicos</h4>
-          <p>API docs, runbook, arquitetura, onboarding, release notes, compliance</p>
+          <p>API docs, runbook, arquitetura, onboarding, SRE handbook, compliance report.</p>
         </div>
         <div class="wt-card green">
-          <h4>&#128274; Compliance validado</h4>
-          <p>LGPD + PCI DSS aprovados pelo Finance Advisor</p>
+          <h4>&#128274; Compliance + Crypto validated</h4>
+          <p>LGPD + PCI DSS + Cryptography intelligence. AES-256-GCM, TLS 1.3, key rotation.</p>
         </div>
       </div>
 
       <div style="margin-top:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
         <div style="padding:16px;background:#161b22;border-radius:10px;text-align:center;border:1px solid #21262d;">
-          <span style="font-size:1.8rem;font-weight:800;color:#8b5cf6;">9</span>
+          <span style="font-size:1.8rem;font-weight:800;color:#8b5cf6;">11</span>
           <p style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">Agentes</p>
         </div>
         <div style="padding:16px;background:#161b22;border-radius:10px;text-align:center;border:1px solid #21262d;">
@@ -858,18 +955,34 @@ const steps = [
           <p style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">Fases</p>
         </div>
         <div style="padding:16px;background:#161b22;border-radius:10px;text-align:center;border:1px solid #21262d;">
-          <span style="font-size:1.8rem;font-weight:800;color:#fbbf24;">42</span>
-          <p style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">Eventos Audit</p>
+          <span style="font-size:1.8rem;font-weight:800;color:#fbbf24;">9</span>
+          <p style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">Checkpoints</p>
         </div>
         <div style="padding:16px;background:#161b22;border-radius:10px;text-align:center;border:1px solid #21262d;">
-          <span style="font-size:1.8rem;font-weight:800;color:#f472b6;">75%</span>
-          <p style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">Economia vs Consultoria</p>
+          <span style="font-size:1.8rem;font-weight:800;color:#f472b6;">375+</span>
+          <p style="font-size:0.7rem;color:#94a3b8;margin-top:4px;">Squads Simultaneos</p>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="padding:12px;background:rgba(251,191,36,0.05);border-radius:10px;text-align:center;border:1px solid rgba(251,191,36,0.2);">
+          <span style="font-size:0.85rem;font-weight:700;color:#fbbf24;">Governance</span>
+          <p style="font-size:0.65rem;color:#94a3b8;margin-top:4px;">Invisivel + Automatica</p>
+        </div>
+        <div style="padding:12px;background:rgba(99,102,241,0.05);border-radius:10px;text-align:center;border:1px solid rgba(99,102,241,0.2);">
+          <span style="font-size:0.85rem;font-weight:700;color:#a5b4fc;">Squad</span>
+          <p style="font-size:0.65rem;color:#94a3b8;margin-top:4px;">11 Agentes Especializados</p>
+        </div>
+        <div style="padding:12px;background:rgba(52,211,153,0.05);border-radius:10px;text-align:center;border:1px solid rgba(52,211,153,0.2);">
+          <span style="font-size:0.85rem;font-weight:700;color:#6ee7b7;">Execution</span>
+          <p style="font-size:0.65rem;color:#94a3b8;margin-top:4px;">Inline | Subagent | Ralph Loop</p>
         </div>
       </div>
 
       <div style="margin-top:20px;padding:16px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.2);border-radius:10px;text-align:center;">
-        <p style="font-size:1rem;color:#6ee7b7;font-weight:600;">"Do zero a producao com 11 agentes, zero retrabalho e compliance garantido."</p>
-        <p style="font-size:0.8rem;color:#94a3b8;margin-top:8px;">ForgeSquad — NTT DATA | Bruno Oliveira</p>
+        <p style="font-size:1rem;color:#6ee7b7;font-weight:600;">ForgeSquad v2.0 — Enterprise Architecture for AI-Powered Software Development</p>
+        <p style="font-size:0.8rem;color:#94a3b8;margin-top:8px;">11 agentes | 3 camadas | 375+ squads | 3000+ devs | Zero retrabalho | Compliance garantido</p>
+        <p style="font-size:0.75rem;color:#64748b;margin-top:6px;">NTT DATA | Bruno Oliveira</p>
       </div>
     `
   }

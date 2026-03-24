@@ -1,227 +1,317 @@
-# ForgeSquad — Setup no Visual Studio Code
+# ForgeSquad v2.0 — VS Code Setup Guide
 
-Guia completo para configurar e usar o ForgeSquad no VS Code.
+Complete guide to configure and use the ForgeSquad Enterprise Multi-Agent Framework in Visual Studio Code.
 
-## Pre-requisitos
+---
 
-- Visual Studio Code 1.85+
-- Uma extensao de AI instalada (pelo menos uma)
+## Prerequisites
 
-## Passo 1: Instalar Extensao de AI
+Before starting, make sure you have:
 
-Escolha UMA (ou mais) das opcoes abaixo:
+- **Visual Studio Code** 1.85 or higher ([download](https://code.visualstudio.com/))
+- **Git** installed and configured
+- **At least one AI extension** (GitHub Copilot, Continue.dev, or Cline)
+- An **API key** or subscription for your chosen AI provider:
+  - GitHub Copilot: GitHub Pro, Teams, or Enterprise subscription
+  - Continue.dev: Anthropic API key (Claude) or OpenAI API key
+  - Cline: Anthropic API key (Claude)
 
-### Opcao A: GitHub Copilot (Recomendado)
-```
-1. Abra VS Code
-2. Ctrl+Shift+X (Extensions)
-3. Busque "GitHub Copilot"
-4. Instale "GitHub Copilot" + "GitHub Copilot Chat"
-5. Faca login com sua conta GitHub
-```
-O ForgeSquad sera lido automaticamente via `COPILOT.md`.
+---
 
-### Opcao B: Continue.dev (Claude ou GPT)
-```
-1. Ctrl+Shift+X → Busque "Continue"
-2. Instale "Continue - Codestral, Claude, and more"
-3. Configure seu provider (Anthropic, OpenAI, ou local)
-```
-O ForgeSquad sera lido via `AGENTS.md`.
+## Step-by-Step Installation
 
-### Opcao C: Cline (Claude)
-```
-1. Ctrl+Shift+X → Busque "Cline"
-2. Instale "Cline" (antigo Claude Dev)
-3. Configure sua API key da Anthropic
-```
-O ForgeSquad sera lido via `CLAUDE.md`.
-
-### Opcao D: Amazon Q Developer
-```
-1. Ctrl+Shift+X → Busque "Amazon Q"
-2. Instale "Amazon Q Developer"
-3. Faca login com sua conta AWS
-```
-O ForgeSquad sera lido via `AGENTS.md`.
-
-## Passo 2: Abrir o Projeto
+### Step 1: Clone the ForgeSquad Repository
 
 ```bash
-# Clone o framework (primeira vez)
 git clone https://github.com/Brunooacks/ForgeSquadAI-Augmented-byAurora.git
 cd ForgeSquadAI-Augmented-byAurora
+```
 
-# Abra no VS Code
+### Step 2: Open in VS Code
+
+```bash
 code .
 ```
 
-Quando abrir, o VS Code vai sugerir instalar as extensoes recomendadas.
-Clique "Install All" para aceitar.
+When VS Code opens, it will detect the `.vscode/extensions.json` file and prompt you to install recommended extensions. Click **"Install All"** to accept.
 
-## Passo 3: Usar o ForgeSquad
+### Step 3: Install Recommended Extensions
 
-### Com GitHub Copilot Chat
-```
-1. Abra o Copilot Chat (Ctrl+Shift+I)
-2. Digite: /forgesquad
-3. O Copilot vai ler COPILOT.md e apresentar o menu
-4. Siga as instrucoes do framework
-```
+If the prompt does not appear, install them manually via `Ctrl+Shift+X` (Extensions panel). See the section below for details on each extension.
 
-### Com Continue.dev
-```
-1. Abra o Continue sidebar (Ctrl+L)
-2. Digite: /forgesquad create "Meu projeto com React + Node.js"
-3. O Continue vai ler AGENTS.md e iniciar o Architect
-4. Siga as instrucoes do framework
-```
+### Step 4: Configure Your AI Provider
 
-### Com Cline
-```
-1. Abra o Cline sidebar
-2. Digite: /forgesquad
-3. O Cline vai ler CLAUDE.md e apresentar o menu
-4. Siga as instrucoes do framework
-```
+Choose one (or more) of the AI integrations described in the sections below.
 
-### Com Amazon Q
-```
-1. Abra o Amazon Q Chat
-2. Digite: Leia o arquivo AGENTS.md e siga as instrucoes do ForgeSquad
-3. O Q vai carregar o framework
-4. Siga as instrucoes
-```
+### Step 5: Verify Setup
 
-## Passo 4: Criar um Novo Projeto
+Open the Command Palette (`Ctrl+Shift+P`) and type "ForgeSquad" to confirm commands are available. Alternatively, open the AI chat and type `/forgesquad` to start.
 
-Em QUALQUER extensao de AI, o fluxo e o mesmo:
+---
 
-```
-Voce: /forgesquad create "E-commerce com React + Node.js + PostgreSQL"
+## Recommended Extensions
 
-ForgeSquad:
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Arquiteto de Solucoes — Discovery
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+These extensions are listed in `.vscode/extensions.json` and will be suggested automatically when you open the project.
 
-  Pergunta 1/5: Qual e o tipo do projeto?
-  1. Greenfield (novo)
-  2. Brownfield (modernizacao)
-  3. Sustaining (manutencao)
+| Extension | ID | Purpose |
+|---|---|---|
+| **GitHub Copilot** | `github.copilot` | AI code completion and inline suggestions. Provides context-aware code generation directly in the editor. |
+| **GitHub Copilot Chat** | `github.copilot-chat` | Chat-based AI assistant integrated into VS Code. Used to interact with ForgeSquad via `COPILOT.md`. |
+| **Continue.dev** | `continue.continue` | Open-source AI code assistant supporting Claude, GPT, and local models. Reads ForgeSquad instructions from `AGENTS.md`. |
+| **Cline** | `saoudrizwan.claude-dev` | Autonomous AI coding agent powered by Claude. Reads ForgeSquad instructions from `CLAUDE.md`. Excels at multi-step tasks. |
+| **YAML** | `redhat.vscode-yaml` | YAML language support with validation and auto-complete. Essential for editing `squad.yaml`, `pipeline.yaml`, and `config.yaml`. |
+| **Prettier** | `esbenp.prettier-vscode` | Code formatter for consistent style across Markdown, YAML, JSON, and code files. Runs automatically on save. |
+| **Markdown All in One** | `yzhang.markdown-all-in-one` | Enhanced Markdown editing: shortcuts, table of contents generation, auto-preview, and list formatting. |
+| **Markdown Mermaid** | `bierner.markdown-mermaid` | Renders Mermaid diagrams in Markdown preview. Useful for viewing architecture and flow diagrams generated by ForgeSquad agents. |
 
-Voce: 1
+---
 
-ForgeSquad:
-  Pergunta 2/5: Qual metodologia de gestao?
-  1. Default (Linear)
-  2. Waterfall
-  3. Scrum
-  4. Kanban
+## Using ForgeSquad with GitHub Copilot Chat
 
-Voce: 3
+GitHub Copilot Chat reads instructions from `COPILOT.md` at the project root.
 
-  ... (continua ate configurar tudo)
+### Setup
 
-ForgeSquad:
-  Squad montado: 11 agentes, Scrum, 5 sprints
-  Aprovar? [S]im / [N]ao
+1. Install **GitHub Copilot** and **GitHub Copilot Chat** extensions.
+2. Sign in with your GitHub account (requires Copilot subscription).
+3. Verify the Copilot icon appears in the status bar.
 
-Voce: S
+### Usage
 
-  Arquivos gerados em: ~/Documents/meu-ecommerce/.forgesquad/
-```
+1. Open Copilot Chat with `Ctrl+Shift+I` (or `Cmd+Shift+I` on macOS).
+2. Type `/forgesquad` to activate the framework menu.
+3. Copilot will read `COPILOT.md` and present the ForgeSquad interface.
+4. Follow the guided prompts to create squads, run pipelines, or manage agents.
 
-## Passo 5: Executar o Pipeline
+### Tips
 
-```
-Voce: /forgesquad run meu-ecommerce
+- Use `@workspace` to give Copilot full context of your project files.
+- Reference specific files with `#file:squad.yaml` to focus the conversation.
+- If Copilot does not recognize `/forgesquad`, say: "Read the file COPILOT.md and follow the instructions."
 
-ForgeSquad:
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Running squad: meu-ecommerce
-  Pipeline: 24 steps
-  Methodology: Scrum
-  Agents: 11
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-  Step 1/24: Checkpoint — Briefing do Projeto
-  [AGUARDANDO SUA APROVACAO]
-  ...
+## Using ForgeSquad with Continue.dev (Claude)
+
+Continue.dev reads instructions from `AGENTS.md` at the project root.
+
+### Setup
+
+1. Install the **Continue** extension (`continue.continue`).
+2. Open Continue settings via the gear icon in the Continue sidebar.
+3. Configure your AI provider in `~/.continue/config.json`:
+
+```json
+{
+  "models": [
+    {
+      "title": "Claude Sonnet",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-20250514",
+      "apiKey": "YOUR_ANTHROPIC_API_KEY"
+    }
+  ]
+}
 ```
 
-O pipeline vai pausar em CADA checkpoint pedindo sua aprovacao.
-Todos os artefatos sao gerados automaticamente em `.forgesquad/runs/`.
+4. Restart VS Code if needed.
 
-## Estrutura de Arquivos Gerada
+### Usage
+
+1. Open the Continue sidebar with `Ctrl+L` (or `Cmd+L` on macOS).
+2. Type: `/forgesquad create "My project description"`
+3. Continue will read `AGENTS.md` and start the Architect agent.
+4. Follow the discovery questions and approve the generated squad.
+
+### Tips
+
+- Use `@codebase` to let Continue index and search your entire project.
+- Add files to context by dragging them into the chat or using `@file`.
+- For long pipelines, keep the chat window open; Continue maintains conversation state.
+
+---
+
+## Using ForgeSquad with Cline
+
+Cline reads instructions from `CLAUDE.md` at the project root.
+
+### Setup
+
+1. Install the **Cline** extension (`saoudrizwan.claude-dev`).
+2. Open Cline from the activity bar (robot icon).
+3. Enter your Anthropic API key when prompted.
+4. Select your preferred Claude model (Claude Sonnet 4 or Claude Opus 4 recommended).
+
+### Usage
+
+1. Open the Cline sidebar from the activity bar.
+2. Type: `/forgesquad`
+3. Cline will read `CLAUDE.md` and present the ForgeSquad menu.
+4. Follow the guided prompts to create and run your squad.
+
+### Tips
+
+- Cline operates autonomously and can create files, run commands, and manage the full pipeline.
+- Review Cline's proposed actions before approving; it will ask for confirmation on file changes.
+- For large projects, use "Auto-approve" mode cautiously and review the audit trail.
+
+---
+
+## Quick Start: Creating Your First Squad
+
+This workflow is the same regardless of which AI extension you use.
+
+### 1. Start the Framework
+
+Open your AI chat and type:
 
 ```
-meu-ecommerce/
-├── .forgesquad/                    # ForgeSquad metadata
-│   ├── state.json                  # Estado atual do pipeline
-│   ├── squad.yaml                  # Configuracao do squad
-│   ├── pipeline/                   # Pipeline definition
+/forgesquad create "E-commerce app with React + Node.js + PostgreSQL"
+```
+
+### 2. Answer the Discovery Questions
+
+The Architect agent will ask 5 configuration questions:
+
+- **Project type**: Greenfield (new), Brownfield (modernization), or Sustaining (maintenance)
+- **Methodology**: Default (Linear), Waterfall, Scrum, or Kanban
+- **Team size**: Small, Medium, or Large
+- **Tech stack confirmation**: Verify detected technologies
+- **Special requirements**: Security, compliance, performance targets
+
+### 3. Review and Approve the Squad
+
+ForgeSquad will present the generated squad configuration:
+
+```
+Squad assembled: 11 agents, Scrum, 5 sprints
+Approve? [Y]es / [N]o
+```
+
+Type `Y` to approve. Files will be generated in `.forgesquad/`.
+
+### 4. Run the Pipeline
+
+```
+/forgesquad run my-ecommerce
+```
+
+The pipeline will execute step by step, pausing at each checkpoint for your approval. All artifacts are saved to `.forgesquad/runs/`.
+
+### 5. Review Generated Artifacts
+
+```
+my-ecommerce/
+├── .forgesquad/
+│   ├── state.json
+│   ├── squad.yaml
+│   ├── pipeline/
 │   │   ├── pipeline.yaml
 │   │   └── steps/
-│   ├── agents/                     # Agent personas
-│   ├── runs/                       # Execucoes (audit trail)
+│   ├── agents/
+│   ├── runs/
 │   │   └── 2026-03-23-140000/
 │   │       ├── audit-trail.json
 │   │       ├── step-01-briefing.md
 │   │       ├── step-02-requirements.md
-│   │       ├── checkpoint-step-03.md
 │   │       └── final-report.md
-│   └── backups/                    # Snapshots automaticos
-├── src/                            # Codigo fonte (gerado)
-├── tests/                          # Testes (gerado)
-├── docs/                           # Documentacao (gerado)
-├── docker/                         # Docker (gerado)
-├── Makefile                        # Comandos padronizados
-└── README.md                       # Getting started
+│   └── backups/
+├── src/
+├── tests/
+├── docs/
+└── README.md
 ```
 
-## Atalhos Uteis no VS Code
+---
 
-| Atalho | Acao |
+## VS Code Keyboard Shortcuts
+
+| Shortcut | Action |
 |---|---|
-| `Ctrl+Shift+I` | Abrir Copilot Chat |
-| `Ctrl+L` | Abrir Continue |
-| `Ctrl+Shift+P` → "ForgeSquad" | Buscar comandos |
-| `Ctrl+`` ` | Abrir terminal integrado |
-| `Ctrl+Shift+E` | Explorer (ver arquivos) |
+| `Ctrl+Shift+I` | Open Copilot Chat |
+| `Ctrl+L` | Open Continue sidebar |
+| `Ctrl+Shift+P` | Command Palette |
+| `` Ctrl+` `` | Toggle integrated terminal |
+| `Ctrl+Shift+E` | Open Explorer (file tree) |
+| `Ctrl+Shift+F` | Search across files |
+| `Ctrl+P` | Quick file open |
+
+> On macOS, replace `Ctrl` with `Cmd`.
+
+---
+
+## Workspace Settings
+
+The project includes a `.vscode/settings.json` with preconfigured settings:
+
+- **Format on save** enabled with Prettier as the default formatter.
+- **File associations** map `.agent.md`, `.prompt.md`, `.skill.md` to Markdown and squad/pipeline/config YAML files to YAML.
+- **Search exclusions** hide `_memory/` and `node_modules/` from search results.
+- **Markdown editing** has word wrap enabled and smart suggestions turned on.
+
+These settings apply only to this workspace and do not affect your global VS Code configuration.
+
+---
 
 ## Troubleshooting
 
-**"O AI nao reconhece /forgesquad"**
-→ Verifique se o arquivo de instrucoes existe (COPILOT.md, AGENTS.md, CLAUDE.md).
-Tente dizer ao AI: "Leia o arquivo AGENTS.md e siga as instrucoes".
+### "The AI does not recognize /forgesquad"
 
-**"O AI pula checkpoints"**
-→ Diga: "PARE. Voce deve seguir o runner.executable.md. Nao pule checkpoints."
-O runner tem instrucoes explicitas para parar. Reforce se necessario.
+- Verify the instruction file exists at the project root: `COPILOT.md` (for Copilot), `AGENTS.md` (for Continue/Amazon Q), or `CLAUDE.md` (for Cline/Claude Code).
+- Try telling the AI directly: "Read the file AGENTS.md and follow the instructions."
+- Make sure you opened the project folder (not a parent or child directory).
 
-**"Nao gera artefatos"**
-→ Verifique se o diretorio .forgesquad/runs/ existe.
-Diga ao AI: "Gere todos os artefatos conforme o runner.executable.md".
+### "The AI skips checkpoints"
 
-**"Qual extensao de AI e melhor?"**
-→ Para ForgeSquad, recomendamos Copilot Chat ou Continue.dev com Claude.
-Ambos seguem bem instrucoes longas e estruturadas.
+- Say: "STOP. You must follow runner.executable.md. Do not skip checkpoints."
+- The runner has explicit instructions to pause at checkpoints. Reinforce if the AI rushes ahead.
 
-## Compatibilidade
+### "Artifacts are not generated"
 
-| IDE/Editor | Extensao | Arquivo | Status |
+- Verify the directory `.forgesquad/runs/` exists in your project.
+- Tell the AI: "Generate all artifacts as defined in runner.executable.md."
+- Check the audit trail at `.forgesquad/runs/<timestamp>/audit-trail.json` for errors.
+
+### "YAML validation errors in squad.yaml"
+
+- Ensure the **YAML** extension (`redhat.vscode-yaml`) is installed.
+- Check for indentation issues (YAML uses 2-space indentation).
+- Validate your file with the Command Palette: "YAML: Validate".
+
+### "Mermaid diagrams not rendering in preview"
+
+- Install the **Markdown Mermaid** extension (`bierner.markdown-mermaid`).
+- Open Markdown preview with `Ctrl+Shift+V` to see rendered diagrams.
+- Ensure the Mermaid code block uses the correct syntax: ` ```mermaid `.
+
+### "Prettier conflicts with other formatters"
+
+- The workspace settings set Prettier as the default formatter. If you have a different global default, the workspace setting takes precedence.
+- To disable format on save for a specific file type, add an override in `.vscode/settings.json`.
+
+### "Which AI extension is best for ForgeSquad?"
+
+- **GitHub Copilot Chat**: Best overall integration, follows structured instructions well, ideal for teams already using GitHub.
+- **Continue.dev with Claude**: Best for open-source workflows and custom model configuration. Excellent at following long prompts.
+- **Cline**: Best for autonomous operation. Cline can create files and run terminal commands without manual intervention.
+- All three are fully supported. Choose based on your existing subscriptions and preferences.
+
+---
+
+## Compatibility Matrix
+
+| IDE/Editor | Extension | Instruction File | Status |
 |---|---|---|---|
-| VS Code | GitHub Copilot | COPILOT.md | Pronto |
-| VS Code | Continue.dev | AGENTS.md | Pronto |
-| VS Code | Cline | CLAUDE.md | Pronto |
-| VS Code | Amazon Q | AGENTS.md | Pronto |
-| Cursor | Nativo | .cursorrules | Pronto |
-| Claude Code | Nativo | CLAUDE.md | Pronto |
-| Windsurf | Nativo | AGENTS.md | Pronto |
-| Codex CLI | Nativo | AGENTS.md | Pronto |
+| VS Code | GitHub Copilot | COPILOT.md | Ready |
+| VS Code | Continue.dev | AGENTS.md | Ready |
+| VS Code | Cline | CLAUDE.md | Ready |
+| VS Code | Amazon Q | AGENTS.md | Ready |
+| Cursor | Native | .cursorrules | Ready |
+| Claude Code | Native | CLAUDE.md | Ready |
+| Windsurf | Native | AGENTS.md | Ready |
+| Codex CLI | Native | AGENTS.md | Ready |
 
 ---
 
 *ForgeSquad v2.0 — Enterprise Multi-Agent Framework*
-*Funciona em qualquer IDE. Qualquer AI. Qualquer projeto.*
+*Works in any IDE. Any AI. Any project.*
