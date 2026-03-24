@@ -3,1370 +3,2132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ForgeSquad — Squad Dashboard</title>
+  <title>ForgeSquad v2.0 — Mission Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0f172a;
-      --bg-floor: #1e293b;
-      --bg-desk: #334155;
-      --bg-card: #1e293b;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --accent: #3b82f6;
-      --accent-light: #60a5fa;
-      --green: #22c55e;
-      --orange: #f59e0b;
-      --red: #ef4444;
-      --pink: #ec4899;
-      --purple: #a78bfa;
-      --cyan: #22d3ee;
-      --border: #334155;
-      --radius: 16px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --bg-deep: #050a18;
+      --bg: #0a0f1e;
+      --bg-card: #0d1326;
+      --bg-panel: #0b1025;
+      --bg-elevated: #111833;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #475569;
+      --neon-blue: #00d4ff;
+      --neon-cyan: #22d3ee;
+      --neon-purple: #a855f7;
+      --neon-magenta: #e879f9;
+      --neon-green: #00ff88;
+      --neon-amber: #fbbf24;
+      --neon-red: #ff4466;
+      --neon-pink: #f472b6;
+      --glow-blue: rgba(0, 212, 255, 0.15);
+      --glow-cyan: rgba(34, 211, 238, 0.12);
+      --glow-purple: rgba(168, 85, 247, 0.12);
+      --glow-green: rgba(0, 255, 136, 0.15);
+      --border: rgba(0, 212, 255, 0.08);
+      --border-bright: rgba(0, 212, 255, 0.2);
+      --radius: 12px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
     }
 
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes typing {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    @keyframes code-scroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+    @keyframes border-flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    @keyframes particle-drift {
+      0% { transform: translate(0, 0) scale(1); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    }
+    @keyframes data-stream {
+      0% { transform: translateY(100%); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-100%); opacity: 0; }
+    }
+    @keyframes hex-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes glow-breathe {
+      0%, 100% { filter: drop-shadow(0 0 4px currentColor); }
+      50% { filter: drop-shadow(0 0 12px currentColor); }
+    }
+    @keyframes checkpoint-fill {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    @keyframes slide-in {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes counter-tick {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); color: var(--neon-cyan); }
+      100% { transform: scale(1); }
+    }
+    @keyframes robot-eye-blink {
+      0%, 45%, 55%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.1); }
+    }
+    @keyframes robot-antenna {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+    @keyframes matrix-rain {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+    @keyframes status-working {
+      0%, 100% { box-shadow: 0 0 8px rgba(0,255,136,0.3), inset 0 0 8px rgba(0,255,136,0.05); }
+      50% { box-shadow: 0 0 20px rgba(0,255,136,0.6), inset 0 0 15px rgba(0,255,136,0.1); }
+    }
+    @keyframes progress-stripe {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+    @keyframes flicker {
+      0%, 97%, 100% { opacity: 1; }
+      98% { opacity: 0.8; }
+      99% { opacity: 0.9; }
+    }
+
+    html { font-size: 14px; }
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
+      font-family: var(--font);
+      background: var(--bg-deep);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* ===== HEADER (Ship Control Bar) ===== */
-    .header {
+    /* === BACKGROUND EFFECTS === */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,212,255,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168,85,247,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,255,136,0.01) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-purple), var(--neon-cyan), transparent);
+      opacity: 0.4;
+      z-index: 1000;
+    }
+
+    .scanline-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .scanline-overlay::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(180deg, transparent, rgba(0,212,255,0.04), transparent);
+      animation: scanline 8s linear infinite;
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    #particles-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* === LAYOUT === */
+    .app {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto auto;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* === TOP BAR === */
+    .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 32px;
-      border-bottom: 1px solid rgba(59,130,246,0.2);
-      background: linear-gradient(90deg, rgba(7,13,26,0.98), rgba(15,23,42,0.95), rgba(7,13,26,0.98));
-      backdrop-filter: blur(12px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 20px rgba(59,130,246,0.08);
+      padding: 12px 24px;
+      background: linear-gradient(180deg, rgba(10,15,30,0.98), rgba(10,15,30,0.92));
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      backdrop-filter: blur(20px);
     }
-    .header::after {
+    .top-bar::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 10%; right: 10%;
+      bottom: 0; left: 5%; right: 5%;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(34,211,238,0.3), transparent);
+      background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+      opacity: 0.3;
     }
-    .header-left {
+    .top-left {
       display: flex;
       align-items: center;
       gap: 16px;
     }
-    .header-logo {
-      width: 36px; height: 36px;
-      background: var(--accent);
-      border-radius: 10px;
+    .logo-mark {
+      position: relative;
+      width: 40px; height: 40px;
+    }
+    .logo-mark .hex {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
+      font-size: 18px; font-weight: 800; color: #fff;
+      animation: glow-breathe 3s ease infinite;
     }
-    .header h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
+    .logo-mark .ring {
+      position: absolute;
+      inset: -4px;
+      border: 1px solid var(--neon-blue);
+      border-radius: 50%;
+      animation: hex-rotate 20s linear infinite;
+      opacity: 0.3;
     }
-    .header h1 span { color: var(--accent-light); }
-    .squad-badge {
-      background: var(--accent);
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.75rem;
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand .version {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--neon-purple);
       font-weight: 600;
+      letter-spacing: 0.1em;
     }
-    .header-right {
+    .top-center {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 20px;
     }
-    .pipeline-progress {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .project-name {
+      font-family: var(--mono);
       font-size: 0.85rem;
-      color: var(--text-muted);
+      color: var(--neon-cyan);
+      padding: 6px 16px;
+      border: 1px solid rgba(34,211,238,0.2);
+      border-radius: 6px;
+      background: rgba(34,211,238,0.05);
+      letter-spacing: 0.05em;
     }
-    .pipeline-progress .bar-bg {
-      width: 160px;
-      height: 6px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-    .pipeline-progress .bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--cyan));
-      border-radius: 3px;
-      width: 0%;
-      transition: width 1s ease;
-    }
-    .status-live {
+    .methodology-badge {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.8rem;
-      color: var(--green);
-      font-weight: 600;
-    }
-    .status-live::before {
-      content: '';
-      width: 8px; height: 8px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    /* Mode toggle */
-    .mode-toggle {
-      display: flex;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .mode-btn {
-      padding: 4px 14px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      font-family: 'JetBrains Mono', monospace;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .mode-btn.active {
-      background: var(--accent);
-      color: white;
-    }
-    .mode-btn:hover:not(.active) {
-      color: var(--text);
-      background: rgba(255,255,255,0.05);
-    }
-
-    /* Live connection banner */
-    .live-banner {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 8px 16px;
-      background: rgba(34, 197, 94, 0.08);
-      border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-family: var(--mono);
       font-size: 0.75rem;
-      color: var(--green);
-      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
-    .live-banner.visible { display: flex; }
-    .live-banner.error {
-      background: rgba(239, 68, 68, 0.08);
-      border-color: rgba(239, 68, 68, 0.2);
-      color: var(--red);
+    .methodology-badge.scrum {
+      background: rgba(168,85,247,0.12);
+      border: 1px solid rgba(168,85,247,0.3);
+      color: var(--neon-purple);
+    }
+    .methodology-badge.kanban {
+      background: rgba(0,212,255,0.12);
+      border: 1px solid rgba(0,212,255,0.3);
+      color: var(--neon-cyan);
+    }
+    .methodology-badge.waterfall {
+      background: rgba(0,255,136,0.12);
+      border: 1px solid rgba(0,255,136,0.3);
+      color: var(--neon-green);
+    }
+    .methodology-badge .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse-glow 2s ease infinite;
+    }
+    .sprint-info {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.02);
+    }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--neon-green);
+    }
+    .live-dot-container {
+      position: relative;
+      width: 10px; height: 10px;
     }
     .live-dot {
-      width: 6px; height: 6px;
-      background: var(--green);
+      width: 10px; height: 10px;
+      background: var(--neon-green);
       border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    .live-banner.error .live-dot { background: var(--red); }
-
-    /* ===== MAIN LAYOUT ===== */
-    .main {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 0;
-      min-height: calc(100vh - 65px);
-    }
-
-    /* ===== OFFICE SCENE (SPACESHIP BRIDGE) ===== */
-    .office {
-      padding: 32px;
       position: relative;
-      overflow: hidden;
-      background: #070d1a;
     }
-
-    /* Starfield background */
-    .office::before {
+    .live-dot::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.8), transparent),
-        radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1.5px 1.5px at 40% 10%, rgba(200,220,255,0.9), transparent),
-        radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,0.7), transparent),
-        radial-gradient(1.5px 1.5px at 85% 30%, rgba(180,200,255,0.8), transparent),
-        radial-gradient(1px 1px at 15% 60%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1px 1px at 35% 70%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1.5px 1.5px at 60% 65%, rgba(200,230,255,0.7), transparent),
-        radial-gradient(1px 1px at 5% 80%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 75% 75%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1px 1px at 50% 85%, rgba(255,255,255,0.3), transparent),
-        radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.6), transparent),
-        radial-gradient(1.5px 1.5px at 95% 85%, rgba(180,210,255,0.8), transparent),
-        radial-gradient(1px 1px at 45% 25%, rgba(255,255,255,0.4), transparent),
-        radial-gradient(1px 1px at 80% 50%, rgba(255,255,255,0.5), transparent),
-        radial-gradient(1px 1px at 30% 5%, rgba(255,255,255,0.7), transparent);
-      animation: starDrift 60s linear infinite;
-      z-index: 0;
-    }
-
-    /* Spaceship hull / walls */
-    .ship-hull {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    /* Viewport windows */
-    .ship-window {
-      position: absolute;
-      border: 2px solid rgba(59, 130, 246, 0.3);
+      inset: -2px;
       border-radius: 50%;
-      background: radial-gradient(ellipse, rgba(10,20,50,0.2) 0%, rgba(59,130,246,0.05) 100%);
-      box-shadow:
-        inset 0 0 20px rgba(59, 130, 246, 0.1),
-        0 0 15px rgba(59, 130, 246, 0.08);
+      border: 1px solid var(--neon-green);
+      animation: pulse-ring 2s ease-out infinite;
     }
-    .ship-window::after {
-      content: '';
-      position: absolute;
-      top: 15%;
-      left: 20%;
-      width: 30%;
-      height: 20%;
-      background: rgba(255,255,255,0.06);
-      border-radius: 50%;
-      transform: rotate(-20deg);
+    .status-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
-    .ship-window-1 { top: 20px; left: 20px; width: 80px; height: 80px; }
-    .ship-window-2 { top: 60px; right: 30px; width: 60px; height: 60px; }
-    .ship-window-3 { bottom: 40px; left: 40px; width: 50px; height: 50px; }
-
-    /* Main panoramic viewport at top */
-    .ship-viewport {
-      position: absolute;
-      top: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 70%;
-      height: 60px;
-      border-radius: 0 0 50% 50%;
-      background: linear-gradient(180deg, rgba(10,15,40,0.3) 0%, transparent 100%);
-      border: 1px solid rgba(59,130,246,0.15);
-      border-top: none;
-      box-shadow: 0 4px 30px rgba(59, 130, 246, 0.08);
-      z-index: 1;
-    }
-    .ship-viewport::before {
-      content: '';
-      position: absolute;
-      bottom: 8px; left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+    .clock {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+      font-weight: 600;
+      letter-spacing: 0.05em;
     }
 
-    /* Floor grid (sci-fi) */
-    .floor-grid {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 40%;
-      background:
-        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      transform: perspective(400px) rotateX(35deg);
-      transform-origin: bottom center;
-      z-index: 1;
-      mask-image: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
-    }
-
-    /* Wall panel strips */
-    .wall-panel {
-      position: absolute;
-      z-index: 1;
-      pointer-events: none;
-    }
-    .wall-panel-left {
-      top: 0; left: 0; bottom: 0;
-      width: 12px;
-      background: linear-gradient(180deg,
-        rgba(59,130,246,0.1) 0%,
-        rgba(59,130,246,0.02) 30%,
-        rgba(34,211,238,0.05) 70%,
-        rgba(59,130,246,0.1) 100%
-      );
-      border-right: 1px solid rgba(59,130,246,0.12);
-    }
-    .wall-panel-right {
-      top: 0; right: 0; bottom: 0;
-      width: 12px;
-      background: linear-gradient(180deg,
-        rgba(59,130,246,0.1) 0%,
-        rgba(59,130,246,0.02) 30%,
-        rgba(34,211,238,0.05) 70%,
-        rgba(59,130,246,0.1) 100%
-      );
-      border-left: 1px solid rgba(59,130,246,0.12);
-    }
-    .wall-panel-top {
-      top: 0; left: 0; right: 0;
-      height: 8px;
-      background: linear-gradient(90deg,
-        rgba(59,130,246,0.15),
-        rgba(34,211,238,0.08) 50%,
-        rgba(59,130,246,0.15)
-      );
-      border-bottom: 1px solid rgba(59,130,246,0.12);
-    }
-
-    /* Ambient light strips on walls */
-    .ambient-strip {
-      position: absolute;
-      z-index: 1;
-      pointer-events: none;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0.06;
-      height: 1px;
-    }
-    .ambient-strip-1 { top: 25%; left: 5%; right: 5%; }
-    .ambient-strip-2 { top: 75%; left: 10%; right: 10%; opacity: 0.04; }
-
-    /* Holographic HUD elements */
-    .hud-element {
-      position: absolute;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0.15;
-    }
-    .hud-circle {
-      width: 40px; height: 40px;
-      border: 1px solid var(--cyan);
-      border-radius: 50%;
-      top: 30px; right: 120px;
-    }
-    .hud-circle::before {
-      content: '';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 8px; height: 8px;
-      background: var(--cyan);
-      border-radius: 50%;
-      animation: pulse 3s ease-in-out infinite;
-    }
-    .hud-bracket {
-      top: 40px; left: 120px;
-      width: 50px; height: 30px;
-      border-left: 2px solid var(--accent);
-      border-top: 2px solid var(--accent);
-      border-radius: 4px 0 0 0;
-    }
-    .hud-bracket::after {
-      content: 'SYS OK';
-      position: absolute;
-      top: 6px; left: 8px;
-      font-size: 7px;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--accent);
-      letter-spacing: 1px;
-    }
-    .hud-data {
-      bottom: 50px; right: 100px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 8px;
-      color: var(--cyan);
-      line-height: 1.6;
-    }
-
-    .office-title {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--accent-light);
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      margin-bottom: 24px;
-      position: relative;
-      z-index: 2;
-      text-shadow: 0 0 20px rgba(59,130,246,0.3);
-    }
-    .office-title::after {
-      content: '';
-      display: block;
-      width: 120px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      margin: 8px auto 0;
-    }
-
-    /* ===== WORKSTATION GRID ===== */
-    .workstations {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: auto;
-      gap: 20px;
-      max-width: 1100px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* ===== WORKSTATION (glassmorphism) ===== */
-    .workstation {
-      position: relative;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(59, 130, 246, 0.15);
-      border-radius: var(--radius);
-      padding: 20px 16px 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.4s ease;
-      cursor: default;
-    }
-    .workstation:hover {
-      border-color: rgba(59, 130, 246, 0.4);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2), inset 0 0 20px rgba(59,130,246,0.03);
-    }
-    .workstation.status-working {
-      border-color: var(--accent);
-      box-shadow: 0 0 25px rgba(59, 130, 246, 0.25), inset 0 0 30px rgba(59,130,246,0.05);
-    }
-    .workstation.status-done {
-      border-color: var(--green);
-    }
-    .workstation.status-blocked {
-      border-color: var(--orange);
-    }
-
-    /* Status indicator dot */
-    .ws-status-dot {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--border);
-    }
-    .status-working .ws-status-dot {
-      background: var(--accent);
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    .status-done .ws-status-dot {
-      background: var(--green);
-    }
-    .status-blocked .ws-status-dot {
-      background: var(--orange);
-      animation: pulse 1s ease-in-out infinite;
-    }
-
-    /* ===== ROBOT AVATAR ===== */
-    .robot-avatar {
-      width: 80px;
-      height: 100px;
-      position: relative;
-    }
-    .robot-avatar svg {
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Robot bobbing animation when working */
-    .status-working .robot-avatar {
-      animation: robotWork 2s ease-in-out infinite;
-    }
-
-    /* ===== DESK ===== */
-    .desk-surface {
-      width: 100%;
-      height: 32px;
-      background: var(--bg-desk);
-      border-radius: 6px;
-      position: relative;
+    /* === PIPELINE BAR === */
+    .pipeline-bar {
+      padding: 14px 24px;
+      background: rgba(10,15,30,0.95);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 0 8px;
+      gap: 16px;
     }
-    .desk-monitor {
-      width: 24px; height: 16px;
-      background: #0f172a;
-      border: 1.5px solid #475569;
-      border-radius: 2px;
-      position: relative;
-      overflow: hidden;
-    }
-    .status-working .desk-monitor {
-      border-color: var(--accent);
-    }
-    .desk-monitor-screen {
-      width: 100%; height: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      padding: 2px;
-    }
-    .status-working .desk-monitor-screen .code-line {
-      animation: typingCode 1.5s steps(3) infinite;
-    }
-    .code-line {
-      height: 1.5px;
-      background: var(--accent);
-      border-radius: 1px;
-      opacity: 0.4;
-    }
-    .code-line:nth-child(1) { width: 70%; }
-    .code-line:nth-child(2) { width: 50%; background: var(--green); }
-    .code-line:nth-child(3) { width: 85%; }
-    .desk-coffee {
-      width: 8px; height: 10px;
-      background: #78350f;
-      border-radius: 1px 1px 2px 2px;
-      position: relative;
-    }
-    .desk-coffee::after {
-      content: '';
-      position: absolute;
-      top: -4px; left: 2px;
-      width: 4px; height: 4px;
-      border-top: 1px solid #94a3b8;
-      border-right: 1px solid #94a3b8;
-      border-radius: 0 50% 0 0;
-      opacity: 0;
-    }
-    .status-working .desk-coffee::after {
-      opacity: 1;
-      animation: steam 2s ease-in-out infinite;
-    }
-
-    /* ===== AGENT INFO ===== */
-    .agent-name {
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-align: center;
-      line-height: 1.2;
-    }
-    .agent-role {
-      font-size: 0.65rem;
+    .pipeline-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
     }
-    .agent-task {
-      font-size: 0.7rem;
-      color: var(--accent-light);
-      text-align: center;
-      min-height: 28px;
+    .pipeline-phases {
       display: flex;
       align-items: center;
-      font-family: 'JetBrains Mono', monospace;
+      gap: 0;
+      flex: 1;
     }
-    .status-done .agent-task { color: var(--green); }
-    .status-idle .agent-task { color: var(--text-muted); }
-    .status-blocked .agent-task { color: var(--orange); }
-
-    /* Tool badge */
-    .agent-tools {
+    .phase-node {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 4px;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex: 1;
+      position: relative;
     }
-    .tool-badge {
-      font-size: 0.6rem;
-      padding: 2px 6px;
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-light);
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* ===== HANDOFF ANIMATION ===== */
-    .handoff-particle {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
+    .phase-node .phase-dot {
+      width: 28px; height: 28px;
       border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent);
-      pointer-events: none;
-      z-index: 10;
-      opacity: 0;
-    }
-
-    /* ===== SIDEBAR ===== */
-    .sidebar {
-      border-left: 1px solid var(--border);
+      border: 2px solid var(--border-bright);
       background: var(--bg-card);
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      align-items: center; justify-content: center;
+      font-size: 12px;
+      position: relative;
+      z-index: 2;
+      transition: all 0.5s ease;
     }
-
-    .sidebar-section {
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-section h3 {
-      font-size: 0.75rem;
+    .phase-node .phase-name {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-
-    /* Phase tracker */
-    .phase-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .phase-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      transition: all 0.3s;
-    }
-    .phase-item.active {
-      background: rgba(59, 130, 246, 0.15);
-      color: var(--accent-light);
-    }
-    .phase-item.completed {
-      color: var(--green);
-    }
-    .phase-item.pending {
-      color: var(--text-muted);
-    }
-    .phase-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--border);
-      flex-shrink: 0;
-    }
-    .phase-item.active .phase-dot {
-      background: var(--accent);
-      animation: pulse 2s infinite;
-    }
-    .phase-item.completed .phase-dot {
-      background: var(--green);
-    }
-
-    /* Activity feed */
-    .activity-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-    .activity-feed h3 {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-    .feed-item {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      font-size: 0.75rem;
-      padding: 8px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.02);
-      animation: feedSlide 0.3s ease;
-    }
-    .feed-time {
-      color: var(--text-muted);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      transition: color 0.5s ease;
       white-space: nowrap;
-      padding-top: 1px;
     }
-    .feed-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
+    .phase-node .phase-line {
+      position: absolute;
+      top: 13px;
+      left: calc(50% + 16px);
+      right: calc(-50% + 16px);
+      height: 2px;
+      background: var(--border);
+      z-index: 1;
+      transition: background 0.5s ease;
     }
-    .feed-text {
-      color: var(--text);
-      line-height: 1.4;
-    }
-    .feed-text strong { color: var(--accent-light); }
-    .feed-text .done { color: var(--green); }
-    .feed-text .checkpoint { color: var(--orange); }
+    .phase-node:last-child .phase-line { display: none; }
 
-    /* Metrics */
-    .metrics-grid {
+    .phase-node.completed .phase-dot {
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(34,211,238,0.4);
+      color: #000;
+    }
+    .phase-node.completed .phase-name { color: var(--neon-cyan); }
+    .phase-node.completed .phase-line { background: var(--neon-cyan); }
+
+    .phase-node.active .phase-dot {
+      background: transparent;
+      border-color: var(--neon-blue);
+      box-shadow: 0 0 16px rgba(0,212,255,0.5);
+      animation: pulse-glow 2s ease infinite;
+    }
+    .phase-node.active .phase-name { color: var(--neon-blue); font-weight: 600; }
+
+    .pipeline-pct {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      white-space: nowrap;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .metric-card {
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      padding: 12px;
-      text-align: center;
-    }
-    .metric-value {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--accent-light);
-    }
-    .metric-label {
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    /* ===== ANIMATIONS ===== */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
-    }
-    @keyframes robotWork {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-3px); }
-    }
-    @keyframes typingCode {
-      0% { width: 0%; }
-      100% { width: 85%; }
-    }
-    @keyframes steam {
-      0%, 100% { opacity: 0; transform: translateY(0); }
-      50% { opacity: 0.6; transform: translateY(-3px); }
-    }
-    @keyframes feedSlide {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes handoffMove {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-    @keyframes celebrate {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    @keyframes starDrift {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-20px); }
-    }
-    @keyframes scanline {
-      0% { top: -10%; }
-      100% { top: 110%; }
-    }
-
-    /* ===== RESPONSIVE ===== */
-    /* ===== ARTIFACT PREVIEW ===== */
-    .artifact-preview {
-      padding: 12px 20px;
-      border-bottom: 1px solid var(--border);
-      flex: 1;
+      grid-template-columns: 300px 1fr 280px;
+      gap: 0;
       overflow: hidden;
+    }
+
+    /* === LEFT PANEL: LOG FEED === */
+    .panel-left {
+      border-right: 1px solid var(--border);
+      background: var(--bg-panel);
       display: flex;
       flex-direction: column;
-      min-height: 0;
+      max-height: calc(100vh - 200px);
     }
-    .artifact-preview h3 {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      flex-shrink: 0;
-    }
-    .artifact-header {
+    .panel-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
       flex-shrink: 0;
     }
-    .artifact-filename {
-      font-family: 'JetBrains Mono', monospace;
+    .panel-header h2 {
+      font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--cyan);
-      background: rgba(34,211,238,0.08);
-      padding: 3px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(34,211,238,0.15);
-      max-width: 220px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .artifact-agent {
-      font-size: 0.65rem;
-      color: var(--text-muted);
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
     }
-    .artifact-code {
-      flex: 1;
-      background: #0d1117;
-      border: 1px solid rgba(59,130,246,0.15);
-      border-radius: 8px;
-      padding: 10px 12px;
-      overflow-y: auto;
-      font-family: 'JetBrains Mono', monospace;
+    .panel-header .count {
+      font-family: var(--mono);
       font-size: 0.65rem;
-      line-height: 1.6;
-      color: #c9d1d9;
-      min-height: 80px;
-      max-height: 250px;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .log-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
       scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
+      scrollbar-color: rgba(0,212,255,0.15) transparent;
     }
-    .artifact-code .line-num {
-      color: #484f58;
-      user-select: none;
-      display: inline-block;
-      width: 22px;
-      text-align: right;
-      margin-right: 10px;
+    .log-feed::-webkit-scrollbar { width: 4px; }
+    .log-feed::-webkit-scrollbar-track { background: transparent; }
+    .log-feed::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.15); border-radius: 2px; }
+
+    .log-entry {
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+      animation: slide-in 0.3s ease;
+      font-size: 0.78rem;
+      line-height: 1.4;
     }
-    .artifact-code .kw { color: #ff7b72; }
-    .artifact-code .str { color: #a5d6ff; }
-    .artifact-code .cm { color: #8b949e; }
-    .artifact-code .fn { color: #d2a8ff; }
-    .artifact-code .ty { color: #79c0ff; }
-    .artifact-code .op { color: #ff7b72; }
-    .artifact-code .heading { color: #58a6ff; font-weight: 700; }
-    .artifact-code .bullet { color: #f0883e; }
-    .artifact-code .check { color: #3fb950; }
-    .artifact-code .tag { color: #7ee787; }
-    .artifact-code .attr { color: #79c0ff; }
-    .artifact-typing {
-      display: inline-block;
-      width: 6px;
-      height: 12px;
-      background: var(--cyan);
-      animation: blink 0.8s infinite;
-      vertical-align: middle;
-      margin-left: 2px;
+    .log-entry:hover { background: rgba(0,212,255,0.03); }
+    .log-time {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      margin-right: 6px;
     }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
+    .log-icon { margin-right: 4px; font-size: 0.7rem; }
+    .log-msg { color: var(--text-muted); }
+    .log-msg strong { color: var(--neon-cyan); font-weight: 600; }
+    .log-entry.checkpoint { border-left: 2px solid var(--neon-amber); }
+    .log-entry.checkpoint .log-msg { color: var(--neon-amber); }
+    .log-entry.error { border-left: 2px solid var(--neon-red); }
+    .log-entry.success { border-left: 2px solid var(--neon-green); }
+
+    /* === CENTER: AGENT GRID === */
+    .center-area {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,212,255,0.1) transparent;
     }
-    .artifact-empty {
+    .center-area::-webkit-scrollbar { width: 4px; }
+    .center-area::-webkit-scrollbar-track { background: transparent; }
+    .center-area::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.1); border-radius: 2px; }
+
+    .agents-section-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .agents-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    /* === AGENT CARD === */
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+      cursor: default;
+    }
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--agent-color, var(--border));
+      opacity: 0.5;
+      transition: opacity 0.4s ease;
+    }
+    .agent-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+    }
+    .agent-card:hover::before { opacity: 1; }
+
+    /* Agent status states */
+    .agent-card.idle {
+      --status-color: var(--text-dim);
+    }
+    .agent-card.idle .robot-body { opacity: 0.4; }
+
+    .agent-card.working {
+      border-color: rgba(0,255,136,0.2);
+      animation: status-working 2s ease infinite;
+    }
+    .agent-card.working::before { opacity: 1; background: var(--neon-green); }
+    .agent-card.working .robot-body { animation: float 3s ease infinite; }
+
+    .agent-card.checkpoint {
+      border-color: rgba(251,191,36,0.3);
+      box-shadow: 0 0 12px rgba(251,191,36,0.15);
+    }
+    .agent-card.checkpoint::before { opacity: 1; background: var(--neon-amber); }
+
+    .agent-card.completed {
+      border-color: rgba(34,211,238,0.2);
+      box-shadow: 0 0 10px rgba(34,211,238,0.1);
+    }
+    .agent-card.completed::before { opacity: 1; background: var(--neon-cyan); }
+
+    .agent-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* Robot avatar */
+    .robot-avatar {
+      width: 44px; height: 44px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .robot-body {
+      width: 44px; height: 44px;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+    .robot-head {
+      width: 34px; height: 30px;
+      background: linear-gradient(135deg, var(--agent-color) 0%, color-mix(in srgb, var(--agent-color) 60%, #000) 100%);
+      border-radius: 8px 8px 6px 6px;
+      position: absolute;
+      top: 6px; left: 5px;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100px;
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      font-style: italic;
+      gap: 6px;
+      box-shadow: 0 0 10px color-mix(in srgb, var(--agent-color) 30%, transparent);
+    }
+    .robot-eye {
+      width: 6px; height: 6px;
+      background: #fff;
+      border-radius: 2px;
+      box-shadow: 0 0 6px #fff;
+      animation: robot-eye-blink 5s ease infinite;
+    }
+    .robot-eye:nth-child(2) { animation-delay: 0.1s; }
+    .robot-antenna {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 2px; height: 8px;
+      background: var(--agent-color);
+      border-radius: 2px;
+      transform-origin: bottom center;
+      animation: robot-antenna 3s ease infinite;
+    }
+    .robot-antenna::after {
+      content: '';
+      position: absolute;
+      top: -3px; left: -2px;
+      width: 6px; height: 6px;
+      background: var(--agent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--agent-color);
+    }
+    .working .robot-antenna::after {
+      background: var(--neon-green);
+      box-shadow: 0 0 12px var(--neon-green);
+      animation: pulse-glow 1s ease infinite;
+    }
+    .robot-visor {
+      position: absolute;
+      top: 12px; left: 8px; right: 8px;
+      height: 16px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .robot-visor::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      animation: scanline 3s linear infinite;
     }
 
-    @media (max-width: 1100px) {
-      .main { grid-template-columns: 1fr; }
-      .sidebar { max-height: 400px; }
-      .workstations { grid-template-columns: repeat(3, 1fr); }
+    .agent-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .agent-name {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .agent-role {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .agent-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 4px;
+    }
+    .agent-status-badge.idle { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+    .agent-status-badge.working { background: rgba(0,255,136,0.1); color: var(--neon-green); }
+    .agent-status-badge.checkpoint { background: rgba(251,191,36,0.1); color: var(--neon-amber); }
+    .agent-status-badge.completed { background: rgba(34,211,238,0.1); color: var(--neon-cyan); }
+
+    .agent-status-badge .status-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .agent-status-badge.working .status-dot { animation: pulse-glow 1s ease infinite; }
+
+    /* Code animation area */
+    .agent-code-area {
+      margin-top: 10px;
+      height: 48px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      line-height: 1.5;
+      padding: 6px 8px;
+      color: var(--text-dim);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .agent-card.working .agent-code-area,
+    .agent-card.checkpoint .agent-code-area {
+      opacity: 1;
+    }
+    .code-lines {
+      position: absolute;
+      top: 6px; left: 8px; right: 8px;
+      animation: code-scroll 8s linear infinite;
+    }
+    .code-line {
+      white-space: nowrap;
+      overflow: hidden;
+      height: 12px;
+    }
+    .code-line .kw { color: var(--neon-purple); }
+    .code-line .fn { color: var(--neon-cyan); }
+    .code-line .str { color: var(--neon-green); }
+    .code-line .cm { color: var(--text-dim); }
+    .code-line .op { color: var(--neon-amber); }
+
+    .typing-cursor {
+      display: inline-block;
+      width: 5px; height: 10px;
+      background: var(--neon-green);
+      animation: typing 0.8s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .agent-task-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--neon-green);
+      margin-top: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .agent-card.working .agent-task-label { opacity: 1; }
+
+    .agent-tools {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .agent-tool-tag {
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text-dim);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* === RIGHT PANEL: METRICS === */
+    .panel-right {
+      border-left: 1px solid var(--border);
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,212,255,0.1) transparent;
+    }
+
+    .metric-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .metric-section-title {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .metric-card {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .metric-label {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .metric-value {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      line-height: 1;
+    }
+    .metric-value.tokens { color: var(--neon-blue); }
+    .metric-value.time { color: var(--neon-purple); }
+    .metric-value.cost { color: var(--neon-green); }
+    .metric-value.coverage { color: var(--neon-amber); }
+    .metric-sub {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .metric-bar-container {
+      height: 4px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .metric-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.8s ease;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+    }
+    .metric-bar-fill.animated {
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan));
+      background-size: 40px 40px;
+      background-image: linear-gradient(
+        -45deg,
+        rgba(255,255,255,0.1) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255,255,255,0.1) 50%,
+        rgba(255,255,255,0.1) 75%,
+        transparent 75%
+      );
+      animation: progress-stripe 1s linear infinite;
+    }
+
+    /* Agent activity tracker in metrics */
+    .agent-activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .agent-activity-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.7rem;
+    }
+    .activity-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .activity-dot.idle { background: var(--text-dim); }
+    .activity-dot.working { background: var(--neon-green); animation: pulse-glow 1s ease infinite; }
+    .activity-dot.checkpoint { background: var(--neon-amber); }
+    .activity-dot.completed { background: var(--neon-cyan); }
+    .activity-name { color: var(--text-muted); flex: 1; }
+    .activity-status {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    /* Ceremony status */
+    .ceremony-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.75rem;
+    }
+    .ceremony-item:last-child { border: none; }
+    .ceremony-icon { font-size: 0.8rem; width: 20px; text-align: center; }
+    .ceremony-name { color: var(--text-muted); flex: 1; }
+    .ceremony-status {
+      font-family: var(--mono);
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .ceremony-status.active { background: rgba(0,255,136,0.1); color: var(--neon-green); }
+    .ceremony-status.pending { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+    .ceremony-status.done { background: rgba(34,211,238,0.1); color: var(--neon-cyan); }
+
+    /* === CHECKPOINT BAR (BOTTOM) === */
+    .checkpoint-bar {
+      padding: 10px 24px;
+      background: rgba(10,15,30,0.95);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .checkpoint-bar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 5%; right: 5%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+      opacity: 0.2;
+    }
+    .checkpoint-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .checkpoints {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      justify-content: center;
+    }
+    .checkpoint-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .checkpoint-circle {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border-bright);
+      background: transparent;
+      display: flex;
+      align-items: center; justify-content: center;
+      font-size: 10px;
+      transition: all 0.5s ease;
+      position: relative;
+    }
+    .checkpoint-circle.passed {
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(34,211,238,0.4);
+      color: #000;
+      animation: checkpoint-fill 0.5s ease;
+    }
+    .checkpoint-circle.active {
+      border-color: var(--neon-amber);
+      box-shadow: 0 0 12px rgba(251,191,36,0.3);
+    }
+    .checkpoint-circle.active::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid var(--neon-amber);
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    .checkpoint-num {
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      color: var(--text-dim);
+    }
+    .checkpoint-connector {
+      width: 24px; height: 2px;
+      background: var(--border);
+      transition: background 0.5s ease;
+    }
+    .checkpoint-connector.passed { background: var(--neon-cyan); }
+
+    .checkpoint-summary {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* === BOTTOM STATUS BAR === */
+    .bottom-bar {
+      padding: 8px 24px;
+      background: rgba(5,10,24,0.98);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+    .bottom-bar .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .connection-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--neon-green);
+    }
+    .connection-dot.error { background: var(--neon-red); }
+    .connection-dot.connecting { background: var(--neon-amber); animation: pulse-glow 1s ease infinite; }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 1200px) {
+      .main-content {
+        grid-template-columns: 250px 1fr 240px;
+      }
+    }
+    @media (max-width: 960px) {
+      .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      .panel-left, .panel-right {
+        max-height: 300px;
+        border: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .center-area { max-height: none; }
+      .top-center { display: none; }
+    }
+
+    /* === SCROLLBAR GLOBAL === */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.1); border-radius: 2px; }
+
+    /* Tooltip */
+    [data-tooltip] {
+      position: relative;
+    }
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10,15,30,0.95);
+      border: 1px solid var(--border-bright);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      white-space: nowrap;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    /* Animation for token counter */
+    .counter-tick {
+      animation: counter-tick 0.3s ease;
+    }
+
+    /* No-data state */
+    .no-data-msg {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+    }
+    .no-data-msg .big-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      opacity: 0.3;
+    }
+
+    /* ============================================================
+       COMPLETION SCREEN
+       ============================================================ */
+    .completion-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(5, 10, 24, 0.95);
+      backdrop-filter: blur(20px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .completion-overlay.visible {
+      display: flex;
+      opacity: 1;
+    }
+    .completion-container {
+      width: 90%;
+      max-width: 1100px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 48px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(13, 19, 38, 0.98), rgba(11, 16, 37, 0.98));
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 60px rgba(0, 212, 255, 0.15), 0 0 120px rgba(0, 212, 255, 0.05);
+      animation: completion-entrance 0.8s ease-out;
+    }
+    @keyframes completion-entrance {
+      0% { transform: scale(0.8) translateY(40px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .completion-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .completion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 24px;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(34, 211, 238, 0.1));
+      border: 1px solid var(--neon-green);
+      border-radius: 50px;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--neon-green);
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    .completion-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue), var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .completion-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .completion-sprint-release {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .sprint-tag, .release-tag {
+      padding: 6px 18px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .sprint-tag {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid var(--neon-purple);
+      color: var(--neon-purple);
+    }
+    .release-tag {
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid var(--neon-blue);
+      color: var(--neon-blue);
+    }
+
+    .completion-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 800px) {
+      .completion-grid { grid-template-columns: 1fr; }
+    }
+
+    .completion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .completion-card-title {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .completion-card-title::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+    }
+
+    .deliverable-list {
+      list-style: none;
+    }
+    .deliverable-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+    .deliverable-item:last-child { border-bottom: none; }
+    .deliverable-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--bg);
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .deliverable-name {
+      flex: 1;
+    }
+    .deliverable-agent {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      background: var(--bg-elevated);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .status-metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    .status-metric-row:last-child { border-bottom: none; }
+    .status-metric-label { color: var(--text-muted); }
+    .status-metric-value { color: var(--neon-cyan); font-family: var(--mono); font-weight: 600; }
+    .status-metric-value.green { color: var(--neon-green); }
+    .status-metric-value.amber { color: var(--neon-amber); }
+    .status-metric-value.purple { color: var(--neon-purple); }
+
+    .agent-participation {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .agent-part-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-elevated);
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+    .agent-part-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .agent-part-name { color: var(--text); font-weight: 500; }
+
+    .completion-footer {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .completion-footer-text {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .completion-btn {
+      margin-top: 16px;
+      padding: 12px 32px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: var(--font);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .completion-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
     }
   </style>
 </head>
 <body>
+  <!-- COMPLETION OVERLAY -->
+  <div class="completion-overlay" id="completionOverlay">
+    <div class="completion-container">
+      <div class="completion-header">
+        <div class="completion-badge">MISSION COMPLETE</div>
+        <div class="completion-title" id="completionTitle">Pipeline Finalizado com Sucesso</div>
+        <div class="completion-subtitle" id="completionSubtitle">Todos os agentes finalizaram suas atividades</div>
+        <div class="completion-sprint-release">
+          <span class="sprint-tag" id="completionSprint">Sprint 1</span>
+          <span class="release-tag" id="completionRelease">Release v1.0.0</span>
+        </div>
+      </div>
 
-  <!-- HEADER -->
-  <header class="header">
-    <div class="header-left">
-      <div class="header-logo">&#x2699;</div>
-      <h1>Forge<span>Squad</span></h1>
-      <span class="squad-badge" id="squadName">forge-engineering</span>
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="btnDemo" onclick="switchMode('demo')">Demo</button>
-        <button class="mode-btn" id="btnLive" onclick="switchMode('live')">Live</button>
+      <div class="completion-grid">
+        <!-- ENTREGAVEIS -->
+        <div class="completion-card">
+          <div class="completion-card-title">Entregaveis da Sprint</div>
+          <ul class="deliverable-list" id="deliverableList">
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Estimativa de Projeto</span><span class="deliverable-agent">Finance Advisor</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">User Stories + Criterios de Aceite</span><span class="deliverable-agent">Business Analyst</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Parecer Regulatorio</span><span class="deliverable-agent">Finance Advisor</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Arquitetura + ADRs</span><span class="deliverable-agent">Architect</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Sprint Backlog</span><span class="deliverable-agent">Tech Lead</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Estrategia de Testes</span><span class="deliverable-agent">QA Engineer</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Codigo Backend + Testes</span><span class="deliverable-agent">Dev Backend</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Codigo Frontend + Testes</span><span class="deliverable-agent">Dev Frontend</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Relatorio de Qualidade</span><span class="deliverable-agent">QA Engineer</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Code Review Report</span><span class="deliverable-agent">Tech Lead</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">API Docs + Runbook</span><span class="deliverable-agent">Tech Writer</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Deploy em Producao</span><span class="deliverable-agent">DevOps</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">SLOs + Observabilidade</span><span class="deliverable-agent">SRE</span></li>
+            <li class="deliverable-item"><span class="deliverable-check">&#10003;</span><span class="deliverable-name">Audit Trail Completo</span><span class="deliverable-agent">Project Manager</span></li>
+          </ul>
+        </div>
+
+        <!-- STATUS REPORT -->
+        <div class="completion-card">
+          <div class="completion-card-title">Status Report</div>
+          <div class="status-metric-row"><span class="status-metric-label">Status</span><span class="status-metric-value green" id="crStatus">CONCLUIDO</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Fases Concluidas</span><span class="status-metric-value" id="crPhases">10 / 10</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Steps Executados</span><span class="status-metric-value" id="crSteps">24 / 24</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Checkpoints Aprovados</span><span class="status-metric-value green" id="crCheckpoints">8 / 8</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Agentes Participantes</span><span class="status-metric-value purple" id="crAgents">11 / 11</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Tempo Total</span><span class="status-metric-value" id="crTime">00:00:00</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Tokens Consumidos</span><span class="status-metric-value" id="crTokens">0</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Custo Estimado</span><span class="status-metric-value green" id="crCost">$0.00</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Cobertura de Testes</span><span class="status-metric-value green" id="crCoverage">--</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Vulnerabilidades</span><span class="status-metric-value green" id="crVulns">0</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Metodologia</span><span class="status-metric-value purple" id="crMethodology">SCRUM</span></div>
+          <div class="status-metric-row"><span class="status-metric-label">Governance</span><span class="status-metric-value green">COMPLIANT</span></div>
+
+          <div class="completion-card-title" style="margin-top:24px;">Agentes Participantes</div>
+          <div class="agent-participation" id="agentParticipation">
+            <div class="agent-part-item"><div class="agent-part-avatar">SF</div><span class="agent-part-name">Sofia</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">RF</div><span class="agent-part-name">Rafael</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">CL</div><span class="agent-part-name">Clara</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">BR</div><span class="agent-part-name">Bruno</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">FE</div><span class="agent-part-name">Fernanda</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">QS</div><span class="agent-part-name">Quesia</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">DN</div><span class="agent-part-name">Daniela</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">RC</div><span class="agent-part-name">Ricardo</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">PD</div><span class="agent-part-name">Pedro</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">LC</div><span class="agent-part-name">Lucas</span></div>
+            <div class="agent-part-item"><div class="agent-part-avatar">MR</div><span class="agent-part-name">Marcos</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="completion-footer">
+        <div class="completion-footer-text">ForgeSquad v2.0 — Pipeline executado com sucesso | Audit trail salvo</div>
+        <button class="completion-btn" onclick="closeCompletion()">Voltar ao Dashboard</button>
       </div>
     </div>
-    <div class="header-right">
-      <div class="pipeline-progress">
-        <span>Pipeline</span>
-        <div class="bar-bg"><div class="bar-fill" id="pipelineBar"></div></div>
-        <span id="pipelinePercent">0%</span>
-      </div>
-      <div class="status-live" id="statusLabel">Executando</div>
-    </div>
-  </header>
-
-  <div class="live-banner" id="liveBanner">
-    <span class="live-dot"></span>
-    <span id="liveBannerText">Conectado ao state.json — atualizando a cada 2s</span>
   </div>
 
-  <div class="main">
-    <!-- OFFICE SCENE -->
-    <div class="office">
-      <!-- Spaceship interior elements -->
-      <div class="ship-viewport"></div>
-      <div class="ship-hull">
-        <div class="ship-window ship-window-1"></div>
-        <div class="ship-window ship-window-2"></div>
-        <div class="ship-window ship-window-3"></div>
-      </div>
-      <div class="wall-panel wall-panel-left"></div>
-      <div class="wall-panel wall-panel-right"></div>
-      <div class="wall-panel wall-panel-top"></div>
-      <div class="ambient-strip ambient-strip-1"></div>
-      <div class="ambient-strip ambient-strip-2"></div>
-      <div class="floor-grid"></div>
+  <div class="scanline-overlay"></div>
+  <div class="grid-bg"></div>
+  <canvas id="particles-canvas"></canvas>
 
-      <!-- HUD overlays -->
-      <div class="hud-element hud-circle"></div>
-      <div class="hud-element hud-bracket"></div>
-      <div class="hud-element hud-data">ALT 35000ft<br>SPD WARP 2.4<br>CREW 8/8<br>HULL 100%</div>
-
-      <div class="office-title">Ponte de Comando ForgeSquad &mdash; Monitoramento em Tempo Real</div>
-      <div class="workstations" id="workstations">
-        <!-- Generated by JS -->
+  <div class="app">
+    <!-- TOP BAR -->
+    <header class="top-bar">
+      <div class="top-left">
+        <div class="logo-mark">
+          <div class="hex">F</div>
+          <div class="ring"></div>
+        </div>
+        <div class="brand">
+          <h1>ForgeSquad</h1>
+          <div class="version">MISSION CONTROL v2.0</div>
+        </div>
       </div>
+      <div class="top-center">
+        <div class="project-name" id="projectName">AWAITING_PROJECT</div>
+        <div class="methodology-badge scrum" id="methodologyBadge">
+          <span class="dot"></span>
+          <span id="methodologyText">SCRUM</span>
+        </div>
+        <div class="sprint-info" id="sprintInfo">Sprint --</div>
+      </div>
+      <div class="top-right">
+        <div class="live-indicator" id="liveIndicator">
+          <div class="live-dot-container">
+            <div class="live-dot"></div>
+          </div>
+          <span id="statusLabel">CONNECTING</span>
+        </div>
+        <div class="clock" id="elapsedClock">00:00:00</div>
+      </div>
+    </header>
+
+    <!-- PIPELINE PROGRESS -->
+    <div class="pipeline-bar">
+      <div class="pipeline-label">Pipeline</div>
+      <div class="pipeline-phases" id="pipelinePhases"></div>
+      <div class="pipeline-pct" id="pipelinePct">0%</div>
     </div>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <!-- Phase tracker -->
-      <div class="sidebar-section">
-        <h3>Fases do Pipeline</h3>
-        <div class="phase-list" id="phaseList"></div>
-      </div>
+    <!-- MAIN 3-COLUMN -->
+    <div class="main-content">
+      <!-- LEFT: LOG FEED -->
+      <aside class="panel-left">
+        <div class="panel-header">
+          <h2>Activity Log</h2>
+          <span class="count" id="logCount">0</span>
+        </div>
+        <div class="log-feed" id="logFeed">
+          <div class="no-data-msg">
+            <div class="big-icon">&#x1F4E1;</div>
+            Waiting for agent activity...
+          </div>
+        </div>
+      </aside>
 
-      <!-- Metrics -->
-      <div class="sidebar-section">
-        <h3>Metricas</h3>
-        <div class="metrics-grid">
+      <!-- CENTER: AGENTS -->
+      <main class="center-area">
+        <div class="agents-section-title">
+          <span>&#x1F916; Agent Fleet</span>
+        </div>
+        <div class="agents-grid" id="agentsGrid"></div>
+      </main>
+
+      <!-- RIGHT: METRICS -->
+      <aside class="panel-right">
+        <div class="metric-section">
+          <div class="metric-section-title">Performance</div>
           <div class="metric-card">
-            <div class="metric-value" id="metricSteps">0/23</div>
-            <div class="metric-label">Steps</div>
+            <div class="metric-label">Tokens Used</div>
+            <div class="metric-value tokens" id="metricTokens">0</div>
+            <div class="metric-sub" id="metricTokensSub">input: 0 / output: 0</div>
           </div>
           <div class="metric-card">
-            <div class="metric-value" id="metricCheckpoints">0/8</div>
+            <div class="metric-label">Time Elapsed</div>
+            <div class="metric-value time" id="metricTime">00:00:00</div>
+            <div class="metric-sub" id="metricTimeSub">started --</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Estimated Cost</div>
+            <div class="metric-value cost" id="metricCost">$0.00</div>
+            <div class="metric-sub" id="metricCostSub">per 1M tokens: $3.00</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Test Coverage</div>
+            <div class="metric-value coverage" id="metricCoverage">--</div>
+            <div class="metric-bar-container">
+              <div class="metric-bar-fill animated" id="coverageBar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-section">
+          <div class="metric-section-title">Progress</div>
+          <div class="metric-card">
+            <div class="metric-label">Step</div>
+            <div class="metric-value" id="metricStep" style="font-size:1rem">0 / 0</div>
+            <div class="metric-bar-container">
+              <div class="metric-bar-fill animated" id="stepBar" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="metric-card">
             <div class="metric-label">Checkpoints</div>
+            <div class="metric-value" id="metricCheckpoints" style="font-size:1rem">0 / 8</div>
           </div>
           <div class="metric-card">
-            <div class="metric-value" id="metricArtifacts">0</div>
-            <div class="metric-label">Artefatos</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-value" id="metricTime">00:00</div>
-            <div class="metric-label">Tempo</div>
+            <div class="metric-label">Artifacts</div>
+            <div class="metric-value" id="metricArtifacts" style="font-size:1rem">0</div>
           </div>
         </div>
-      </div>
 
-      <!-- Artifact Preview -->
-      <div class="artifact-preview" id="artifactPreview">
-        <h3>Artefato em Geracao</h3>
-        <div class="artifact-empty" id="artifactEmpty">Aguardando inicio do pipeline...</div>
-        <div id="artifactContent" style="display:none; flex:1; display:flex; flex-direction:column; min-height:0;">
-          <div class="artifact-header">
-            <span class="artifact-filename" id="artifactFilename">—</span>
-            <span class="artifact-agent" id="artifactAgent">—</span>
-          </div>
-          <div class="artifact-code" id="artifactCode"></div>
+        <div class="metric-section">
+          <div class="metric-section-title">Agent Status</div>
+          <div class="agent-activity-list" id="agentActivityList"></div>
         </div>
-      </div>
 
-      <!-- Activity feed -->
-      <div class="activity-feed" id="activityFeed">
-        <h3>Atividade</h3>
+        <div class="metric-section">
+          <div class="metric-section-title">Ceremony</div>
+          <div id="ceremonyList"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- CHECKPOINT BAR -->
+    <div class="checkpoint-bar">
+      <div class="checkpoint-label">Checkpoints</div>
+      <div class="checkpoints" id="checkpointsContainer"></div>
+      <div class="checkpoint-summary" id="checkpointSummary">0/8 passed</div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <footer class="bottom-bar">
+      <div class="connection-status">
+        <span class="connection-dot" id="connectionDot"></span>
+        <span id="connectionText">Polling state.json...</span>
       </div>
-    </aside>
+      <div id="bottomMeta">ForgeSquad v2.0 | Powered by Claude</div>
+    </footer>
   </div>
 
 <script>
-// ===== AGENT DATA =====
+// ============================================================
+// ForgeSquad v2.0 Mission Control Dashboard
+// ============================================================
+
 const agents = [
-  {
-    id: 'architect', name: 'Sofia', fullName: 'Arq. Sofia Sistemas', role: 'Arquiteta',
-    color: '#3b82f6', tools: ['Web Search'],
-    hoodie: '#3b82f6', hair: '#1e293b', glasses: true, headphones: false,
-    skinTone: '#fbbf24'
-  },
-  {
-    id: 'tech-lead', name: 'Rafael', fullName: 'TL Rafael Review', role: 'Tech Lead',
-    color: '#8b5cf6', tools: ['Copilot', 'Devin'],
-    hoodie: '#8b5cf6', hair: '#78350f', glasses: true, headphones: true,
-    skinTone: '#f59e0b'
-  },
-  {
-    id: 'business-analyst', name: 'Clara', fullName: 'BA Clara Requisitos', role: 'Business Analyst',
-    color: '#ec4899', tools: ['Kiro'],
-    hoodie: '#ec4899', hair: '#b91c1c', glasses: false, headphones: false,
-    skinTone: '#fcd34d'
-  },
-  {
-    id: 'dev-backend', name: 'Bruno', fullName: 'Dev Bruno Backend', role: 'Dev Backend',
-    color: '#22c55e', tools: ['Devin', 'Copilot', 'StackSpot'],
-    hoodie: '#22c55e', hair: '#1e293b', glasses: false, headphones: true,
-    skinTone: '#f59e0b'
-  },
-  {
-    id: 'dev-frontend', name: 'Fernanda', fullName: 'Dev Fernanda Front', role: 'Dev Frontend',
-    color: '#f59e0b', tools: ['Devin', 'Copilot'],
-    hoodie: '#f59e0b', hair: '#7c2d12', glasses: true, headphones: true,
-    skinTone: '#fcd34d'
-  },
-  {
-    id: 'qa-engineer', name: 'Quesia', fullName: 'QA Quesia Quality', role: 'QA Engineer',
-    color: '#22d3ee', tools: ['Devin', 'Copilot'],
-    hoodie: '#22d3ee', hair: '#1e293b', glasses: true, headphones: false,
-    skinTone: '#fbbf24'
-  },
-  {
-    id: 'tech-writer', name: 'Daniela', fullName: 'TW Daniela Docs', role: 'Tech Writer',
-    color: '#f472b6', tools: ['Web Search'],
-    hoodie: '#f472b6', hair: '#92400e', glasses: false, headphones: false,
-    skinTone: '#fcd34d'
-  },
-  {
-    id: 'finance-advisor', name: 'Ricardo', fullName: 'FIN Ricardo Regulação', role: 'Finance Advisor',
-    color: '#14b8a6', tools: ['Web Search', 'Bacen', 'BIAN'],
-    hoodie: '#14b8a6', hair: '#292524', glasses: true, headphones: false,
-    skinTone: '#fbbf24'
-  },
-  {
-    id: 'project-manager', name: 'Pedro', fullName: 'PM Pedro Progress', role: 'Project Manager',
-    color: '#a78bfa', tools: ['Jira Sync'],
-    hoodie: '#a78bfa', hair: '#1e293b', glasses: true, headphones: false,
-    skinTone: '#f59e0b'
-  },
-  {
-    id: 'sre', name: 'Lucas', fullName: 'SRE Lucas Reliability', role: 'SRE',
-    color: '#ef4444', tools: ['Prometheus', 'Grafana', 'PagerDuty'],
-    hoodie: '#ef4444', hair: '#1e293b', glasses: true, headphones: true,
-    skinTone: '#fbbf24'
-  },
-  {
-    id: 'devops', name: 'Marcos', fullName: 'DevOps Marcos Pipeline', role: 'DevOps',
-    color: '#f59e0b', tools: ['Terraform', 'ArgoCD', 'K8s'],
-    hoodie: '#f59e0b', hair: '#292524', glasses: false, headphones: true,
-    skinTone: '#fcd34d'
-  }
+  { id: 'architect', name: 'Sofia', fullName: 'Arq. Sofia Sistemas', role: 'Architect', color: '#3b82f6', tools: ['Web Search'] },
+  { id: 'tech-lead', name: 'Rafael', fullName: 'TL Rafael Review', role: 'Tech Lead', color: '#8b5cf6', tools: ['Copilot', 'Devin'] },
+  { id: 'business-analyst', name: 'Clara', fullName: 'BA Clara Requisitos', role: 'Business Analyst', color: '#ec4899', tools: ['Kiro'] },
+  { id: 'dev-backend', name: 'Bruno', fullName: 'Dev Bruno Backend', role: 'Dev Backend', color: '#22c55e', tools: ['Devin', 'Copilot', 'StackSpot'] },
+  { id: 'dev-frontend', name: 'Fernanda', fullName: 'Dev Fernanda Front', role: 'Dev Frontend', color: '#f59e0b', tools: ['Devin', 'Copilot'] },
+  { id: 'qa-engineer', name: 'Quesia', fullName: 'QA Quesia Quality', role: 'QA Engineer', color: '#22d3ee', tools: ['Devin', 'Copilot'] },
+  { id: 'tech-writer', name: 'Daniela', fullName: 'TW Daniela Docs', role: 'Tech Writer', color: '#f472b6', tools: ['Web Search'] },
+  { id: 'finance-advisor', name: 'Ricardo', fullName: 'FIN Ricardo Regulacao', role: 'Finance Advisor', color: '#14b8a6', tools: ['Web Search', 'Bacen', 'BIAN'] },
+  { id: 'project-manager', name: 'Pedro', fullName: 'PM Pedro Progress', role: 'Project Manager', color: '#a78bfa', tools: ['Jira Sync'] },
+  { id: 'sre', name: 'Lucas', fullName: 'SRE Lucas Reliability', role: 'SRE', color: '#ef4444', tools: ['Prometheus', 'Grafana', 'PagerDuty'] },
+  { id: 'devops', name: 'Marcos', fullName: 'DevOps Marcos Pipeline', role: 'DevOps', color: '#f59e0b', tools: ['Terraform', 'ArgoCD', 'K8s'] }
 ];
 
 const phases = [
-  { name: 'Estimativa', icon: '&#x1F4CA;' },
-  { name: 'Requisitos', icon: '&#x1F4CB;' },
-  { name: 'Arquitetura', icon: '&#x1F3D7;' },
-  { name: 'Planejamento', icon: '&#x1F4C5;' },
-  { name: 'Implementacao', icon: '&#x2699;' },
-  { name: 'Qualidade', icon: '&#x1F50D;' },
-  { name: 'Code Review', icon: '&#x1F4AC;' },
-  { name: 'Documentacao', icon: '&#x1F4DD;' },
-  { name: 'Deploy', icon: '&#x1F680;' },
-  { name: 'Sustentacao', icon: '&#x1F527;' }
+  { name: 'Estimativa', icon: '\u{1F4CA}' },
+  { name: 'Requisitos', icon: '\u{1F4CB}' },
+  { name: 'Arquitetura', icon: '\u{1F3D7}' },
+  { name: 'Planejamento', icon: '\u{1F4C5}' },
+  { name: 'Implementacao', icon: '\u{2699}\uFE0F' },
+  { name: 'Qualidade', icon: '\u{1F50D}' },
+  { name: 'Code Review', icon: '\u{1F4AC}' },
+  { name: 'Documentacao', icon: '\u{1F4DD}' },
+  { name: 'Deploy', icon: '\u{1F680}' },
+  { name: 'Sustentacao', icon: '\u{1F527}' }
 ];
 
-// Pipeline simulation steps
-const simulation = [
-  { step: 1, phase: 0, working: ['architect', 'project-manager'], task: { 'architect': 'Analisando complexidade do projeto...', 'project-manager': 'Calculando esforco e custos...' }, msg: '<strong>Sofia</strong> e <strong>Pedro</strong> analisando complexidade do projeto', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Estimativa: Opcao A (Quality-First) selecionada' },
-  { step: 2, phase: 1, working: ['business-analyst', 'architect'], task: { 'business-analyst': 'Elicitando requisitos com Kiro...', 'architect': 'Validando NFRs...' }, msg: '<strong>BA Clara</strong> iniciou elicitacao de requisitos' },
-  { step: 3, phase: 1, working: ['architect'], done: ['business-analyst'], task: { 'architect': 'Revisando user stories...' }, msg: '<strong>Sofia</strong> revisando user stories e NFRs', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Aprovacao de requisitos' },
-  { step: 4, phase: 1, working: ['finance-advisor'], task: { 'finance-advisor': 'Analisando compliance regulatorio (Bacen/BIAN)...' }, msg: '<strong>Ricardo</strong> emitindo parecer de negocios — setor financeiro' },
-  { step: 5, phase: 2, working: ['architect'], task: { 'architect': 'Projetando arquitetura...' }, msg: '<strong>Sofia</strong> projetando arquitetura do sistema' },
-  { step: 6, phase: 2, working: ['architect'], task: { 'architect': 'Gerando ADRs...' }, msg: '<strong>Sofia</strong> gerando ADRs e guardrails', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Aprovacao de arquitetura' },
-  { step: 7, phase: 2, working: ['finance-advisor', 'architect'], task: { 'finance-advisor': 'Validando compliance da arquitetura (PCI DSS/LGPD)...', 'architect': 'Revisando com Ricardo...' }, msg: '<strong>Ricardo</strong> validacao regulatoria da arquitetura — BIAN/Bacen' },
-  { step: 8, phase: 3, working: ['tech-lead', 'qa-engineer'], task: { 'tech-lead': 'Quebrando em tasks...', 'qa-engineer': 'Definindo estrategia de testes...' }, msg: '<strong>Rafael</strong> planejando sprint backlog' },
-  { step: 9, phase: 3, working: ['tech-lead'], done: ['qa-engineer'], task: { 'tech-lead': 'Priorizando backlog...' }, msg: '<strong>Quesia</strong> <span class="done">finalizou</span> estrategia de testes', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Aprovacao do plano' },
-  { step: 10, phase: 4, working: ['dev-backend'], task: { 'dev-backend': 'Implementando APIs com Devin...' }, msg: '<strong>Bruno</strong> implementando APIs com Devin' },
-  { step: 11, phase: 4, working: ['dev-frontend', 'dev-backend'], task: { 'dev-frontend': 'Criando componentes UI...', 'dev-backend': 'Configurando banco de dados...' }, msg: '<strong>Fernanda</strong> criando componentes UI com Copilot' },
-  { step: 12, phase: 4, working: ['dev-frontend', 'dev-backend'], task: { 'dev-frontend': 'Integrando com APIs...', 'dev-backend': 'Finalizando endpoints...' }, msg: '<strong>Bruno</strong> e <strong>Fernanda</strong> integrando front + back' },
-  { step: 13, phase: 4, done: ['dev-backend', 'dev-frontend'], working: ['architect'], task: { 'architect': 'Validando integracao...' }, msg: '<strong>Sofia</strong> validando integracao arquitetural' },
-  { step: 14, phase: 5, working: ['qa-engineer'], task: { 'qa-engineer': 'Executando testes unitarios...' }, msg: '<strong>Quesia</strong> executando testes unitarios' },
-  { step: 15, phase: 5, working: ['qa-engineer'], task: { 'qa-engineer': 'Testes de integracao...' }, msg: '<strong>Quesia</strong> rodando testes de integracao' },
-  { step: 16, phase: 5, working: ['qa-engineer'], task: { 'qa-engineer': 'Testes de performance...' }, msg: '<strong>Quesia</strong> <span class="done">cobertura 87%</span> - testes de performance' },
-  { step: 17, phase: 6, working: ['tech-lead', 'architect'], task: { 'tech-lead': 'Revisando codigo...', 'architect': 'Review arquitetural...' }, msg: '<strong>Rafael</strong> e <strong>Sofia</strong> em code review' },
-  { step: 18, phase: 6, working: ['tech-lead'], task: { 'tech-lead': 'Aprovando mudancas...' }, msg: '<strong>Rafael</strong> <span class="done">aprovou</span> code review', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Quality Gate' },
-  { step: 19, phase: 7, working: ['tech-writer'], task: { 'tech-writer': 'Gerando API docs...' }, msg: '<strong>Daniela</strong> gerando documentacao de API' },
-  { step: 20, phase: 7, working: ['tech-writer'], task: { 'tech-writer': 'Escrevendo runbooks...' }, msg: '<strong>Daniela</strong> escrevendo runbooks e ADRs' },
-  { step: 21, phase: 8, working: ['dev-backend', 'architect'], task: { 'dev-backend': 'Configurando CI/CD...', 'architect': 'Validando infra...' }, msg: '<strong>Bruno</strong> configurando pipeline CI/CD com StackSpot', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Go/No-Go Deploy' },
-  { step: 22, phase: 8, working: ['finance-advisor'], task: { 'finance-advisor': 'Sign-off regulatorio pre-producao (Bacen/PCI DSS/LGPD)...' }, msg: '<strong>Ricardo</strong> sign-off regulatorio final — checklist de compliance' },
-  { step: 23, phase: 8, working: ['dev-backend'], done: ['finance-advisor'], task: { 'dev-backend': 'Deploy em producao...' }, msg: '<strong>Bruno</strong> deploy em producao <span class="done">APROVADO por Ricardo</span>' },
-  { step: 24, phase: 9, working: ['project-manager', 'architect'], task: { 'project-manager': 'Gerando report final...', 'architect': 'Handover de sustentacao...' }, msg: '<strong>Pedro</strong> gerando report final', checkpoint: true, checkMsg: '<span class="checkpoint">CHECKPOINT</span> Handover completo' },
+const phaseMap = {};
+phases.forEach((p, i) => { phaseMap[p.name.toLowerCase()] = i; });
+
+const checkpointNames = [
+  'Estimativa', 'Requisitos', 'Arquitetura', 'Sprint Plan',
+  'Code Done', 'QA Pass', 'Docs Ready', 'Deploy OK'
 ];
 
-// ===== ROBOT SVG GENERATOR =====
-function createRobotSVG(agent) {
-  const h = agent.hoodie;
-  const skin = agent.skinTone;
-  const hair = agent.hair;
-  // Each robot is a cute tech-worker robot with hoodie, optional glasses/headphones
-  return `
-  <svg viewBox="0 0 80 100" xmlns="http://www.w3.org/2000/svg">
-    <!-- Antenna -->
-    <line x1="40" y1="8" x2="40" y2="16" stroke="#64748b" stroke-width="2"/>
-    <circle cx="40" cy="6" r="3" fill="${agent.color}" opacity="0.8">
-      <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
-    </circle>
+const ceremonies = [
+  { name: 'Sprint Planning', icon: '\u{1F4CB}' },
+  { name: 'Daily Standup', icon: '\u{2615}' },
+  { name: 'Code Review', icon: '\u{1F50D}' },
+  { name: 'Retrospective', icon: '\u{1F4AD}' },
+  { name: 'Demo', icon: '\u{1F3AC}' }
+];
 
-    <!-- Head -->
-    <rect x="24" y="16" width="32" height="28" rx="8" fill="#94a3b8"/>
-    <rect x="26" y="18" width="28" height="24" rx="6" fill="#cbd5e1"/>
+// Fake code snippets for the typing animation
+const codeSnippets = {
+  'architect': [
+    '<span class="kw">interface</span> <span class="fn">PaymentGateway</span> {',
+    '  <span class="fn">processPayment</span>(amount: <span class="kw">number</span>): <span class="kw">Promise</span>;',
+    '  <span class="fn">validateCard</span>(card: <span class="fn">CardInfo</span>): <span class="kw">boolean</span>;',
+    '}',
+    '<span class="cm">// ADR-001: Microservices Architecture</span>',
+    '<span class="kw">export class</span> <span class="fn">SystemDesign</span> {',
+    '  <span class="kw">private</span> services: <span class="fn">ServiceMap</span>;',
+    '  <span class="fn">defineContract</span>(): <span class="fn">OpenAPI</span> {}',
+    '}'
+  ],
+  'tech-lead': [
+    '<span class="cm">// Code Review: PR #142</span>',
+    '<span class="kw">if</span> (coverage <span class="op">&lt;</span> <span class="str">80</span>) {',
+    '  <span class="fn">requestChanges</span>(<span class="str">"Coverage too low"</span>);',
+    '}',
+    '<span class="fn">approveArchitecture</span>(design);',
+    '<span class="kw">const</span> standards <span class="op">=</span> <span class="fn">enforceGuidelines</span>();'
+  ],
+  'business-analyst': [
+    '<span class="cm"># User Story: US-042</span>',
+    '<span class="kw">As a</span> bank customer,',
+    '<span class="kw">I want to</span> transfer funds,',
+    '<span class="kw">So that</span> I can pay bills.',
+    '<span class="cm">## Acceptance Criteria</span>',
+    '<span class="op">-</span> Max transfer: <span class="str">R$ 50.000</span>',
+    '<span class="op">-</span> Requires <span class="fn">2FA</span> validation'
+  ],
+  'dev-backend': [
+    '<span class="kw">@RestController</span>',
+    '<span class="kw">class</span> <span class="fn">TransferController</span> {',
+    '  <span class="kw">@PostMapping</span>(<span class="str">"/transfer"</span>)',
+    '  <span class="kw">fun</span> <span class="fn">execute</span>(req: <span class="fn">TransferDTO</span>) {',
+    '    <span class="fn">validateBalance</span>(req.amount);',
+    '    <span class="fn">pixService</span>.send(req);',
+    '    <span class="kw">return</span> <span class="fn">Response</span>.ok();',
+    '  }',
+    '}'
+  ],
+  'dev-frontend': [
+    '<span class="kw">export function</span> <span class="fn">TransferForm</span>() {',
+    '  <span class="kw">const</span> [amount, setAmount] <span class="op">=</span> <span class="fn">useState</span>(<span class="str">0</span>);',
+    '  <span class="kw">return</span> (',
+    '    <span class="op">&lt;</span><span class="fn">Card</span> variant<span class="op">=</span><span class="str">"glass"</span><span class="op">&gt;</span>',
+    '      <span class="op">&lt;</span><span class="fn">CurrencyInput</span> /<span class="op">&gt;</span>',
+    '      <span class="op">&lt;</span><span class="fn">SubmitButton</span> /<span class="op">&gt;</span>',
+    '    <span class="op">&lt;/</span><span class="fn">Card</span><span class="op">&gt;</span>',
+    '  );',
+    '}'
+  ],
+  'qa-engineer': [
+    '<span class="kw">describe</span>(<span class="str">"Transfer Flow"</span>, () <span class="op">=></span> {',
+    '  <span class="kw">it</span>(<span class="str">"validates amount"</span>, () <span class="op">=></span> {',
+    '    <span class="fn">expect</span>(validate(<span class="str">-1</span>)).<span class="fn">toBeFalsy</span>();',
+    '  });',
+    '  <span class="kw">it</span>(<span class="str">"requires 2FA"</span>, () <span class="op">=></span> {',
+    '    <span class="fn">mockAuth</span>().<span class="fn">verify2FA</span>();',
+    '    <span class="fn">expect</span>(result).<span class="fn">toBeTruthy</span>();',
+    '  });',
+    '});'
+  ],
+  'tech-writer': [
+    '<span class="cm">## API Reference</span>',
+    '',
+    '<span class="kw">### POST</span> <span class="fn">/api/v1/transfer</span>',
+    '',
+    '<span class="op">|</span> Field <span class="op">|</span> Type <span class="op">|</span> Required <span class="op">|</span>',
+    '<span class="op">|</span> amount <span class="op">|</span> <span class="fn">number</span> <span class="op">|</span> <span class="str">yes</span> <span class="op">|</span>',
+    '<span class="op">|</span> dest <span class="op">|</span> <span class="fn">string</span> <span class="op">|</span> <span class="str">yes</span> <span class="op">|</span>'
+  ],
+  'finance-advisor': [
+    '<span class="cm">// Bacen Compliance Check</span>',
+    '<span class="kw">const</span> rules <span class="op">=</span> {',
+    '  pixLimit: <span class="str">50000</span>,',
+    '  kycRequired: <span class="str">true</span>,',
+    '  amlCheck: <span class="str">true</span>,',
+    '  bianCompliant: <span class="str">true</span>,',
+    '};',
+    '<span class="fn">validateRegulation</span>(rules);'
+  ],
+  'project-manager': [
+    '<span class="cm"># Sprint Backlog</span>',
+    '<span class="op">-</span> [<span class="str">x</span>] Estimation complete',
+    '<span class="op">-</span> [<span class="str">x</span>] Requirements signed',
+    '<span class="op">-</span> [ ] Architecture review',
+    '<span class="op">-</span> [ ] Implementation start',
+    '<span class="fn">velocity</span>: <span class="str">42 pts/sprint</span>',
+    '<span class="fn">burndown</span>: <span class="str">on track</span>'
+  ],
+  'sre': [
+    '<span class="cm"># Prometheus Alert Rules</span>',
+    '<span class="kw">groups</span>:',
+    '  <span class="op">-</span> name: <span class="str">sla</span>',
+    '    rules:',
+    '      <span class="op">-</span> alert: <span class="fn">HighLatency</span>',
+    '        expr: <span class="str">p99 > 200ms</span>',
+    '        for: <span class="str">5m</span>',
+    '      <span class="op">-</span> alert: <span class="fn">ErrorRate</span>',
+    '        expr: <span class="str">errors > 0.1%</span>'
+  ],
+  'devops': [
+    '<span class="cm"># Terraform: EKS Cluster</span>',
+    '<span class="kw">resource</span> <span class="str">"aws_eks_cluster"</span> <span class="fn">"main"</span> {',
+    '  name    <span class="op">=</span> <span class="str">"forge-prod"</span>',
+    '  version <span class="op">=</span> <span class="str">"1.28"</span>',
+    '  vpc_config {',
+    '    subnet_ids <span class="op">=</span> <span class="fn">var</span>.subnets',
+    '  }',
+    '}'
+  ]
+};
 
-    <!-- Hair/Cap -->
-    <path d="M24 24 Q24 14 40 14 Q56 14 56 24 L56 20 Q56 12 40 12 Q24 12 24 20Z" fill="${hair}" opacity="0.9"/>
+// ============================================================
+// STATE
+// ============================================================
+let agentStates = {};
+agents.forEach(a => { agentStates[a.id] = { status: 'idle', task: '' }; });
+let currentPhase = -1;
+let checkpointsPassed = 0;
+let logEntries = [];
+let startTime = Date.now();
+let lastStateHash = '';
+let totalTokens = 0;
+let inputTokens = 0;
+let outputTokens = 0;
+let pollOk = false;
 
-    <!-- Eyes (LED style) -->
-    <circle cx="34" cy="30" r="4" fill="#0f172a"/>
-    <circle cx="46" cy="30" r="4" fill="#0f172a"/>
-    <circle cx="34" cy="30" r="2.5" fill="${agent.color}">
-      <animate attributeName="r" values="2.5;2;2.5" dur="3s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="46" cy="30" r="2.5" fill="${agent.color}">
-      <animate attributeName="r" values="2.5;2;2.5" dur="3s" repeatCount="indefinite"/>
-    </circle>
-    <!-- Eye glare -->
-    <circle cx="35.5" cy="28.5" r="1" fill="white" opacity="0.7"/>
-    <circle cx="47.5" cy="28.5" r="1" fill="white" opacity="0.7"/>
+const squadParam = new URLSearchParams(window.location.search).get('squad') || 'default';
 
-    ${agent.glasses ? `
-    <!-- Glasses -->
-    <rect x="28" y="26" width="12" height="9" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
-    <rect x="42" y="26" width="12" height="9" rx="3" fill="none" stroke="#475569" stroke-width="1.5"/>
-    <line x1="40" y1="30" x2="42" y2="30" stroke="#475569" stroke-width="1.5"/>
-    ` : ''}
-
-    ${agent.headphones ? `
-    <!-- Headphones -->
-    <path d="M22 26 Q22 10 40 10 Q58 10 58 26" fill="none" stroke="#334155" stroke-width="3"/>
-    <rect x="18" y="22" width="6" height="10" rx="3" fill="#334155"/>
-    <rect x="56" y="22" width="6" height="10" rx="3" fill="#334155"/>
-    <rect x="19" y="24" width="4" height="6" rx="2" fill="${agent.color}" opacity="0.5"/>
-    <rect x="57" y="24" width="4" height="6" rx="2" fill="${agent.color}" opacity="0.5"/>
-    ` : ''}
-
-    <!-- Mouth (smile) -->
-    <path d="M35 37 Q40 41 45 37" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
-
-    <!-- Neck -->
-    <rect x="36" y="44" width="8" height="4" rx="2" fill="#94a3b8"/>
-
-    <!-- Hoodie Body -->
-    <path d="M20 52 Q20 48 28 48 L52 48 Q60 48 60 52 L62 80 Q62 84 58 84 L22 84 Q18 84 18 80Z" fill="${h}"/>
-
-    <!-- Hoodie collar / zip -->
-    <line x1="40" y1="48" x2="40" y2="72" stroke="${h}" stroke-width="2" opacity="0.6" stroke-dasharray="2 3"/>
-    <path d="M32 48 Q36 54 40 48 Q44 54 48 48" fill="none" stroke="${h}" stroke-width="1" opacity="0.4"/>
-
-    <!-- Hood string -->
-    <line x1="36" y1="54" x2="34" y2="62" stroke="white" stroke-width="1" opacity="0.5"/>
-    <line x1="44" y1="54" x2="46" y2="62" stroke="white" stroke-width="1" opacity="0.5"/>
-
-    <!-- Pocket -->
-    <rect x="30" y="66" width="20" height="10" rx="4" fill="${h}" stroke="white" stroke-width="0.5" opacity="0.3"/>
-
-    <!-- Arms -->
-    <path d="M20 52 L12 68 L16 70 L22 58" fill="${h}"/>
-    <path d="M60 52 L68 68 L64 70 L58 58" fill="${h}"/>
-
-    <!-- Hands (metallic) -->
-    <circle cx="14" cy="70" r="4" fill="#94a3b8"/>
-    <circle cx="66" cy="70" r="4" fill="#94a3b8"/>
-
-    <!-- Sneakers -->
-    <rect x="22" y="84" width="14" height="8" rx="4" fill="#1e293b"/>
-    <rect x="44" y="84" width="14" height="8" rx="4" fill="#1e293b"/>
-    <rect x="22" y="86" width="14" height="3" rx="2" fill="${agent.color}" opacity="0.6"/>
-    <rect x="44" y="86" width="14" height="3" rx="2" fill="${agent.color}" opacity="0.6"/>
-    <!-- Sole -->
-    <rect x="20" y="90" width="16" height="3" rx="1.5" fill="white" opacity="0.3"/>
-    <rect x="44" y="90" width="16" height="3" rx="1.5" fill="white" opacity="0.3"/>
-
-    <!-- Sticker/Badge on hoodie -->
-    <circle cx="50" cy="58" r="4" fill="white" opacity="0.2"/>
-    <text x="50" y="60" text-anchor="middle" font-size="5" fill="white" opacity="0.6">&lt;/&gt;</text>
-  </svg>`;
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  renderPipeline();
+  renderAgents();
+  renderCheckpoints();
+  renderAgentActivity();
+  renderCeremonies();
+  startParticles();
+  startClock();
+  startPolling();
+  addLog('System initialized. Awaiting state.json...', '\u{1F4E1}');
 }
 
-// ===== RENDER WORKSTATIONS =====
-function renderWorkstations() {
-  const container = document.getElementById('workstations');
-  container.innerHTML = agents.map(agent => `
-    <div class="workstation status-idle" id="ws-${agent.id}" data-agent="${agent.id}">
-      <div class="ws-status-dot"></div>
-      <div class="robot-avatar">${createRobotSVG(agent)}</div>
-      <div class="desk-surface">
-        <div class="desk-monitor">
-          <div class="desk-monitor-screen">
-            <div class="code-line"></div>
-            <div class="code-line"></div>
-            <div class="code-line"></div>
-          </div>
-        </div>
-        <div class="desk-coffee"></div>
-      </div>
-      <div class="agent-name">${agent.name}</div>
-      <div class="agent-role">${agent.role}</div>
-      <div class="agent-task" id="task-${agent.id}">Aguardando...</div>
-      <div class="agent-tools">
-        ${agent.tools.map(t => `<span class="tool-badge">${t}</span>`).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-// ===== RENDER PHASES =====
-function renderPhases() {
-  const container = document.getElementById('phaseList');
+// ============================================================
+// RENDER PIPELINE
+// ============================================================
+function renderPipeline() {
+  const container = document.getElementById('pipelinePhases');
   container.innerHTML = phases.map((p, i) => `
-    <div class="phase-item pending" id="phase-${i}">
-      <div class="phase-dot"></div>
-      <span>${p.name}</span>
+    <div class="phase-node" id="phase-${i}">
+      <div class="phase-dot">${p.icon}</div>
+      <div class="phase-name">${p.name}</div>
+      ${i < phases.length - 1 ? '<div class="phase-line"></div>' : ''}
     </div>
   `).join('');
 }
 
-// ===== UPDATE FUNCTIONS =====
-function setAgentStatus(agentId, status, task) {
-  const ws = document.getElementById(`ws-${agentId}`);
-  const taskEl = document.getElementById(`task-${agentId}`);
-  if (!ws) return;
-  ws.className = `workstation status-${status}`;
-  if (task) taskEl.textContent = task;
-  else if (status === 'idle') taskEl.textContent = 'Aguardando...';
-  else if (status === 'done') taskEl.textContent = 'Concluido';
-}
-
-function setPhase(index) {
+function setPhase(idx) {
+  if (idx === currentPhase) return;
+  currentPhase = idx;
   phases.forEach((_, i) => {
     const el = document.getElementById(`phase-${i}`);
-    if (i < index) el.className = 'phase-item completed';
-    else if (i === index) el.className = 'phase-item active';
-    else el.className = 'phase-item pending';
+    el.classList.remove('completed', 'active');
+    if (i < idx) el.classList.add('completed');
+    else if (i === idx) el.classList.add('active');
+  });
+  const pct = Math.round(((idx + 1) / phases.length) * 100);
+  document.getElementById('pipelinePct').textContent = pct + '%';
+}
+
+// ============================================================
+// RENDER AGENTS
+// ============================================================
+function renderAgents() {
+  const grid = document.getElementById('agentsGrid');
+  grid.innerHTML = agents.map(a => {
+    const snippets = codeSnippets[a.id] || codeSnippets['dev-backend'];
+    const doubledSnippets = [...snippets, ...snippets];
+    return `
+    <div class="agent-card idle" id="agent-${a.id}" style="--agent-color: ${a.color}">
+      <div class="agent-top">
+        <div class="robot-avatar">
+          <div class="robot-body">
+            <div class="robot-antenna"></div>
+            <div class="robot-head">
+              <div class="robot-eye"></div>
+              <div class="robot-eye"></div>
+            </div>
+          </div>
+        </div>
+        <div class="agent-info">
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-role">${a.role}</div>
+          <div class="agent-status-badge idle" id="badge-${a.id}">
+            <span class="status-dot"></span>
+            <span class="badge-text">IDLE</span>
+          </div>
+        </div>
+      </div>
+      <div class="agent-code-area">
+        <div class="code-lines">
+          ${doubledSnippets.map(l => `<div class="code-line">${l}</div>`).join('')}
+        </div>
+        <span class="typing-cursor"></span>
+      </div>
+      <div class="agent-task-label" id="task-${a.id}"></div>
+      <div class="agent-tools">
+        ${a.tools.map(t => `<span class="agent-tool-tag">${t}</span>`).join('')}
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function setAgentStatus(agentId, status, task) {
+  const card = document.getElementById(`agent-${agentId}`);
+  const badge = document.getElementById(`badge-${agentId}`);
+  const taskLabel = document.getElementById(`task-${agentId}`);
+  if (!card) return;
+
+  card.className = `agent-card ${status}`;
+  badge.className = `agent-status-badge ${status}`;
+
+  const statusText = { idle: 'IDLE', working: 'WORKING', checkpoint: 'CHECKPOINT', completed: 'COMPLETED', done: 'COMPLETED' };
+  badge.querySelector('.badge-text').textContent = statusText[status] || status.toUpperCase();
+
+  taskLabel.textContent = task || '';
+  agentStates[agentId] = { status, task: task || '' };
+
+  updateAgentActivity();
+}
+
+// ============================================================
+// RENDER CHECKPOINTS
+// ============================================================
+function renderCheckpoints() {
+  const container = document.getElementById('checkpointsContainer');
+  let html = '';
+  for (let i = 0; i < 8; i++) {
+    if (i > 0) html += `<div class="checkpoint-connector" id="chk-conn-${i}"></div>`;
+    html += `
+      <div class="checkpoint-node">
+        <div class="checkpoint-circle" id="chk-${i}" data-tooltip="${checkpointNames[i]}">
+          ${i + 1}
+        </div>
+        <div class="checkpoint-num">${checkpointNames[i].substring(0, 6)}</div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+function setCheckpoints(passed) {
+  if (passed === checkpointsPassed) return;
+  checkpointsPassed = passed;
+  for (let i = 0; i < 8; i++) {
+    const circle = document.getElementById(`chk-${i}`);
+    const conn = document.getElementById(`chk-conn-${i}`);
+    circle.classList.remove('passed', 'active');
+    if (conn) conn.classList.remove('passed');
+    if (i < passed) {
+      circle.classList.add('passed');
+      circle.innerHTML = '\u2713';
+      if (conn) conn.classList.add('passed');
+    } else if (i === passed) {
+      circle.classList.add('active');
+      circle.innerHTML = `${i + 1}`;
+    } else {
+      circle.innerHTML = `${i + 1}`;
+    }
+  }
+  document.getElementById('checkpointSummary').textContent = `${passed}/8 passed`;
+}
+
+// ============================================================
+// AGENT ACTIVITY (RIGHT PANEL)
+// ============================================================
+function renderAgentActivity() {
+  const container = document.getElementById('agentActivityList');
+  container.innerHTML = agents.map(a => `
+    <div class="agent-activity-row" id="activity-${a.id}">
+      <span class="activity-dot idle"></span>
+      <span class="activity-name">${a.name}</span>
+      <span class="activity-status">idle</span>
+    </div>
+  `).join('');
+}
+
+function updateAgentActivity() {
+  agents.forEach(a => {
+    const row = document.getElementById(`activity-${a.id}`);
+    if (!row) return;
+    const st = agentStates[a.id]?.status || 'idle';
+    row.querySelector('.activity-dot').className = `activity-dot ${st}`;
+    row.querySelector('.activity-status').textContent = st;
   });
 }
 
-function addFeedItem(html, icon) {
-  const feed = document.getElementById('activityFeed');
+// ============================================================
+// CEREMONIES
+// ============================================================
+function renderCeremonies() {
+  const container = document.getElementById('ceremonyList');
+  container.innerHTML = ceremonies.map((c, i) => `
+    <div class="ceremony-item" id="ceremony-${i}">
+      <span class="ceremony-icon">${c.icon}</span>
+      <span class="ceremony-name">${c.name}</span>
+      <span class="ceremony-status pending" id="ceremony-status-${i}">pending</span>
+    </div>
+  `).join('');
+}
+
+function updateCeremonies(phaseIdx) {
+  // Simple logic: ceremonies advance with phases
+  const map = [0, 0, 1, 1, 2, 2, 2, 3, 3, 4]; // phase -> ceremony active
+  const activeC = map[phaseIdx] ?? 0;
+  ceremonies.forEach((_, i) => {
+    const el = document.getElementById(`ceremony-status-${i}`);
+    el.className = 'ceremony-status';
+    if (i < activeC) { el.classList.add('done'); el.textContent = 'done'; }
+    else if (i === activeC) { el.classList.add('active'); el.textContent = 'active'; }
+    else { el.classList.add('pending'); el.textContent = 'pending'; }
+  });
+}
+
+// ============================================================
+// LOG FEED
+// ============================================================
+function addLog(msg, icon, type) {
+  const feed = document.getElementById('logFeed');
+  if (logEntries.length === 0) feed.innerHTML = '';
+
   const now = new Date();
-  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const item = document.createElement('div');
-  item.className = 'feed-item';
-  item.innerHTML = `
-    <span class="feed-time">${time}</span>
-    <span class="feed-icon">${icon || '&#x25CF;'}</span>
-    <span class="feed-text">${html}</span>
+  const time = now.toLocaleTimeString('en-US', { hour12: false });
+  logEntries.push({ msg, icon, type, time });
+
+  const entry = document.createElement('div');
+  entry.className = `log-entry${type ? ' ' + type : ''}`;
+  entry.innerHTML = `
+    <span class="log-time">${time}</span>
+    <span class="log-icon">${icon || '\u{1F916}'}</span>
+    <span class="log-msg">${msg}</span>
   `;
-  feed.appendChild(item);
-  feed.scrollTop = feed.scrollHeight;
+  feed.prepend(entry);
+
+  // Keep max 200
+  while (feed.children.length > 200) feed.removeChild(feed.lastChild);
+  document.getElementById('logCount').textContent = Math.min(logEntries.length, 200);
 }
 
-function updateMetrics(step, checkpoints, artifacts) {
-  const totalSteps = simulation.length;
-  const totalCheckpoints = simulation.filter(s => s.checkpoint).length;
-  document.getElementById('metricSteps').textContent = `${step}/${totalSteps}`;
-  document.getElementById('metricCheckpoints').textContent = `${checkpoints}/${totalCheckpoints}`;
-  document.getElementById('metricArtifacts').textContent = artifacts;
-  document.getElementById('pipelineBar').style.width = `${(step/totalSteps)*100}%`;
-  document.getElementById('pipelinePercent').textContent = `${Math.round((step/totalSteps)*100)}%`;
+// ============================================================
+// CLOCK & TIMERS
+// ============================================================
+function startClock() {
+  setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const h = Math.floor(elapsed / 3600000);
+    const m = Math.floor((elapsed % 3600000) / 60000);
+    const s = Math.floor((elapsed % 60000) / 1000);
+    const str = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    document.getElementById('elapsedClock').textContent = str;
+    document.getElementById('metricTime').textContent = str;
+  }, 1000);
 }
 
-// Timer
-let startTime = Date.now();
-function updateTimer() {
-  const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
-  const s = String(elapsed % 60).padStart(2, '0');
-  document.getElementById('metricTime').textContent = `${m}:${s}`;
-}
-setInterval(updateTimer, 1000);
+// ============================================================
+// PARTICLES
+// ============================================================
+function startParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
 
-// ===== MODE MANAGEMENT =====
-let currentMode = 'demo'; // 'demo' or 'live'
-let simTimeout = null;
-let liveInterval = null;
-let currentStep = 0;
-let checkpointCount = 0;
-let artifactCount = 0;
-let lastStateHash = '';
-
-// Read squad name from URL params: ?squad=forge-engineering
-const urlParams = new URLSearchParams(window.location.search);
-const squadParam = urlParams.get('squad') || 'forge-engineering';
-document.getElementById('squadName').textContent = squadParam;
-
-// Phase name to index mapping
-const phaseMap = {
-  'requisitos': 0, 'requirements': 0,
-  'arquitetura': 1, 'architecture': 1,
-  'planejamento': 2, 'planning': 2,
-  'implementacao': 3, 'implementation': 3,
-  'qualidade': 4, 'quality': 4,
-  'code review': 5, 'code_review': 5, 'review': 5,
-  'documentacao': 6, 'documentation': 6,
-  'deploy': 7, 'deployment': 7,
-  'sustentacao': 8, 'sustaining': 8
-};
-
-function switchMode(mode) {
-  currentMode = mode;
-  document.getElementById('btnDemo').className = mode === 'demo' ? 'mode-btn active' : 'mode-btn';
-  document.getElementById('btnLive').className = mode === 'live' ? 'mode-btn active' : 'mode-btn';
-
-  // Stop current mode
-  if (simTimeout) { clearTimeout(simTimeout); simTimeout = null; }
-  if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
-
-  // Reset UI
-  agents.forEach(a => setAgentStatus(a.id, 'idle'));
-  renderPhases();
-  updateMetrics(0, 0, 0);
-  document.getElementById('statusLabel').innerHTML = 'Executando';
-  document.getElementById('statusLabel').style.color = 'var(--green)';
-  document.getElementById('activityFeed').innerHTML = '<h3>Atividade</h3>';
-  startTime = Date.now();
-  currentStep = 0;
-  checkpointCount = 0;
-  artifactCount = 0;
-  lastStateHash = '';
-
-  if (mode === 'demo') {
-    document.getElementById('liveBanner').className = 'live-banner';
-    addFeedItem('Pipeline <strong>' + squadParam + '</strong> iniciado (demo)', '&#x1F680;');
-    addFeedItem('11 agentes carregados e prontos', '&#x1F916;');
-    simTimeout = setTimeout(runSimStep, 2000);
-  } else {
-    document.getElementById('liveBanner').className = 'live-banner visible';
-    addFeedItem('Modo <strong>LIVE</strong> ativado — monitorando state.json', '&#x1F4E1;');
-    pollStateJson();
-    liveInterval = setInterval(pollStateJson, 2000);
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function createParticle() {
+    return {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      size: Math.random() * 1.5 + 0.5,
+      opacity: Math.random() * 0.3 + 0.1,
+      color: ['#00d4ff', '#a855f7', '#22d3ee', '#00ff88'][Math.floor(Math.random() * 4)]
+    };
+  }
+
+  for (let i = 0; i < 60; i++) particles.push(createParticle());
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.opacity;
+      ctx.fill();
+    });
+
+    // Draw connections
+    ctx.globalAlpha = 0.03;
+    ctx.strokeStyle = '#00d4ff';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  draw();
 }
 
-// ===== LIVE MODE: Poll state.json =====
+// ============================================================
+// METRICS UPDATE
+// ============================================================
+function updateMetrics(state) {
+  const stepCur = state.step?.current || 0;
+  const stepTotal = state.step?.total || 20;
+  const chk = state.metrics?.checkpoints_passed || 0;
+  const artifacts = state.metrics?.artifacts_generated?.length || 0;
+
+  document.getElementById('metricStep').textContent = `${stepCur} / ${stepTotal}`;
+  document.getElementById('stepBar').style.width = `${(stepCur / stepTotal) * 100}%`;
+  document.getElementById('metricCheckpoints').textContent = `${chk} / 8`;
+  document.getElementById('metricArtifacts').textContent = artifacts;
+
+  // Tokens
+  const newInput = state.metrics?.tokens_input || inputTokens;
+  const newOutput = state.metrics?.tokens_output || outputTokens;
+  if (newInput !== inputTokens || newOutput !== outputTokens) {
+    inputTokens = newInput;
+    outputTokens = newOutput;
+    totalTokens = inputTokens + outputTokens;
+    const tokEl = document.getElementById('metricTokens');
+    tokEl.textContent = totalTokens.toLocaleString();
+    tokEl.classList.add('counter-tick');
+    setTimeout(() => tokEl.classList.remove('counter-tick'), 300);
+    document.getElementById('metricTokensSub').textContent = `in: ${inputTokens.toLocaleString()} / out: ${outputTokens.toLocaleString()}`;
+  }
+
+  // Cost estimate
+  const cost = (totalTokens / 1_000_000) * 3.0;
+  document.getElementById('metricCost').textContent = `$${cost.toFixed(2)}`;
+
+  // Coverage
+  if (state.metrics?.test_coverage != null) {
+    const cov = state.metrics.test_coverage;
+    document.getElementById('metricCoverage').textContent = `${cov}%`;
+    document.getElementById('coverageBar').style.width = `${cov}%`;
+  }
+
+  // Time sub
+  if (state.startedAt) {
+    startTime = new Date(state.startedAt).getTime();
+    document.getElementById('metricTimeSub').textContent = `started ${new Date(state.startedAt).toLocaleTimeString()}`;
+  }
+
+  setCheckpoints(chk);
+}
+
+// ============================================================
+// POLLING
+// ============================================================
+function startPolling() {
+  pollStateJson();
+  setInterval(pollStateJson, 2000);
+}
+
 async function pollStateJson() {
-  // Try multiple possible locations for state.json
   const paths = [
     `/state.json`,
     `/../squads/${squadParam}/state.json`,
-    `/squads/${squadParam}/state.json`
+    `/squads/${squadParam}/state.json`,
+    `./state.json`
   ];
 
   let state = null;
@@ -1380,649 +2142,232 @@ async function pollStateJson() {
     } catch (e) { /* try next */ }
   }
 
+  const dot = document.getElementById('connectionDot');
+  const txt = document.getElementById('connectionText');
+
   if (!state) {
-    const banner = document.getElementById('liveBanner');
-    banner.className = 'live-banner visible error';
-    document.getElementById('liveBannerText').textContent =
-      `state.json nao encontrado — execute: /forgesquad run ${squadParam}`;
+    if (pollOk) {
+      dot.className = 'connection-dot error';
+      txt.textContent = 'state.json not found';
+      document.getElementById('statusLabel').textContent = 'DISCONNECTED';
+      pollOk = false;
+    }
+    // Run demo mode if never connected
+    if (!lastStateHash) runDemoTick();
     return;
   }
 
-  // Successfully connected
-  const banner = document.getElementById('liveBanner');
-  banner.className = 'live-banner visible';
-  document.getElementById('liveBannerText').textContent =
-    `Conectado ao state.json — ${state.status} — atualizado ${new Date(state.updatedAt).toLocaleTimeString()}`;
+  pollOk = true;
+  dot.className = 'connection-dot';
+  txt.textContent = `Connected to state.json | ${state.status || 'running'} | ${new Date(state.updatedAt).toLocaleTimeString()}`;
 
-  // Avoid redundant updates
   const hash = JSON.stringify(state);
   if (hash === lastStateHash) return;
   lastStateHash = hash;
 
-  // Update squad name
-  document.getElementById('squadName').textContent = state.squad || squadParam;
+  // Project name
+  document.getElementById('projectName').textContent = state.squad || state.project || squadParam;
 
-  // Update agent statuses
+  // Methodology
+  if (state.methodology) {
+    const m = state.methodology.toLowerCase();
+    const badge = document.getElementById('methodologyBadge');
+    badge.className = `methodology-badge ${m}`;
+    document.getElementById('methodologyText').textContent = state.methodology.toUpperCase();
+  }
+
+  // Sprint
+  if (state.sprint) {
+    document.getElementById('sprintInfo').textContent = `Sprint ${state.sprint}`;
+  }
+
+  // Agents
   if (state.agents) {
     state.agents.forEach(a => {
-      const agentDef = agents.find(x => x.id === a.id);
-      if (!agentDef) return;
-
       const status = a.status === 'delivering' ? 'working' : a.status;
       const task = a.status === 'working' ? (state.step?.label || 'Trabalhando...') : null;
-      setAgentStatus(a.id, status, task);
+      setAgentStatus(a.id, status, task || a.task);
     });
   }
 
-  // Update phase
+  // Phase
   if (state.phase) {
     const phaseKey = state.phase.toLowerCase();
     const phaseIdx = phaseMap[phaseKey] ?? -1;
-    if (phaseIdx >= 0) setPhase(phaseIdx);
+    if (phaseIdx >= 0) {
+      setPhase(phaseIdx);
+      updateCeremonies(phaseIdx);
+    }
   }
 
-  // Update metrics
-  const stepCur = state.step?.current || 0;
-  const stepTotal = state.step?.total || 20;
-  updateMetrics(
-    stepCur,
-    state.metrics?.checkpoints_passed || 0,
-    state.metrics?.artifacts_generated?.length || 0
-  );
+  // Metrics
+  updateMetrics(state);
 
-  // Update overall status
+  // Status label
   const label = document.getElementById('statusLabel');
   if (state.status === 'completed') {
-    label.innerHTML = '&#x2705; Completo';
-    label.style.color = 'var(--green)';
+    label.textContent = 'MISSION COMPLETE';
+    label.style.color = 'var(--neon-cyan)';
+    // Show completion screen
+    setTimeout(() => showCompletionScreen(), 2000);
   } else if (state.status === 'checkpoint') {
-    label.innerHTML = '&#x26A0; Checkpoint';
-    label.style.color = 'var(--orange)';
+    label.textContent = 'CHECKPOINT';
+    label.style.color = 'var(--neon-amber)';
   } else if (state.status === 'failed') {
-    label.innerHTML = '&#x274C; Erro';
-    label.style.color = 'var(--red)';
+    label.textContent = 'ERROR';
+    label.style.color = 'var(--neon-red)';
   } else {
-    label.innerHTML = 'Executando';
-    label.style.color = 'var(--green)';
+    label.textContent = 'LIVE';
+    label.style.color = 'var(--neon-green)';
   }
 
-  // Add feed item for current step
+  // Log
   if (state.step?.label) {
-    addFeedItem(`Step ${stepCur}/${stepTotal}: <strong>${state.step.label}</strong>`, '&#x1F916;');
+    addLog(`Step ${state.step.current}/${state.step.total}: <strong>${state.step.label}</strong>`, '\u{1F916}');
   }
 }
 
-// ===== ARTIFACT PREVIEW DATA =====
-const artifactPreviews = {
-  1: {
-    file: 'estimation/project-estimation.md',
-    agent: 'Sofia + Pedro',
-    type: 'md',
-    lines: [
-      '# Estimativa de Projeto — ForgeSquad',
-      '',
-      '## Complexidade',
-      '| Dimensão | Score | Nível |',
-      '|----------|-------|-------|',
-      '| Escopo funcional | 8/10 | Alta |',
-      '| Complexidade técnica | 6/10 | Média |',
-      '| Compliance/Regulat. | 8/10 | Alta |',
-      '| Domínio de negócio | 6/10 | Média |',
-      '',
-      '**Score ponderado: 7.2/10 (ALTA)**',
-      '',
-      '## Esforço por Agente',
-      '| Agente | Horas | Modelo |',
-      '|--------|-------|--------|',
-      '| Sofia (Architect) | 10h | Opus |',
-      '| Rafael (Tech Lead) | 6h | Opus |',
-      '| Clara (BA) | 8h | Opus |',
-      '| Ricardo (Finance) | 6h | Opus |',
-      '| Bruno (Backend) | 24h | Opus |',
-      '| Fernanda (Frontend) | 20h | Opus |',
-      '| Quésia (QA) | 12h | Opus |',
-      '| Daniela (Writer) | 6h | Haiku |',
-      '| Pedro (PM) | 4h | Haiku |',
-      '| **TOTAL** | **96h** | |',
-      '',
-      '## Opção A: Quality-First',
-      '- Custo: ~$12.50 | Tempo: ~45min',
-      '- Todos agentes tier-1 | 24 steps',
-      '',
-      '## Opção B: Cost-Optimized',
-      '- Custo: ~$4.20 | Tempo: ~90min',
-      '- Mix de tiers | 21 steps',
-      '',
-      '**Escolha: OPÇÃO A selecionada**',
-    ]
-  },
-  2: {
-    file: 'requirements/user-stories.md',
-    agent: 'Clara',
-    type: 'md',
-    lines: [
-      '# User Stories — Projeto',
-      '',
-      '## EP-01: Autenticação e Autorização',
-      '',
-      '### US-001: Login com credenciais',
-      '**Como** usuário do sistema',
-      '**Quero** fazer login com email e senha',
-      '**Para** acessar minha conta de forma segura',
-      '',
-      '**Critérios de Aceite:**',
-      '- [x] Campo email com validação de formato',
-      '- [x] Senha com mínimo 8 caracteres',
-      '- [x] Bloqueio após 5 tentativas falhas',
-      '- [ ] MFA obrigatório para operações financeiras',
-      '',
-      '### US-002: Recuperação de senha',
-      '**Como** usuário que esqueceu a senha',
-      '**Quero** receber um link de redefinição',
-      '**Para** recuperar o acesso à minha conta',
-    ]
-  },
-  3: {
-    file: 'requirements/acceptance-criteria.md',
-    agent: 'Sofia',
-    type: 'md',
-    lines: [
-      '# Critérios de Aceite — Validação NFRs',
-      '',
-      '## NFR-01: Performance',
-      '- Tempo de resposta API: < 200ms (p95)',
-      '- Throughput: > 1000 req/s por instância',
-      '- Latência Pix: < 10s end-to-end',
-      '',
-      '## NFR-02: Segurança',
-      '- TLS 1.2+ obrigatório em todos os endpoints',
-      '- Dados PII criptografados em repouso (AES-256)',
-      '- Rate limiting: 100 req/min por IP',
-      '- Tokens JWT com expiração de 15 minutos',
-    ]
-  },
-  4: {
-    file: 'requirements/financial-business-review.md',
-    agent: 'Ricardo',
-    type: 'md',
-    lines: [
-      '# Parecer de Negócios — Setor Financeiro',
-      '',
-      '## Resumo Executivo',
-      'Parecer: **APROVADO COM RESSALVAS**',
-      '',
-      '## Análise Regulatória',
-      '| Regulação | Status | Observação |',
-      '|-----------|--------|------------|',
-      '| LGPD      | ✅     | Base legal definida |',
-      '| PCI DSS   | ⚠️     | Vault para dados de cartão pendente |',
-      '| Bacen 4.893| ✅    | Política de segurança prevista |',
-      '| Open Finance| N/A  | Não aplicável nesta fase |',
-      '| PLD/FT    | ⚠️     | Monitoramento a implementar |',
-      '| BIAN      | ✅     | Domínios alinhados ao Landscape |',
-      '',
-      '## Recomendações',
-      '1. Implementar vault PCI DSS antes do MVP',
-      '2. Adicionar monitoramento PLD/FT no backlog',
-    ]
-  },
-  5: {
-    file: 'architecture/architecture-design.md',
-    agent: 'Sofia',
-    type: 'md',
-    lines: [
-      '# Arquitetura do Sistema',
-      '',
-      '## Visão Geral',
-      'Arquitetura baseada em microserviços com',
-      'API Gateway, Event Bus e Service Mesh.',
-      '',
-      '## Componentes Principais',
-      '```',
-      '┌──────────────┐   ┌──────────────┐',
-      '│  API Gateway │──▶│ Auth Service │',
-      '│  (Kong/Nginx)│   │  (OAuth 2.0) │',
-      '└──────┬───────┘   └──────────────┘',
-      '       │',
-      '       ├──▶ Payment Service (Pix/SPB)',
-      '       ├──▶ Account Service (BIAN)',
-      '       └──▶ Notification Service',
-      '```',
-      '',
-      '## Stack Tecnológica',
-      '- Backend: Node.js + NestJS',
-      '- Database: PostgreSQL + Redis',
-    ]
-  },
-  6: {
-    file: 'architecture/adrs/ADR-001-microservices.md',
-    agent: 'Sofia',
-    type: 'md',
-    lines: [
-      '# ADR-001: Adoção de Microserviços',
-      '',
-      '## Status: ACEITO',
-      '',
-      '## Contexto',
-      'O sistema precisa escalar componentes de',
-      'forma independente e isolar falhas.',
-      '',
-      '## Decisão',
-      'Adotar arquitetura de microserviços com:',
-      '- Service mesh (Istio) para observabilidade',
-      '- Event bus (Kafka) para comunicação assíncrona',
-      '- API Gateway (Kong) para roteamento',
-      '',
-      '## Trade-offs',
-      '- (+) Escalabilidade independente por serviço',
-      '- (+) Deploy independente',
-      '- (-) Complexidade operacional',
-      '- (-) Latência adicional entre serviços',
-    ]
-  },
-  7: {
-    file: 'architecture/compliance-matrix.md',
-    agent: 'Ricardo',
-    type: 'md',
-    lines: [
-      '# Compliance Matrix — Arquitetura',
-      '',
-      '## Validação BIAN Service Landscape',
-      '| Domínio Sistema | BIAN Service Domain | Status |',
-      '|----------------|--------------------:|--------|',
-      '| Contas         | Current Account     | ✅     |',
-      '| Pagamentos     | Payment Execution   | ✅     |',
-      '| Autenticação   | Party Authentication| ✅     |',
-      '| Notificações   | Customer Workbench  | ⚠️     |',
-      '',
-      '## Validação Bacen',
-      '- CMN 4.893 (Segurança): ✅ Política prevista',
-      '- CMN 4.658 (Cloud): ✅ Multi-cloud configurado',
-      '- BCB 199 (Pix): ✅ SPI/DICT integrado',
-      '- Circular 3.978 (PLD): ⚠️ Fase 2',
-      '',
-      '## Criptografia',
-      '- Em trânsito: TLS 1.3 ✅',
-      '- Em repouso: AES-256 ✅',
-    ]
-  },
-  8: {
-    file: 'planning/sprint-backlog.md',
-    agent: 'Rafael',
-    type: 'md',
-    lines: [
-      '# Sprint Backlog — Sprint 1',
-      '',
-      '## Capacidade: 40 story points',
-      '',
-      '| ID | Story | Pontos | Responsável |',
-      '|----|-------|--------|-------------|',
-      '| US-001 | Login com credenciais | 5 | Bruno |',
-      '| US-002 | Recuperação de senha | 3 | Bruno |',
-      '| US-003 | Dashboard principal | 8 | Fernanda |',
-      '| US-004 | API de pagamentos | 8 | Bruno |',
-      '| US-005 | Notificações push | 5 | Fernanda |',
-      '| T-001 | Setup CI/CD | 3 | Bruno |',
-      '| T-002 | Configurar testes e2e | 5 | Quésia |',
-      '',
-      '**Total: 37 pontos (93% da capacidade)**',
-    ]
-  },
-  10: {
-    file: 'implementation/backend/src/auth.service.ts',
-    agent: 'Bruno',
-    type: 'ts',
-    lines: [
-      "import { Injectable } from '@nestjs/common';",
-      "import { JwtService } from '@nestjs/jwt';",
-      "import * as bcrypt from 'bcrypt';",
-      '',
-      '@Injectable()',
-      'export class AuthService {',
-      '  constructor(',
-      '    private readonly jwtService: JwtService,',
-      '    private readonly userRepo: UserRepository,',
-      '    private readonly auditLog: AuditLogService,',
-      '  ) {}',
-      '',
-      '  async validateUser(email: string, pass: string) {',
-      '    const user = await this.userRepo.findByEmail(email);',
-      '    if (!user) return null;',
-      '',
-      '    const isValid = await bcrypt.compare(pass, user.hash);',
-      '    if (!isValid) {',
-      '      await this.auditLog.log({',
-      "        action: 'LOGIN_FAILED',",
-      '        userId: user.id,',
-      '        ip: req.ip,',
-      '      });',
-      '      return null;',
-      '    }',
-      '    return user;',
-      '  }',
-      '}',
-    ]
-  },
-  11: {
-    file: 'implementation/frontend/src/components/Dashboard.tsx',
-    agent: 'Fernanda',
-    type: 'tsx',
-    lines: [
-      "import React, { useEffect, useState } from 'react';",
-      "import { Card, Grid, Metric } from '@tremor/react';",
-      "import { useAuth } from '../hooks/useAuth';",
-      "import { api } from '../services/api';",
-      '',
-      'export function Dashboard() {',
-      '  const { user } = useAuth();',
-      '  const [balance, setBalance] = useState(0);',
-      '  const [transactions, setTransactions] = useState([]);',
-      '',
-      '  useEffect(() => {',
-      '    api.get("/accounts/balance")',
-      '      .then(res => setBalance(res.data.amount));',
-      '    api.get("/transactions/recent")',
-      '      .then(res => setTransactions(res.data));',
-      '  }, []);',
-      '',
-      '  return (',
-      '    <Grid numItems={3} className="gap-4">',
-      '      <Card>',
-      '        <Metric>R$ {balance.toFixed(2)}</Metric>',
-      '      </Card>',
-      '    </Grid>',
-      '  );',
-      '}',
-    ]
-  },
-  16: {
-    file: 'quality/test-report.md',
-    agent: 'Quésia',
-    type: 'md',
-    lines: [
-      '# Relatório de Testes — Sprint 1',
-      '',
-      '## Resumo',
-      '- Total de testes: 147',
-      '- Passando: 128 (87%)',
-      '- Falhando: 12 (8%)',
-      '- Skipped: 7 (5%)',
-      '',
-      '## Cobertura por Módulo',
-      '| Módulo | Cobertura | Status |',
-      '|--------|-----------|--------|',
-      '| Auth   | 94%       | ✅     |',
-      '| Payment| 82%       | ⚠️     |',
-      '| Account| 91%       | ✅     |',
-      '| API    | 78%       | ⚠️     |',
-      '',
-      '## Testes de Performance',
-      '- p50: 45ms | p95: 180ms | p99: 340ms',
-      '- Throughput: 1,250 req/s',
-      '- Status: APROVADO',
-    ]
-  },
-  17: {
-    file: 'review/code-review-report.md',
-    agent: 'Rafael',
-    type: 'md',
-    lines: [
-      '# Code Review — Sprint 1',
-      '',
-      '## Resultado: APROVADO',
-      '',
-      '## Padrões de Código',
-      '- [x] ESLint: 0 erros, 3 warnings',
-      '- [x] Prettier: formatação consistente',
-      '- [x] TypeScript strict mode',
-      '- [x] SonarQube: Quality Gate passed',
-      '',
-      '## Pontos Positivos',
-      '- Boa separação de responsabilidades',
-      '- Audit trail implementado corretamente',
-      '- Testes unitários cobrindo edge cases',
-      '',
-      '## Ajustes Solicitados',
-      '- Adicionar retry policy no Payment Service',
-      '- Melhorar error handling no middleware',
-    ]
-  },
-  19: {
-    file: 'documentation/api-docs.md',
-    agent: 'Daniela',
-    type: 'md',
-    lines: [
-      '# API Documentation',
-      '',
-      '## Authentication',
-      '',
-      '### POST /api/v1/auth/login',
-      '**Request Body:**',
-      '```json',
-      '{',
-      '  "email": "user@example.com",',
-      '  "password": "securePass123"',
-      '}',
-      '```',
-      '',
-      '**Response 200:**',
-      '```json',
-      '{',
-      '  "token": "eyJhbG...",',
-      '  "expiresIn": 900,',
-      '  "refreshToken": "rf_..."',
-      '}',
-      '```',
-      '',
-      '### POST /api/v1/pix/transfer',
-      '**Headers:** `Authorization: Bearer {token}`',
-    ]
-  },
-  22: {
-    file: 'deployment/regulatory-signoff.md',
-    agent: 'Ricardo',
-    type: 'md',
-    lines: [
-      '# Sign-off Regulatório — Pré-Produção',
-      '',
-      '**Parecer: APROVADO PARA PRODUÇÃO**',
-      '',
-      '## Checklist de Compliance',
-      '- [x] TLS 1.3 em todos os endpoints',
-      '- [x] AES-256 para dados em repouso',
-      '- [x] PCI DSS vault configurado',
-      '- [x] LGPD: DPO designado',
-      '- [x] PLD/FT: monitoramento ativo',
-      '- [x] Trilha de auditoria imutável',
-      '- [x] SoD: maker/checker/approver',
-      '- [x] FAPI/MTLS para APIs financeiras',
-      '- [x] Pix SPI/DICT integrado',
-      '',
-      '## Assinatura',
-      'FIN Ricardo Regulação',
-      'Consultor de Negócios Financeiros',
-      'Data: 2026-03-17',
-    ]
-  },
-  24: {
-    file: 'reports/final-report.md',
-    agent: 'Pedro',
-    type: 'md',
-    lines: [
-      '# Relatório Final — Pipeline Completo',
-      '',
-      '## Status: CONCLUÍDO COM SUCESSO',
-      '',
-      '## Métricas do Projeto',
-      '- Steps executados: 23/23',
-      '- Checkpoints aprovados: 8/8',
-      '- Artefatos gerados: 32',
-      '- Ciclos de review: 1',
-      '- Tempo total: 45 minutos',
-      '',
-      '## Compliance',
-      '- Parecer Financeiro: APROVADO',
-      '- Code Review: APROVADO',
-      '- Quality Gate: APROVADO',
-      '- Sign-off Regulatório: APROVADO',
-      '',
-      '## Próximos Passos',
-      '- Monitoramento pós-deploy (30 dias)',
-      '- Primeira auditoria regulatória',
-    ]
-  }
-};
+// ============================================================
+// DEMO MODE (when no state.json)
+// ============================================================
+let demoStep = 0;
+const demoSequence = [
+  { phase: 0, agents: { architect: 'working', 'project-manager': 'working' }, task: { architect: 'Analyzing project complexity...', 'project-manager': 'Calculating effort...' }, log: '<strong>Sofia</strong> and <strong>Pedro</strong> analyzing project complexity' },
+  { phase: 0, agents: { architect: 'checkpoint', 'project-manager': 'checkpoint' }, chk: 1, log: 'Checkpoint: Estimation approved', logType: 'checkpoint' },
+  { phase: 1, agents: { 'business-analyst': 'working', architect: 'working' }, task: { 'business-analyst': 'Eliciting requirements with Kiro...', architect: 'Validating NFRs...' }, log: '<strong>Clara</strong> started requirements elicitation' },
+  { phase: 1, agents: { 'finance-advisor': 'working', 'business-analyst': 'completed', architect: 'completed' }, task: { 'finance-advisor': 'Bacen/BIAN compliance analysis...' }, chk: 2, log: '<strong>Ricardo</strong> analyzing regulatory compliance', logType: 'checkpoint' },
+  { phase: 2, agents: { architect: 'working', 'tech-lead': 'working' }, task: { architect: 'Designing system architecture...', 'tech-lead': 'Reviewing patterns...' }, log: '<strong>Sofia</strong> designing system architecture' },
+  { phase: 2, agents: { architect: 'checkpoint', 'tech-lead': 'checkpoint' }, chk: 3, log: 'Checkpoint: Architecture approved', logType: 'checkpoint' },
+  { phase: 3, agents: { 'project-manager': 'working' }, task: { 'project-manager': 'Sprint planning in progress...' }, log: '<strong>Pedro</strong> running sprint planning' },
+  { phase: 3, agents: { 'project-manager': 'completed' }, chk: 4, log: 'Checkpoint: Sprint plan locked', logType: 'checkpoint' },
+  { phase: 4, agents: { 'dev-backend': 'working', 'dev-frontend': 'working' }, task: { 'dev-backend': 'Implementing transfer service...', 'dev-frontend': 'Building UI components...' }, log: '<strong>Bruno</strong> and <strong>Fernanda</strong> implementing features' },
+  { phase: 4, agents: { 'dev-backend': 'working', 'dev-frontend': 'working', devops: 'working' }, task: { 'dev-backend': 'Writing unit tests...', 'dev-frontend': 'Adding form validations...', devops: 'Setting up CI/CD pipeline...' }, log: '<strong>Marcos</strong> configuring deployment pipeline' },
+  { phase: 5, agents: { 'qa-engineer': 'working', 'dev-backend': 'completed', 'dev-frontend': 'completed' }, task: { 'qa-engineer': 'Running integration tests...' }, chk: 5, log: '<strong>Quesia</strong> running quality analysis', logType: 'checkpoint' },
+  { phase: 6, agents: { 'tech-lead': 'working', 'qa-engineer': 'completed' }, task: { 'tech-lead': 'Conducting code review...' }, chk: 6, log: '<strong>Rafael</strong> conducting code review' },
+  { phase: 7, agents: { 'tech-writer': 'working' }, task: { 'tech-writer': 'Generating API documentation...' }, log: '<strong>Daniela</strong> writing documentation' },
+  { phase: 7, agents: { 'tech-writer': 'completed' }, chk: 7, log: 'Checkpoint: Documentation complete', logType: 'checkpoint' },
+  { phase: 8, agents: { devops: 'working', sre: 'working' }, task: { devops: 'Deploying to production...', sre: 'Monitoring health checks...' }, log: '<strong>Marcos</strong> and <strong>Lucas</strong> deploying to production' },
+  { phase: 9, agents: { sre: 'working', devops: 'completed' }, task: { sre: 'Setting up monitoring dashboards...' }, chk: 8, log: 'Checkpoint: Deploy successful', logType: 'success' },
+  { phase: 9, agents: {}, allCompleted: true, log: 'MISSION COMPLETE: All agents finished', logType: 'success' }
+];
 
-function highlightLine(line, type) {
-  const escaped = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  if (type === 'md') {
-    if (escaped.startsWith('# ')) return `<span class="heading">${escaped}</span>`;
-    if (escaped.startsWith('## ')) return `<span class="heading">${escaped}</span>`;
-    if (escaped.startsWith('### ')) return `<span class="heading">${escaped}</span>`;
-    if (escaped.startsWith('- [x]')) return `<span class="check">${escaped}</span>`;
-    if (escaped.startsWith('- [ ]')) return `<span class="bullet">${escaped}</span>`;
-    if (escaped.startsWith('- ')) return `<span class="bullet">${escaped}</span>`;
-    if (escaped.startsWith('|')) return `<span class="cm">${escaped}</span>`;
-    if (escaped.startsWith('```')) return `<span class="cm">${escaped}</span>`;
-    if (escaped.startsWith('**')) return `<span class="kw">${escaped}</span>`;
-    return escaped;
-  }
-  // ts/tsx highlighting
-  let h = escaped;
-  h = h.replace(/\b(import|from|export|const|let|var|function|return|if|else|async|await|new|class|extends|implements)\b/g, '<span class="kw">$1</span>');
-  h = h.replace(/\b(Injectable|Component|useEffect|useState|constructor)\b/g, '<span class="fn">$1</span>');
-  h = h.replace(/\b(string|number|boolean|void|null|any|Promise)\b/g, '<span class="ty">$1</span>');
-  h = h.replace(/(&#39;[^&#]*&#39;|&quot;[^&]*&quot;|'[^']*'|"[^"]*"|`[^`]*`)/g, '<span class="str">$1</span>');
-  h = h.replace(/\/\/.*$/g, '<span class="cm">$&</span>');
-  h = h.replace(/@(\w+)/g, '<span class="fn">@$1</span>');
-  return h;
-}
-
-let artifactLines = [];
-let artifactLineIdx = 0;
-let artifactInterval = null;
-
-function showArtifactPreview(stepNum) {
-  const preview = artifactPreviews[stepNum];
-  if (!preview) return;
-
-  const emptyEl = document.getElementById('artifactEmpty');
-  const contentEl = document.getElementById('artifactContent');
-  const filenameEl = document.getElementById('artifactFilename');
-  const agentEl = document.getElementById('artifactAgent');
-  const codeEl = document.getElementById('artifactCode');
-
-  emptyEl.style.display = 'none';
-  contentEl.style.display = 'flex';
-  filenameEl.textContent = preview.file;
-  agentEl.textContent = preview.agent;
-  codeEl.innerHTML = '';
-
-  artifactLines = preview.lines;
-  artifactLineIdx = 0;
-
-  if (artifactInterval) clearInterval(artifactInterval);
-
-  artifactInterval = setInterval(() => {
-    if (artifactLineIdx >= artifactLines.length) {
-      clearInterval(artifactInterval);
-      // Remove cursor
-      const cursor = codeEl.querySelector('.artifact-typing');
-      if (cursor) cursor.remove();
-      return;
-    }
-
-    // Remove previous cursor
-    const oldCursor = codeEl.querySelector('.artifact-typing');
-    if (oldCursor) oldCursor.remove();
-
-    const line = artifactLines[artifactLineIdx];
-    const lineNum = artifactLineIdx + 1;
-    const highlighted = highlightLine(line, preview.type);
-    const lineEl = document.createElement('div');
-    lineEl.innerHTML = `<span class="line-num">${lineNum}</span>${highlighted}<span class="artifact-typing"></span>`;
-    codeEl.appendChild(lineEl);
-    codeEl.scrollTop = codeEl.scrollHeight;
-
-    artifactLineIdx++;
-  }, 120);
-}
-
-// ===== DEMO MODE: Simulation Engine =====
-function resetAllAgents() {
-  agents.forEach(a => setAgentStatus(a.id, 'idle'));
-}
-
-function runSimStep() {
-  if (currentMode !== 'demo') return;
-
-  if (currentStep >= simulation.length) {
-    document.getElementById('statusLabel').innerHTML = '&#x2705; Completo';
-    document.getElementById('statusLabel').style.color = 'var(--green)';
-    addFeedItem('<span class="done">Pipeline completo!</span> Todos os artefatos gerados.', '&#x1F389;');
-    resetAllAgents();
-    agents.forEach(a => setAgentStatus(a.id, 'done', 'Concluido'));
+function runDemoTick() {
+  if (demoStep >= demoSequence.length) {
+    demoStep = 0;
+    // Reset
+    agents.forEach(a => setAgentStatus(a.id, 'idle', ''));
+    checkpointsPassed = 0;
+    renderCheckpoints();
+    currentPhase = -1;
+    renderPipeline();
     return;
   }
 
-  const sim = simulation[currentStep];
+  const step = demoSequence[demoStep];
 
+  // Set phase
+  setPhase(step.phase);
+  updateCeremonies(step.phase);
+
+  // Reset non-mentioned agents to idle (unless they were completed)
   agents.forEach(a => {
-    if (!sim.working?.includes(a.id) && !sim.done?.includes(a.id)) {
-      const ws = document.getElementById(`ws-${a.id}`);
-      if (ws && !ws.classList.contains('status-done')) {
-        setAgentStatus(a.id, 'idle');
-      }
+    if (!step.agents[a.id] && agentStates[a.id]?.status !== 'completed') {
+      // Keep completed agents completed
+    } else if (step.agents[a.id]) {
+      setAgentStatus(a.id, step.agents[a.id], step.task?.[a.id] || '');
     }
   });
 
-  if (sim.working) {
-    sim.working.forEach(id => {
-      setAgentStatus(id, 'working', sim.task?.[id] || 'Trabalhando...');
-    });
-  }
-
-  if (sim.done) {
-    sim.done.forEach(id => {
-      setAgentStatus(id, 'done', 'Concluido');
-    });
-  }
-
-  setPhase(sim.phase);
-
-  if (sim.msg) addFeedItem(sim.msg, '&#x1F916;');
-  if (sim.checkpoint) {
-    checkpointCount++;
-    artifactCount += 2;
-    setTimeout(() => addFeedItem(sim.checkMsg, '&#x26A0;'), 800);
+  if (step.allCompleted) {
+    agents.forEach(a => setAgentStatus(a.id, 'completed', ''));
+    document.getElementById('statusLabel').textContent = 'MISSION COMPLETE';
+    document.getElementById('statusLabel').style.color = 'var(--neon-cyan)';
+    // Show completion screen after 3 seconds
+    setTimeout(() => showCompletionScreen(), 3000);
   } else {
-    artifactCount += 1;
+    document.getElementById('statusLabel').textContent = 'DEMO MODE';
+    document.getElementById('statusLabel').style.color = 'var(--neon-amber)';
   }
 
-  updateMetrics(sim.step, checkpointCount, artifactCount);
+  // Checkpoints
+  if (step.chk) setCheckpoints(step.chk);
 
-  // Show artifact preview if available for this step
-  showArtifactPreview(sim.step);
+  // Log
+  if (step.log) addLog(step.log, '\u{1F916}', step.logType);
 
-  currentStep++;
-  const delay = sim.checkpoint ? 4000 : 2500;
-  simTimeout = setTimeout(runSimStep, delay);
+  // Fake metrics
+  const fakeTokens = (demoStep + 1) * 12400;
+  inputTokens = Math.round(fakeTokens * 0.7);
+  outputTokens = Math.round(fakeTokens * 0.3);
+  totalTokens = inputTokens + outputTokens;
+  document.getElementById('metricTokens').textContent = totalTokens.toLocaleString();
+  document.getElementById('metricTokensSub').textContent = `in: ${inputTokens.toLocaleString()} / out: ${outputTokens.toLocaleString()}`;
+  const cost = (totalTokens / 1_000_000) * 3.0;
+  document.getElementById('metricCost').textContent = `$${cost.toFixed(2)}`;
+  document.getElementById('metricStep').textContent = `${demoStep + 1} / ${demoSequence.length}`;
+  document.getElementById('stepBar').style.width = `${((demoStep + 1) / demoSequence.length) * 100}%`;
+
+  document.getElementById('projectName').textContent = 'DEMO_PROJECT';
+  document.getElementById('connectionText').textContent = 'Demo mode | No state.json found';
+  document.getElementById('connectionDot').className = 'connection-dot connecting';
+
+  demoStep++;
 }
 
-// ===== INIT =====
-renderWorkstations();
-renderPhases();
+// ============================================================
+// COMPLETION SCREEN
+// ============================================================
+function showCompletionScreen() {
+  const overlay = document.getElementById('completionOverlay');
 
-// Auto-detect mode: if ?mode=live in URL, start in live mode
-const modeParam = urlParams.get('mode');
-if (modeParam === 'live') {
-  switchMode('live');
-} else {
-  addFeedItem('Pipeline <strong>' + squadParam + '</strong> iniciado (demo)', '&#x1F680;');
-  addFeedItem('11 agentes carregados e prontos', '&#x1F916;');
-  simTimeout = setTimeout(runSimStep, 2000);
+  // Populate dynamic data
+  const elapsed = document.getElementById('metricTime')?.textContent || '00:00:00';
+  const tokens = totalTokens.toLocaleString();
+  const cost = (totalTokens / 1_000_000 * 3.0).toFixed(2);
+  const project = document.getElementById('projectName')?.textContent || 'Project';
+  const methodology = document.getElementById('methodologyText')?.textContent || 'SCRUM';
+
+  // Sprint & Release
+  const now = new Date();
+  const sprintNum = Math.ceil((now.getDate()) / 14);
+  const releaseVersion = `v${now.getFullYear() % 100}.${now.getMonth() + 1}.${sprintNum}`;
+  document.getElementById('completionSprint').textContent = `Sprint ${sprintNum}`;
+  document.getElementById('completionRelease').textContent = `Release ${releaseVersion}`;
+  document.getElementById('completionTitle').textContent = `${project} — Pipeline Finalizado`;
+  document.getElementById('completionSubtitle').textContent = `Todos os 11 agentes concluiram suas atividades com sucesso`;
+
+  // Status Report
+  document.getElementById('crTime').textContent = elapsed;
+  document.getElementById('crTokens').textContent = tokens;
+  document.getElementById('crCost').textContent = `$${cost}`;
+  document.getElementById('crMethodology').textContent = methodology;
+
+  const steps = document.getElementById('metricStep')?.textContent || '17 / 17';
+  document.getElementById('crSteps').textContent = steps;
+  document.getElementById('crCheckpoints').textContent = `${checkpointsPassed} / 8`;
+
+  const cov = document.getElementById('metricCoverage')?.textContent || '--';
+  document.getElementById('crCoverage').textContent = cov;
+
+  // Show with animation
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => {
+    overlay.classList.add('visible');
+  });
 }
 
+function closeCompletion() {
+  const overlay = document.getElementById('completionOverlay');
+  overlay.classList.remove('visible');
+  setTimeout(() => {
+    overlay.style.display = 'none';
+  }, 800);
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
