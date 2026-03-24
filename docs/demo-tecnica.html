@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForgeSquad v2.0 — Demo Tecnica (Due Diligence)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #050a18;
+      --bg: #0a0f1e;
+      --bg-card: #0d1326;
+      --bg-panel: #0b1025;
+      --bg-elevated: #111833;
+      --bg-terminal: #0d1117;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-dim: #475569;
+      --neon-blue: #00d4ff;
+      --neon-cyan: #22d3ee;
+      --neon-purple: #a855f7;
+      --neon-magenta: #e879f9;
+      --neon-green: #00ff88;
+      --neon-amber: #fbbf24;
+      --neon-red: #ff4466;
+      --neon-pink: #f472b6;
+      --glow-blue: rgba(0, 212, 255, 0.15);
+      --glow-cyan: rgba(34, 211, 238, 0.12);
+      --glow-purple: rgba(168, 85, 247, 0.12);
+      --glow-green: rgba(0, 255, 136, 0.15);
+      --border: rgba(0, 212, 255, 0.08);
+      --border-bright: rgba(0, 212, 255, 0.2);
+      --radius: 12px;
+      --font: 'Inter', -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    /* === KEYFRAMES === */
+    @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+    @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.5); opacity: 0; } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes typing-cursor { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    @keyframes border-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+    @keyframes glow-breathe { 0%, 100% { filter: drop-shadow(0 0 4px currentColor); } 50% { filter: drop-shadow(0 0 12px currentColor); } }
+    @keyframes hex-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes slide-in { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slide-up { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scale-in { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes progress-stripe { 0% { background-position: 0 0; } 100% { background-position: 40px 0; } }
+    @keyframes flicker { 0%, 97%, 100% { opacity: 1; } 98% { opacity: 0.8; } 99% { opacity: 0.9; } }
+    @keyframes bar-fill { from { width: 0; } }
+
+    html { font-size: 14px; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-deep);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* === BACKGROUND === */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,212,255,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168,85,247,0.03) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,255,136,0.01) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .scanline-overlay {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 9999; overflow: hidden;
+    }
+    .scanline-overlay::before {
+      content: '';
+      position: absolute; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(180deg, transparent, rgba(0,212,255,0.04), transparent);
+      animation: scanline 8s linear infinite;
+    }
+
+    .grid-bg {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    #particles-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* === PROGRESS BAR TOP === */
+    .progress-bar-top {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 3px; z-index: 10000;
+      background: rgba(0,0,0,0.5);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple), var(--neon-cyan), var(--neon-green));
+      background-size: 300% 100%;
+      animation: border-flow 3s linear infinite;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px var(--neon-blue), 0 0 20px rgba(0,212,255,0.3);
+    }
+
+    /* === APP LAYOUT === */
+    .app {
+      display: flex; flex-direction: column;
+      height: 100vh; position: relative; z-index: 1;
+    }
+
+    /* === TOP BAR === */
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px;
+      background: linear-gradient(180deg, rgba(10,15,30,0.98), rgba(10,15,30,0.92));
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      flex-shrink: 0; position: relative;
+    }
+    .top-bar::after {
+      content: ''; position: absolute;
+      bottom: 0; left: 5%; right: 5%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+      opacity: 0.3;
+    }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .logo-mark { position: relative; width: 36px; height: 36px; }
+    .logo-mark .hex {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 800; color: #fff;
+      animation: glow-breathe 3s ease infinite;
+    }
+    .logo-mark .ring {
+      position: absolute; inset: -4px;
+      border: 1px solid var(--neon-blue);
+      border-radius: 50%;
+      animation: hex-rotate 20s linear infinite;
+      opacity: 0.3;
+    }
+    .brand h1 {
+      font-size: 1rem; font-weight: 800; letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand .version {
+      font-family: var(--mono); font-size: 0.6rem;
+      color: var(--neon-purple); font-weight: 600; letter-spacing: 0.1em;
+    }
+    .demo-badge {
+      font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+      color: var(--neon-cyan); padding: 4px 12px;
+      border: 1px solid rgba(34,211,238,0.3);
+      border-radius: 6px; background: rgba(34,211,238,0.08);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .top-center { display: flex; align-items: center; gap: 16px; }
+    .step-counter {
+      font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
+      color: var(--neon-cyan); letter-spacing: 0.05em;
+    }
+    .step-counter .dim { color: var(--text-dim); }
+    .timer {
+      font-family: var(--mono); font-size: 0.8rem;
+      color: var(--neon-purple); font-weight: 600; letter-spacing: 0.05em;
+    }
+    .top-right { display: flex; align-items: center; gap: 14px; }
+    .autoplay-toggle {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-muted); cursor: pointer; user-select: none;
+    }
+    .autoplay-toggle input[type="checkbox"] {
+      appearance: none; width: 32px; height: 16px;
+      background: rgba(255,255,255,0.08); border-radius: 8px;
+      position: relative; cursor: pointer; transition: background 0.3s;
+    }
+    .autoplay-toggle input[type="checkbox"]::after {
+      content: ''; position: absolute;
+      top: 2px; left: 2px; width: 12px; height: 12px;
+      background: var(--text-dim); border-radius: 50%;
+      transition: all 0.3s;
+    }
+    .autoplay-toggle input[type="checkbox"]:checked {
+      background: rgba(0,255,136,0.2);
+    }
+    .autoplay-toggle input[type="checkbox"]:checked::after {
+      left: 18px; background: var(--neon-green);
+      box-shadow: 0 0 6px var(--neon-green);
+    }
+    .ntt-badge {
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--text-dim); letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      flex: 1; overflow: hidden; position: relative;
+    }
+    .step {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      padding: 20px 40px 20px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+      pointer-events: none;
+      overflow-y: auto;
+    }
+    .step.active {
+      opacity: 1; transform: translateY(0);
+      pointer-events: auto;
+    }
+    .step-inner {
+      display: flex; flex-direction: column;
+      align-items: center; width: 100%;
+      max-width: 1100px;
+    }
+    .step-title {
+      font-size: 1.5rem; font-weight: 800;
+      text-align: center; margin-bottom: 6px;
+      background: linear-gradient(135deg, #fff 30%, var(--neon-cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1.3;
+    }
+    .step-subtitle {
+      font-family: var(--mono); font-size: 0.78rem;
+      color: var(--text-muted); text-align: center;
+      margin-bottom: 20px; max-width: 800px;
+    }
+    .step-badge {
+      display: inline-block; font-family: var(--mono); font-size: 0.6rem;
+      font-weight: 600; padding: 3px 12px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px;
+    }
+    .step-badge.cyan { background: rgba(0,212,255,0.1); color: var(--neon-cyan); border: 1px solid rgba(0,212,255,0.3); }
+    .step-badge.green { background: rgba(0,255,136,0.1); color: var(--neon-green); border: 1px solid rgba(0,255,136,0.3); }
+    .step-badge.purple { background: rgba(168,85,247,0.1); color: var(--neon-purple); border: 1px solid rgba(168,85,247,0.3); }
+    .step-badge.amber { background: rgba(251,191,36,0.1); color: var(--neon-amber); border: 1px solid rgba(251,191,36,0.3); }
+    .step-badge.red { background: rgba(255,68,102,0.1); color: var(--neon-red); border: 1px solid rgba(255,68,102,0.3); }
+
+    /* === CODE BLOCK === */
+    .code-block {
+      background: var(--bg-terminal);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: var(--mono); font-size: 0.68rem;
+      line-height: 1.6; color: #8b949e;
+      overflow-x: auto; width: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .code-block .kw { color: var(--neon-purple); }
+    .code-block .fn { color: var(--neon-cyan); }
+    .code-block .str { color: var(--neon-green); }
+    .code-block .cm { color: var(--text-dim); }
+    .code-block .hl { color: var(--neon-blue); font-weight: 600; }
+    .code-block .warn { color: var(--neon-amber); }
+    .code-block .err { color: var(--neon-red); }
+
+    /* === TECH TABLE === */
+    .tech-table-wrap {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .tech-table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--mono); font-size: 0.65rem;
+    }
+    .tech-table thead th {
+      padding: 10px 12px; text-align: left;
+      font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border-bright);
+      background: rgba(0,0,0,0.3);
+      color: var(--neon-cyan);
+    }
+    .tech-table tbody td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+    .tech-table tbody tr:hover { background: rgba(0,212,255,0.03); }
+    .tech-table tbody td:first-child { color: var(--text); font-weight: 600; }
+    .tech-table .td-mode { color: var(--neon-purple); }
+    .tech-table .td-model { color: var(--neon-amber); }
+    .tech-table .td-caps { color: var(--neon-green); }
+    .tech-table .td-cost { color: var(--neon-green); font-weight: 600; }
+    .tech-table .td-time { color: var(--neon-blue); }
+    .tech-table .td-agents { color: var(--neon-cyan); font-size: 0.6rem; }
+    .tech-table .td-default { color: var(--neon-cyan); font-weight: 600; }
+    .tech-table .td-alt { color: var(--text-dim); }
+
+    /* === TECH CARDS === */
+    .tech-cards {
+      display: grid; gap: 12px; width: 100%;
+    }
+    .tech-cards.cols-2 { grid-template-columns: 1fr 1fr; }
+    .tech-cards.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .tech-cards.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .tech-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      position: relative; overflow: hidden;
+      transition: all 0.4s ease;
+      animation: scale-in 0.5s ease backwards;
+    }
+    .tech-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+    }
+    .tech-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+    }
+    .tech-card.border-cyan { border-color: rgba(34,211,238,0.2); }
+    .tech-card.border-cyan::before { background: var(--neon-cyan); opacity: 0.6; }
+    .tech-card.border-green { border-color: rgba(0,255,136,0.2); }
+    .tech-card.border-green::before { background: var(--neon-green); opacity: 0.6; }
+    .tech-card.border-purple { border-color: rgba(168,85,247,0.2); }
+    .tech-card.border-purple::before { background: var(--neon-purple); opacity: 0.6; }
+    .tech-card.border-amber { border-color: rgba(251,191,36,0.2); }
+    .tech-card.border-amber::before { background: var(--neon-amber); opacity: 0.6; }
+    .tech-card.border-red { border-color: rgba(255,68,102,0.2); }
+    .tech-card.border-red::before { background: var(--neon-red); opacity: 0.6; }
+    .tech-card.border-blue { border-color: rgba(0,212,255,0.2); }
+    .tech-card.border-blue::before { background: var(--neon-blue); opacity: 0.6; }
+    .tech-card.border-pink { border-color: rgba(244,114,182,0.2); }
+    .tech-card.border-pink::before { background: var(--neon-pink); opacity: 0.6; }
+
+    .tc-title {
+      font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+    .tc-title.cyan { color: var(--neon-cyan); }
+    .tc-title.green { color: var(--neon-green); }
+    .tc-title.purple { color: var(--neon-purple); }
+    .tc-title.amber { color: var(--neon-amber); }
+    .tc-title.red { color: var(--neon-red); }
+    .tc-title.blue { color: var(--neon-blue); }
+    .tc-title.pink { color: var(--neon-pink); }
+
+    .tc-list {
+      list-style: none; padding: 0;
+    }
+    .tc-list li {
+      font-family: var(--mono); font-size: 0.62rem;
+      color: var(--text-muted); padding: 3px 0;
+      display: flex; align-items: flex-start; gap: 6px;
+      line-height: 1.5;
+    }
+    .tc-list li .dot {
+      color: var(--neon-cyan); flex-shrink: 0; margin-top: 1px;
+    }
+    .tc-desc {
+      font-family: var(--mono); font-size: 0.62rem;
+      color: var(--text-dim); line-height: 1.6;
+    }
+
+    /* === KEY MESSAGE === */
+    .key-message {
+      width: 100%; text-align: center;
+      padding: 12px 20px;
+      background: rgba(0,255,136,0.05);
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius: 8px;
+      font-family: var(--mono); font-size: 0.72rem;
+      color: var(--neon-green); font-weight: 600;
+    }
+    .key-message.amber-msg {
+      background: rgba(251,191,36,0.05);
+      border-color: rgba(251,191,36,0.15);
+      color: var(--neon-amber);
+    }
+    .key-message.cyan-msg {
+      background: rgba(0,212,255,0.05);
+      border-color: rgba(0,212,255,0.15);
+      color: var(--neon-cyan);
+    }
+
+    /* === FACT ROW === */
+    .fact-row {
+      display: flex; gap: 12px; width: 100%; flex-wrap: wrap;
+    }
+    .fact-pill {
+      flex: 1; min-width: 140px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px;
+      text-align: center;
+    }
+    .fact-pill .fp-label {
+      font-family: var(--mono); font-size: 0.5rem;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 4px;
+    }
+    .fact-pill .fp-value {
+      font-family: var(--mono); font-size: 0.9rem; font-weight: 700;
+    }
+    .fact-pill .fp-value.green { color: var(--neon-green); }
+    .fact-pill .fp-value.cyan { color: var(--neon-cyan); }
+    .fact-pill .fp-value.purple { color: var(--neon-purple); }
+    .fact-pill .fp-value.amber { color: var(--neon-amber); }
+
+    /* === CHECKLIST === */
+    .checklist-section {
+      width: 100%;
+    }
+    .checklist-group-title {
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 8px; margin-top: 14px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .checklist-group-title.cyan { color: var(--neon-cyan); }
+    .checklist-group-title.green { color: var(--neon-green); }
+    .checklist-group-title.purple { color: var(--neon-purple); }
+    .checklist-group-title.amber { color: var(--neon-amber); }
+    .checklist-item {
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-muted); padding: 4px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .checklist-item .check {
+      color: var(--neon-green); font-size: 0.7rem; flex-shrink: 0;
+    }
+
+    /* === USE CASE CARD === */
+    .uc-badge {
+      display: inline-block; font-family: var(--mono);
+      font-size: 0.5rem; font-weight: 700; padding: 2px 8px;
+      border-radius: 4px; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-top: 8px;
+    }
+    .uc-badge.complete {
+      color: var(--neon-green); background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+    }
+    .uc-badge.partial {
+      color: var(--neon-amber); background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.3);
+    }
+
+    /* === COST BAR === */
+    .cost-bar-wrap {
+      width: 100%; margin: 4px 0;
+    }
+    .cost-bar-label {
+      display: flex; justify-content: space-between;
+      font-family: var(--mono); font-size: 0.55rem;
+      color: var(--text-dim); margin-bottom: 3px;
+    }
+    .cost-bar-track {
+      width: 100%; height: 16px;
+      background: rgba(0,0,0,0.3); border-radius: 4px;
+      overflow: hidden; position: relative;
+    }
+    .cost-bar-fill {
+      height: 100%; border-radius: 4px;
+      transition: width 1s ease;
+    }
+    .cost-bar-fill.blue { background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan)); }
+    .cost-bar-fill.purple { background: linear-gradient(90deg, var(--neon-purple), var(--neon-magenta)); }
+    .cost-bar-fill.green { background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan)); }
+    .cost-bar-fill.amber { background: linear-gradient(90deg, var(--neon-amber), #f97316); }
+    .cost-bar-value {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      font-family: var(--mono); font-size: 0.5rem; font-weight: 700;
+      color: #fff; text-shadow: 0 0 4px rgba(0,0,0,0.8);
+    }
+
+    /* === RALPH LOOP DIAGRAM === */
+    .ralph-diagram {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap; width: 100%; padding: 10px 0;
+    }
+    .ralph-node {
+      background: var(--bg-card); border: 1px solid var(--border-bright);
+      border-radius: 8px; padding: 10px 16px; text-align: center;
+      font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+      color: var(--neon-cyan);
+      min-width: 100px;
+    }
+    .ralph-node.active-node {
+      border-color: var(--neon-green);
+      box-shadow: 0 0 12px rgba(0,255,136,0.2);
+      color: var(--neon-green);
+    }
+    .ralph-arrow {
+      font-size: 1.2rem; color: var(--text-dim);
+    }
+
+    /* === CTA BUTTON === */
+    .cta-button {
+      display: inline-block; padding: 14px 40px;
+      background: linear-gradient(135deg, var(--neon-green), #22d3ee);
+      border: none; border-radius: 8px;
+      font-family: var(--font); font-size: 1rem; font-weight: 700;
+      color: #000; cursor: pointer;
+      text-decoration: none; margin-top: 16px;
+      box-shadow: 0 0 20px rgba(0,255,136,0.3), 0 0 40px rgba(34,211,238,0.2);
+      transition: all 0.3s ease;
+      animation: glow-breathe 3s ease infinite;
+    }
+    .cta-button:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 0 30px rgba(0,255,136,0.5), 0 0 60px rgba(34,211,238,0.3);
+    }
+    .cta-note {
+      font-family: var(--mono); font-size: 0.65rem;
+      color: var(--text-dim); margin-top: 10px;
+    }
+
+    /* === BOTTOM BAR === */
+    .bottom-bar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: linear-gradient(0deg, rgba(10,15,30,0.98), rgba(10,15,30,0.92));
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      flex-shrink: 0; position: relative;
+    }
+    .bottom-bar::before {
+      content: ''; position: absolute;
+      top: 0; left: 5%; right: 5%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+      opacity: 0.2;
+    }
+    .nav-btn {
+      font-family: var(--mono); font-size: 0.75rem; font-weight: 600;
+      padding: 8px 20px; border-radius: 6px;
+      border: 1px solid var(--border-bright);
+      background: rgba(0,212,255,0.05);
+      color: var(--neon-cyan); cursor: pointer;
+      transition: all 0.3s ease; letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .nav-btn:hover {
+      background: rgba(0,212,255,0.1);
+      box-shadow: 0 0 12px rgba(0,212,255,0.2);
+      transform: translateY(-1px);
+    }
+    .nav-btn:disabled {
+      opacity: 0.3; cursor: not-allowed;
+      transform: none; box-shadow: none;
+    }
+    .timeline-dots {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .timeline-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 2px solid var(--border-bright);
+      background: transparent;
+      cursor: pointer; transition: all 0.3s ease;
+      position: relative;
+    }
+    .timeline-dot.visited {
+      background: var(--neon-cyan); border-color: var(--neon-cyan);
+    }
+    .timeline-dot.active {
+      background: var(--neon-blue); border-color: var(--neon-blue);
+      box-shadow: 0 0 10px rgba(0,212,255,0.5);
+      transform: scale(1.3);
+    }
+    .timeline-dot.active::after {
+      content: ''; position: absolute;
+      inset: -4px; border-radius: 50%;
+      border: 1px solid var(--neon-blue);
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    .timeline-dot-label {
+      position: absolute; bottom: -18px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono); font-size: 0.4rem;
+      color: var(--text-dim); white-space: nowrap;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .timeline-dot:hover .timeline-dot-label { opacity: 1; }
+
+    /* === SPACING HELPERS === */
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+    .mb-12 { margin-bottom: 12px; }
+    .mb-16 { margin-bottom: 16px; }
+    .gap-12 { gap: 12px; }
+
+    /* === PIPELINE PHASE STRIP === */
+    .pipeline-strip {
+      display: flex; gap: 2px; width: 100%;
+      background: rgba(0,0,0,0.2); border-radius: 8px;
+      overflow: hidden;
+    }
+    .ps-phase {
+      flex: 1; padding: 8px 4px; text-align: center;
+      font-family: var(--mono); font-size: 0.5rem;
+      color: var(--text-dim); position: relative;
+      transition: all 0.3s;
+      border-right: 1px solid rgba(255,255,255,0.03);
+    }
+    .ps-phase:last-child { border-right: none; }
+    .ps-phase .ps-num {
+      font-weight: 700; color: var(--neon-cyan); font-size: 0.6rem;
+      display: block; margin-bottom: 2px;
+    }
+    .ps-phase .ps-name { display: block; text-transform: uppercase; letter-spacing: 0.04em; }
+    .ps-phase .ps-check {
+      display: block; margin-top: 3px; font-size: 0.55rem;
+    }
+    .ps-phase.has-checkpoint .ps-check { color: var(--neon-amber); }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 900px) {
+      .tech-cards.cols-2, .tech-cards.cols-3, .tech-cards.cols-4 { grid-template-columns: 1fr; }
+      .fact-row { flex-direction: column; }
+      .step { padding: 16px 20px 16px; }
+    }
+    @media (max-width: 600px) {
+      .step-title { font-size: 1.1rem; }
+      .pipeline-strip { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles-canvas"></canvas>
+  <div class="grid-bg"></div>
+  <div class="scanline-overlay"></div>
+  <div class="progress-bar-top"><div class="progress-bar-fill" id="progressFill" style="width: 8.33%"></div></div>
+
+  <div class="app">
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="top-left">
+        <div class="logo-mark">
+          <div class="hex">F</div>
+          <div class="ring"></div>
+        </div>
+        <div class="brand">
+          <h1>ForgeSquad</h1>
+          <span class="version">v2.0 PROMETHEUS</span>
+        </div>
+        <span class="demo-badge">Demo Tecnica</span>
+      </div>
+      <div class="top-center">
+        <div class="step-counter">STEP <span id="stepNum">1</span><span class="dim"> / 12</span></div>
+        <div class="timer" id="timer">00:00</div>
+      </div>
+      <div class="top-right">
+        <label class="autoplay-toggle">
+          <input type="checkbox" id="autoplayCheck" checked>
+          AUTO-PLAY
+        </label>
+        <span class="ntt-badge">NTT DATA | Confidencial | Due Diligence v1.0</span>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- ============================================================ -->
+      <!-- STEP 1: O QUE E O FORGESQUAD -->
+      <!-- ============================================================ -->
+      <div class="step active" id="step1">
+        <div class="step-inner">
+          <span class="step-badge cyan">Step 1 / Visao Geral</span>
+          <div class="step-title">Framework de orquestracao multi-agente. Nao e plataforma.</div>
+          <div class="step-subtitle">Arquivos texto que orquestram agentes AI dentro da IDE do desenvolvedor.</div>
+
+          <div class="code-block mb-12" style="max-width:700px;">
+<span class="hl">+---------------------------------------------+</span>
+<span class="hl">|         CAMADA 1: GOVERNANCE                |</span>
+<span class="str">|  Audit Trail | Compliance | Metricas        |</span>
+<span class="str">|  Production Standard | Quality Gates        |</span>
+<span class="hl">+--------------------------------------------|</span>
+<span class="hl">|         CAMADA 2: SQUAD                     |</span>
+<span class="fn">|  11 Agentes | Metodologia | Pipeline        |</span>
+<span class="fn">|  Capabilities Model | Model Tiers           |</span>
+<span class="hl">+---------------------------------------------+</span>
+<span class="hl">|         CAMADA 3: EXECUTION                 |</span>
+<span class="kw">|  Inline | Subagent | Ralph Loop             |</span>
+<span class="kw">|  Quality Gates | Veto System                |</span>
+<span class="hl">+---------------------------------------------+</span>
+          </div>
+
+          <div class="fact-row mb-12">
+            <div class="fact-pill"><div class="fp-label">Arquivos</div><div class="fp-value green">.md + .yaml</div></div>
+            <div class="fact-pill"><div class="fp-label">Runtime</div><div class="fp-value cyan">IDE do Dev</div></div>
+            <div class="fact-pill"><div class="fp-label">Deps Externas</div><div class="fp-value green">Zero</div></div>
+            <div class="fact-pill"><div class="fp-label">Dados Cloud</div><div class="fp-value green">Zero</div></div>
+            <div class="fact-pill"><div class="fp-label">Tamanho</div><div class="fp-value purple">~2MB texto</div></div>
+          </div>
+
+          <div class="key-message">Zero binarios. Zero dependencias. Zero dados em cloud. 100% local. 100% auditavel.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 2: COMPOSICAO TECNICA -->
+      <!-- ============================================================ -->
+      <div class="step" id="step2">
+        <div class="step-inner">
+          <span class="step-badge green">Step 2 / Composicao</span>
+          <div class="step-title">Anatomia do framework: arquivos, nao binarios.</div>
+          <div class="step-subtitle">Estrutura de diretorios completa. Cada linha auditavel.</div>
+
+          <div class="code-block mb-12" style="max-width:780px;">
+<span class="hl">forgesquad/</span>                          <span class="cm">(~2MB total)</span>
+<span class="fn">+-- _forgesquad/</span>                     <span class="cm">Core do framework</span>
+<span class="fn">|   +-- config.yaml</span>                  <span class="cm">Configuracao global (200 linhas)</span>
+<span class="fn">|   +-- core/</span>
+<span class="fn">|   |   +-- runner.executable.md</span>     <span class="cm">Motor de execucao (800 linhas)</span>
+<span class="fn">|   |   +-- runner.pipeline.md</span>       <span class="cm">Inicializacao do pipeline (200 linhas)</span>
+<span class="fn">|   |   +-- audit-trail.md</span>           <span class="cm">Spec do audit trail (150 linhas)</span>
+<span class="fn">|   |   +-- intelligence/</span>
+<span class="fn">|   |   |   +-- software-architecture.md</span>   <span class="cm">Fowler/DDD/SOLID</span>
+<span class="fn">|   |   |   +-- cryptography-security.md</span>   <span class="cm">Crypto/LGPD/PCI-DSS</span>
+<span class="fn">|   |   +-- templates/</span>               <span class="cm">Scaffolding de producao</span>
+<span class="fn">|   +-- methodologies/</span>
+<span class="fn">|   |   +-- scrum.md</span>                 <span class="cm">Ceremonies + reports</span>
+<span class="fn">|   |   +-- kanban.md</span>                <span class="cm">WIP + flow metrics</span>
+<span class="fn">|   |   +-- waterfall.md</span>             <span class="cm">Phase gates</span>
+<span class="fn">|   +-- _memory/</span>                     <span class="cm">Contexto empresa (configuravel)</span>
+<span class="str">+-- .claude/commands/</span>                <span class="cm">Slash commands (6 arquivos)</span>
+<span class="str">+-- squads/</span>                          <span class="cm">Squads criados</span>
+<span class="str">+-- CLAUDE.md</span>                        <span class="cm">Instrucoes para a IDE AI</span>
+<span class="str">+-- install.sh</span>                       <span class="cm">Instalador (50 linhas bash)</span>
+          </div>
+
+          <div class="key-message">Nenhum arquivo executavel. Nenhuma dependencia. Nenhum daemon. Auditavel linha por linha.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 3: OS 11 AGENTES -->
+      <!-- ============================================================ -->
+      <div class="step" id="step3">
+        <div class="step-inner">
+          <span class="step-badge purple">Step 3 / Agentes</span>
+          <div class="step-title">11 agentes especializados. Capabilities declarativas.</div>
+          <div class="step-subtitle">Cada agente tem papel, modo de execucao, capabilities e tier de modelo definidos.</div>
+
+          <div class="tech-table-wrap">
+            <table class="tech-table">
+              <thead>
+                <tr>
+                  <th>Agente</th>
+                  <th>Papel</th>
+                  <th>Modo</th>
+                  <th>Capabilities</th>
+                  <th>Modelo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Architect</td><td>Design de sistema, ADRs, revisao arquitetural</td><td class="td-mode">Inline</td><td class="td-caps">Research</td><td class="td-model">Powerful</td></tr>
+                <tr><td>Tech Lead</td><td>Code review, sprint planning, padroes</td><td class="td-mode">Inline</td><td class="td-caps">Code Gen, Code Review</td><td class="td-model">Powerful</td></tr>
+                <tr><td>Business Analyst</td><td>Requisitos, user stories, engenharia reversa</td><td class="td-mode">Inline</td><td class="td-caps">Spec Gen</td><td class="td-model">Powerful</td></tr>
+                <tr><td>Dev Backend</td><td>APIs, bancos, integracoes, unit tests</td><td class="td-mode">Ralph Loop</td><td class="td-caps">Autonomous Coding</td><td class="td-model">Powerful</td></tr>
+                <tr><td>Dev Frontend</td><td>UI/UX, componentes, responsividade</td><td class="td-mode">Ralph Loop</td><td class="td-caps">Autonomous Coding</td><td class="td-model">Powerful</td></tr>
+                <tr><td>QA Engineer</td><td>Testes automatizados, performance, regressao</td><td class="td-mode">Subagent</td><td class="td-caps">Test Automation</td><td class="td-model">Powerful</td></tr>
+                <tr><td>Tech Writer</td><td>API docs, runbooks, release notes</td><td class="td-mode">Subagent</td><td class="td-caps">Research</td><td class="td-model">Fast</td></tr>
+                <tr><td>Project Manager</td><td>Status reports, metricas, riscos</td><td class="td-mode">Subagent</td><td class="td-caps">Project Sync</td><td class="td-model">Fast</td></tr>
+                <tr><td>Finance Advisor</td><td>Compliance BACEN, Basel III, LGPD, PCI-DSS</td><td class="td-mode">Inline</td><td class="td-caps">Research, Compliance</td><td class="td-model">Powerful</td></tr>
+                <tr><td>SRE</td><td>SLOs/SLIs, monitoring, incident response</td><td class="td-mode">Subagent</td><td class="td-caps">Infra, Monitoring</td><td class="td-model">Powerful</td></tr>
+                <tr><td>DevOps</td><td>CI/CD, IaC, GitOps, deployment strategies</td><td class="td-mode">Ralph Loop</td><td class="td-caps">Infra, Code Gen</td><td class="td-model">Powerful</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="key-message mt-12">Capabilities sao abstratas. O engine resolve para o provider configurado (Copilot, SonarQube, Jira, etc).</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 4: O PIPELINE -->
+      <!-- ============================================================ -->
+      <div class="step" id="step4">
+        <div class="step-inner">
+          <span class="step-badge amber">Step 4 / Pipeline</span>
+          <div class="step-title">10 fases. 24 steps. 9 checkpoints obrigatorios.</div>
+          <div class="step-subtitle">Pipeline completo com estimativas de tempo e custo por fase.</div>
+
+          <div class="pipeline-strip mb-12">
+            <div class="ps-phase"><span class="ps-num">1</span><span class="ps-name">Estimativa</span><span class="ps-check">5-10 min</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">2</span><span class="ps-name">Requisitos</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">3</span><span class="ps-name">Arquitetura</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">4</span><span class="ps-name">Planejamento</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase"><span class="ps-num">5</span><span class="ps-name">Implementacao</span><span class="ps-check">30-90 min</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">6</span><span class="ps-name">Qualidade</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">7</span><span class="ps-name">Code Review</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">8</span><span class="ps-name">Documentacao</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">9</span><span class="ps-name">Deploy</span><span class="ps-check">CP</span></div>
+            <div class="ps-phase has-checkpoint"><span class="ps-num">10</span><span class="ps-name">Sustentacao</span><span class="ps-check">CP</span></div>
+          </div>
+
+          <div class="tech-table-wrap mb-12">
+            <table class="tech-table">
+              <thead>
+                <tr>
+                  <th>Fase</th>
+                  <th>Tempo</th>
+                  <th>Custo</th>
+                  <th>Agentes Envolvidos</th>
+                  <th>Checkpoint</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>1. Estimativa</td><td class="td-time">5-10 min</td><td class="td-cost">~$0.42</td><td class="td-agents">Architect, Finance Advisor, PM</td><td>--</td></tr>
+                <tr><td>2. Requisitos</td><td class="td-time">15-30 min</td><td class="td-cost">~$2.00</td><td class="td-agents">BA, Architect, Finance Advisor</td><td style="color:var(--neon-amber)">CP-1</td></tr>
+                <tr><td>3. Arquitetura</td><td class="td-time">20-40 min</td><td class="td-cost">~$2.27</td><td class="td-agents">Architect, Tech Lead</td><td style="color:var(--neon-amber)">CP-2</td></tr>
+                <tr><td>4. Planejamento</td><td class="td-time">10-20 min</td><td class="td-cost">~$1.40</td><td class="td-agents">Tech Lead, PM, BA</td><td style="color:var(--neon-amber)">CP-3</td></tr>
+                <tr><td>5. Implementacao</td><td class="td-time">30-90 min</td><td class="td-cost">~$5.48</td><td class="td-agents">Dev Backend, Dev Frontend, DevOps</td><td>Ralph Loop</td></tr>
+                <tr><td>6. Qualidade</td><td class="td-time">15-30 min</td><td class="td-cost">~$1.73</td><td class="td-agents">QA Engineer, Tech Lead</td><td style="color:var(--neon-amber)">CP-4</td></tr>
+                <tr><td>7. Code Review</td><td class="td-time">10-20 min</td><td class="td-cost">~$1.13</td><td class="td-agents">Tech Lead, Architect</td><td style="color:var(--neon-amber)">CP-5</td></tr>
+                <tr><td>8. Documentacao</td><td class="td-time">10-20 min</td><td class="td-cost">~$0.23</td><td class="td-agents">Tech Writer, PM</td><td style="color:var(--neon-amber)">CP-6</td></tr>
+                <tr><td>9. Deploy</td><td class="td-time">10-15 min</td><td class="td-cost">~$1.37</td><td class="td-agents">DevOps, SRE</td><td style="color:var(--neon-amber)">CP-7, CP-8</td></tr>
+                <tr><td>10. Sustentacao</td><td class="td-time">5-10 min</td><td class="td-cost">~$0.27</td><td class="td-agents">SRE, PM</td><td style="color:var(--neon-amber)">CP-9</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="fact-row">
+            <div class="fact-pill"><div class="fp-label">Total Tempo</div><div class="fp-value cyan">2-6 horas</div></div>
+            <div class="fact-pill"><div class="fp-label">Total Custo</div><div class="fp-value green">~$16 USD</div></div>
+            <div class="fact-pill"><div class="fp-label">Total Tokens</div><div class="fp-value purple">~450K</div></div>
+            <div class="fact-pill"><div class="fp-label">Checkpoints</div><div class="fp-value amber">9 obrigatorios</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 5: EXECUCAO E MODOS -->
+      <!-- ============================================================ -->
+      <div class="step" id="step5">
+        <div class="step-inner">
+          <span class="step-badge cyan">Step 5 / Execucao</span>
+          <div class="step-title">3 modos de execucao. Quality gates automaticos.</div>
+          <div class="step-subtitle">Cada modo otimizado para o tipo de trabalho do agente.</div>
+
+          <div class="tech-cards cols-3 mb-12">
+            <div class="tech-card border-cyan" style="animation-delay:0.1s">
+              <div class="tc-title cyan">Inline</div>
+              <div class="tc-desc mb-8">Agente executa na sessao principal. Decisoes em tempo real. Contexto completo do projeto.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Architect</li>
+                <li><span class="dot">&#9656;</span> Tech Lead</li>
+                <li><span class="dot">&#9656;</span> Business Analyst</li>
+                <li><span class="dot">&#9656;</span> Finance Advisor</li>
+              </ul>
+            </div>
+            <div class="tech-card border-purple" style="animation-delay:0.2s">
+              <div class="tc-title purple">Subagent</div>
+              <div class="tc-desc mb-8">Processo background com contexto isolado. Resultados coletados ao final. Sem interferencia na sessao.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> QA Engineer</li>
+                <li><span class="dot">&#9656;</span> Tech Writer</li>
+                <li><span class="dot">&#9656;</span> Project Manager</li>
+                <li><span class="dot">&#9656;</span> SRE</li>
+              </ul>
+            </div>
+            <div class="tech-card border-green" style="animation-delay:0.3s">
+              <div class="tc-title green">Ralph Loop</div>
+              <div class="tc-desc mb-8">Ciclo iterativo autonomo: implementa, testa, corrige, repete. Max 10 iteracoes. Failsafe: escala para humano.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Dev Backend</li>
+                <li><span class="dot">&#9656;</span> Dev Frontend</li>
+                <li><span class="dot">&#9656;</span> DevOps</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="code-block mb-12" style="max-width:680px; text-align:center;">
+<span class="hl">RALPH LOOP — Ciclo Iterativo Autonomo</span>
+
+<span class="fn"> Implement </span> ───&#9654; <span class="warn"> Test (gates) </span> ───&#9654; <span class="err"> Fix Issues </span>
+     <span class="cm">^</span>                    <span class="cm">|</span>                    <span class="cm">|</span>
+     <span class="cm">|</span>                    <span class="cm">v</span>                    <span class="cm">|</span>
+     <span class="cm">+</span>────────── <span class="str"> Commit & Next </span> ◄──────────<span class="cm">+</span>
+                        <span class="cm">|</span>
+                 <span class="cm">All stories done?</span>
+                        <span class="cm">|</span>
+                   <span class="str">[COMPLETE]</span>
+
+<span class="cm">Quality Gates: typecheck | lint | test</span>
+<span class="cm">Max iteracoes: 10 | Failsafe: escala para humano</span>
+          </div>
+
+          <div class="key-message">Human-in-the-loop obrigatorio em todos os checkpoints. Agente NUNCA faz deploy sem aprovacao.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 6: SEGURANCA E COMPLIANCE -->
+      <!-- ============================================================ -->
+      <div class="step" id="step6">
+        <div class="step-inner">
+          <span class="step-badge red">Step 6 / Seguranca</span>
+          <div class="step-title">Zero cloud. Zero vazamento. 100% auditavel.</div>
+          <div class="step-subtitle">Seguranca por design. Nao por promessa.</div>
+
+          <div class="tech-cards cols-2 mb-12">
+            <div class="tech-card border-green" style="animation-delay:0.1s">
+              <div class="tc-title green">Seguranca de Dados</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Execucao 100% local na maquina do dev</li>
+                <li><span class="dot">&#9656;</span> Nenhum dado enviado para servidores ForgeSquad (nao existem)</li>
+                <li><span class="dot">&#9656;</span> Framework sao arquivos texto — auditaveis linha por linha</li>
+                <li><span class="dot">&#9656;</span> Nenhum binario, nenhum daemon, nenhum servico background</li>
+              </ul>
+            </div>
+            <div class="tech-card border-amber" style="animation-delay:0.2s">
+              <div class="tc-title amber">Audit Trail</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Cada acao gera entrada no audit-trail.json</li>
+                <li><span class="dot">&#9656;</span> Hash SHA-256 de cada artefato gerado</li>
+                <li><span class="dot">&#9656;</span> Timestamp ISO 8601 UTC</li>
+                <li><span class="dot">&#9656;</span> Reviewer ID e decisao em cada checkpoint</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="code-block mb-12" style="max-width:600px;">
+<span class="cm">// Estrutura audit-trail.json</span>
+{
+  <span class="fn">"entry_id"</span>: <span class="str">"uuid-v4"</span>,
+  <span class="fn">"sequence"</span>: <span class="kw">1</span>,
+  <span class="fn">"timestamp"</span>: <span class="str">"2025-03-23T10:25:00Z"</span>,
+  <span class="fn">"action_type"</span>: <span class="str">"checkpoint_approved"</span>,
+  <span class="fn">"agent"</span>: <span class="str">"architect"</span>,
+  <span class="fn">"artifact_hash"</span>: <span class="str">"sha256:a3f8e2..."</span>,
+  <span class="fn">"reviewer"</span>: <span class="str">"user"</span>,
+  <span class="fn">"notes"</span>: <span class="str">"Architecture approved"</span>
+}
+          </div>
+
+          <div class="tech-cards cols-2 mb-12">
+            <div class="tech-card border-red" style="animation-delay:0.3s">
+              <div class="tc-title red">Compliance Embarcado</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> BACEN: validacao regulatoria pelo Finance Advisor</li>
+                <li><span class="dot">&#9656;</span> LGPD: patterns de anonimizacao e consentimento</li>
+                <li><span class="dot">&#9656;</span> PCI-DSS: criptografia e key management no intelligence layer</li>
+                <li><span class="dot">&#9656;</span> Basel III/IV: analise de risco pelo Finance Advisor</li>
+              </ul>
+            </div>
+            <div class="tech-card border-blue" style="animation-delay:0.4s">
+              <div class="tc-title blue">Integracao Ferramentas Seguranca</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> SonarQube — quality gates no pipeline</li>
+                <li><span class="dot">&#9656;</span> Fortify/Checkmarx — security scan integrado</li>
+                <li><span class="dot">&#9656;</span> Vault — secrets management patterns</li>
+                <li><span class="dot">&#9656;</span> Integracao via capabilities (desacoplado)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="key-message">O banco audita o framework inteiro em horas. Sao ~2MB de arquivos texto legivel.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 7: METODOLOGIAS DE GESTAO -->
+      <!-- ============================================================ -->
+      <div class="step" id="step7">
+        <div class="step-inner">
+          <span class="step-badge purple">Step 7 / Metodologias</span>
+          <div class="step-title">Metodologia enforced por politica. Nao opcional.</div>
+          <div class="step-subtitle">O framework impoe cerimionias, WIP limits e gates conforme a metodologia escolhida.</div>
+
+          <div class="tech-cards cols-3 mb-12">
+            <div class="tech-card border-cyan" style="animation-delay:0.1s">
+              <div class="tc-title cyan">Scrum</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Sprint Planning (Tech Lead, inicio)</li>
+                <li><span class="dot">&#9656;</span> Daily Standup (PM, por step)</li>
+                <li><span class="dot">&#9656;</span> Sprint Review (PM, fim)</li>
+                <li><span class="dot">&#9656;</span> Retrospective (Tech Lead, fim)</li>
+                <li><span class="dot">&#9656;</span> Backlog Refinement (BA, meio)</li>
+              </ul>
+              <div class="tc-desc mt-8" style="color:var(--neon-cyan);font-weight:600;font-size:0.55rem;">Reports: Burndown, Velocity, Quality Dashboard</div>
+            </div>
+            <div class="tech-card border-purple" style="animation-delay:0.2s">
+              <div class="tc-title purple">Kanban</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> WIP Limits: backlog 20, in_progress 3, review 2</li>
+                <li><span class="dot">&#9656;</span> Replenishment Meeting (semanal)</li>
+                <li><span class="dot">&#9656;</span> Delivery Review (quinzenal)</li>
+              </ul>
+              <div class="tc-desc mt-8" style="color:var(--neon-purple);font-weight:600;font-size:0.55rem;">Reports: Cumulative Flow, Lead Time, Throughput</div>
+            </div>
+            <div class="tech-card border-amber" style="animation-delay:0.3s">
+              <div class="tc-title amber">Waterfall</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Phase Gate Review (fim de fase)</li>
+                <li><span class="dot">&#9656;</span> Status Report (semanal)</li>
+                <li><span class="dot">&#9656;</span> Steering Committee (quinzenal)</li>
+              </ul>
+              <div class="tc-desc mt-8" style="color:var(--neon-amber);font-weight:600;font-size:0.55rem;">Reports: Gantt, Milestone Tracker, Budget Burn</div>
+            </div>
+          </div>
+
+          <div class="key-message">Ceremonies geram artefatos automaticamente. PM e Tech Lead seguem os rituais por politica do framework.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 8: CAPABILITIES MODEL -->
+      <!-- ============================================================ -->
+      <div class="step" id="step8">
+        <div class="step-inner">
+          <span class="step-badge cyan">Step 8 / Capabilities</span>
+          <div class="step-title">Abstracoes de ferramentas. Desacoplado de vendors.</div>
+          <div class="step-subtitle">O banco define QUAL ferramenta usa. O framework define O QUE precisa.</div>
+
+          <div class="tech-table-wrap mb-12">
+            <table class="tech-table">
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  <th>Default Provider</th>
+                  <th>Alternativas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>autonomous_coding</td><td class="td-default">Claude Code</td><td class="td-alt">Devin, Codex, Cursor, Windsurf</td></tr>
+                <tr><td>pair_programming</td><td class="td-default">GitHub Copilot</td><td class="td-alt">Cursor, Windsurf, Kiro, Codeium</td></tr>
+                <tr><td>code_analysis</td><td class="td-default">SonarQube</td><td class="td-alt">CodeClimate, Snyk, Semgrep</td></tr>
+                <tr><td>infrastructure</td><td class="td-default">Terraform</td><td class="td-alt">Pulumi, Bicep, CloudFormation</td></tr>
+                <tr><td>project_sync</td><td class="td-default">Jira</td><td class="td-alt">Linear, Azure DevOps, GitHub Projects</td></tr>
+                <tr><td>monitoring</td><td class="td-default">Datadog</td><td class="td-alt">Grafana, CloudWatch, NewRelic</td></tr>
+                <tr><td>requirements</td><td class="td-default">Native</td><td class="td-alt">Kiro</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="code-block mb-12" style="max-width:600px;">
+<span class="cm"># config.yaml — Exemplo de capabilities</span>
+<span class="fn">capabilities</span>:
+  <span class="fn">autonomous_coding</span>:
+    <span class="fn">provider</span>: <span class="str">"claude-code"</span>
+    <span class="fn">model_tier</span>: <span class="str">"powerful"</span>
+  <span class="fn">code_analysis</span>:
+    <span class="fn">provider</span>: <span class="str">"sonarqube"</span>
+    <span class="fn">endpoint</span>: <span class="str">"https://sonar.banco.com"</span>
+  <span class="fn">project_sync</span>:
+    <span class="fn">provider</span>: <span class="str">"jira"</span>
+    <span class="fn">project_key</span>: <span class="str">"PIX"</span>
+          </div>
+
+          <div class="key-message">Zero vendor lock-in. Troca de provider = mudar 1 linha no config.yaml.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 9: INTELIGENCIA EMBARCADA -->
+      <!-- ============================================================ -->
+      <div class="step" id="step9">
+        <div class="step-inner">
+          <span class="step-badge green">Step 9 / Inteligencia</span>
+          <div class="step-title">Conhecimento invisivel. Sempre ativo.</div>
+          <div class="step-subtitle">Inteligencia de software e seguranca embarcada automaticamente em cada agente.</div>
+
+          <div class="tech-cards cols-2 mb-12">
+            <div class="tech-card border-purple" style="animation-delay:0.1s">
+              <div class="tc-title purple">Software Architecture (Martin Fowler)</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Design Patterns (GoF): Factory, Builder, Strategy, Observer</li>
+                <li><span class="dot">&#9656;</span> Enterprise Patterns (PoEAA): Repository, Unit of Work, CQRS</li>
+                <li><span class="dot">&#9656;</span> DDD: Bounded Contexts, Aggregates, Domain Events</li>
+                <li><span class="dot">&#9656;</span> SOLID, DRY, KISS, Clean Architecture</li>
+                <li><span class="dot">&#9656;</span> Evolutionary Architecture, ADRs</li>
+              </ul>
+              <div class="tc-desc mt-8" style="color:var(--neon-purple);font-weight:600;font-size:0.55rem;">Injetado automaticamente no Architect e Tech Lead</div>
+            </div>
+            <div class="tech-card border-red" style="animation-delay:0.2s">
+              <div class="tc-title red">Cryptography & Security</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Encryption: AES-256-GCM, TLS 1.3, mTLS</li>
+                <li><span class="dot">&#9656;</span> Hashing: bcrypt/Argon2 (senhas), SHA-256 (integridade)</li>
+                <li><span class="dot">&#9656;</span> Key Management: rotation, KMS, HSM integration</li>
+                <li><span class="dot">&#9656;</span> API Security: OAuth 2.0 + PKCE, JWT RS256/ES256</li>
+                <li><span class="dot">&#9656;</span> Data Protection: PII encryption, tokenization, LGPD</li>
+              </ul>
+              <div class="tc-desc mt-8" style="color:var(--neon-red);font-weight:600;font-size:0.55rem;">Injetado automaticamente em TODOS os agentes</div>
+            </div>
+          </div>
+
+          <div class="key-message">O dev nao precisa ser especialista em Fowler ou criptografia. O framework embarca esse conhecimento automaticamente.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 10: ESTIMATIVAS DE CUSTO -->
+      <!-- ============================================================ -->
+      <div class="step" id="step10">
+        <div class="step-inner">
+          <span class="step-badge amber">Step 10 / Custos</span>
+          <div class="step-title">Custo transparente. Previsivel. Auditavel.</div>
+          <div class="step-subtitle">Token economics por porte de projeto e por fase do pipeline.</div>
+
+          <div class="tech-table-wrap mb-12">
+            <table class="tech-table">
+              <thead>
+                <tr>
+                  <th>Porte</th>
+                  <th>Descricao</th>
+                  <th>Duracao</th>
+                  <th>Tokens</th>
+                  <th>Custo USD</th>
+                  <th>Custo BRL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Pequeno</td><td>Landing page, API, CRUD</td><td class="td-time">1-3h</td><td class="td-agents">~300K</td><td class="td-cost">$5-15</td><td class="td-cost">R$25-75</td></tr>
+                <tr><td>Medio</td><td>Fullstack, microservicos</td><td class="td-time">3-8h</td><td class="td-agents">~800K</td><td class="td-cost">$15-40</td><td class="td-cost">R$75-200</td></tr>
+                <tr><td>Grande</td><td>Enterprise, multi-modulo</td><td class="td-time">8-24h</td><td class="td-agents">~2M</td><td class="td-cost">$40-120</td><td class="td-cost">R$200-600</td></tr>
+                <tr><td>Enterprise</td><td>Plataforma, multi-squad</td><td class="td-time">24-80h</td><td class="td-agents">~5M+</td><td class="td-cost">$120-400</td><td class="td-cost">R$600-2000</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="width:100%;max-width:700px;" class="mb-12">
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 5: Implementacao</span><span>$5.48 (34%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill green" style="width:34%"></div><div class="cost-bar-value">$5.48</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 3: Arquitetura</span><span>$2.27 (14%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill blue" style="width:14%"></div><div class="cost-bar-value">$2.27</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 2: Requisitos</span><span>$2.00 (13%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill purple" style="width:13%"></div><div class="cost-bar-value">$2.00</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 6: Qualidade</span><span>$1.73 (11%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill blue" style="width:11%"></div><div class="cost-bar-value">$1.73</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 4: Planejamento</span><span>$1.40 (9%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill purple" style="width:9%"></div><div class="cost-bar-value">$1.40</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 9: Deploy</span><span>$1.37 (9%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill amber" style="width:9%"></div><div class="cost-bar-value">$1.37</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fase 7: Code Review</span><span>$1.13 (7%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill blue" style="width:7%"></div><div class="cost-bar-value">$1.13</div></div>
+            </div>
+            <div class="cost-bar-wrap">
+              <div class="cost-bar-label"><span>Fases 1,8,10</span><span>$0.92 (6%)</span></div>
+              <div class="cost-bar-track"><div class="cost-bar-fill green" style="width:6%"></div><div class="cost-bar-value">$0.92</div></div>
+            </div>
+          </div>
+
+          <div class="fact-row mb-12">
+            <div class="fact-pill"><div class="fp-label">Overhead Scrum</div><div class="fp-value cyan">+5% (~$1.50)</div></div>
+            <div class="fact-pill"><div class="fp-label">Overhead Kanban</div><div class="fp-value purple">+3% (~$0.70)</div></div>
+            <div class="fact-pill"><div class="fp-label">Overhead Waterfall</div><div class="fp-value amber">+4% (~$2.00)</div></div>
+          </div>
+
+          <div class="key-message amber-msg">Comparativo: 1 engenheiro senior custa ~R$800/dia. ForgeSquad executa um projeto medio por R$125.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 11: COBERTURA DE CENARIOS -->
+      <!-- ============================================================ -->
+      <div class="step" id="step11">
+        <div class="step-inner">
+          <span class="step-badge green">Step 11 / Cenarios</span>
+          <div class="step-title">Cenarios validados para operacao bancaria.</div>
+          <div class="step-subtitle">6 cenarios mapeados com cobertura de agentes e nivel de suporte.</div>
+
+          <div class="tech-cards cols-3 mb-12">
+            <div class="tech-card border-cyan" style="animation-delay:0.1s">
+              <div class="tc-title cyan">API Banking</div>
+              <div class="tc-desc mb-8">APIs REST/GraphQL para Open Finance, Pix, SPB.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Architect (DDD)</li>
+                <li><span class="dot">&#9656;</span> Dev Backend (implementation)</li>
+                <li><span class="dot">&#9656;</span> Finance Advisor (BACEN compliance)</li>
+                <li><span class="dot">&#9656;</span> SRE (SLOs 99.9%)</li>
+              </ul>
+              <div class="uc-badge complete">Completo</div>
+            </div>
+            <div class="tech-card border-purple" style="animation-delay:0.15s">
+              <div class="tc-title purple">Microservicos</div>
+              <div class="tc-desc mb-8">Decomposicao de monolito, bounded contexts, event-driven.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Architect (Strangler Fig)</li>
+                <li><span class="dot">&#9656;</span> DevOps (K8s, service mesh)</li>
+                <li><span class="dot">&#9656;</span> SRE (observability)</li>
+              </ul>
+              <div class="uc-badge complete">Completo</div>
+            </div>
+            <div class="tech-card border-green" style="animation-delay:0.2s">
+              <div class="tc-title green">Modernizacao de Legado</div>
+              <div class="tc-desc mb-8">COBOL para Java/Node, engenharia reversa, migracao incremental.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> BA (reverse engineering)</li>
+                <li><span class="dot">&#9656;</span> Architect (migration plan)</li>
+                <li><span class="dot">&#9656;</span> Dev Backend (reimplementation)</li>
+              </ul>
+              <div class="uc-badge complete">Completo</div>
+            </div>
+            <div class="tech-card border-amber" style="animation-delay:0.25s">
+              <div class="tc-title amber">Sustentacao</div>
+              <div class="tc-desc mb-8">Bug fixes, patches, monitoring, SLO management.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> SRE (24/7 patterns)</li>
+                <li><span class="dot">&#9656;</span> QA (regression)</li>
+                <li><span class="dot">&#9656;</span> DevOps (hotfix pipeline)</li>
+                <li><span class="dot">&#9656;</span> PM (SLA reports)</li>
+              </ul>
+              <div class="uc-badge complete">Completo</div>
+            </div>
+            <div class="tech-card border-blue" style="animation-delay:0.3s">
+              <div class="tc-title blue">Evolucao de Sistemas</div>
+              <div class="tc-desc mb-8">Novas features em sistemas existentes, sem regressao.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> BA (impact analysis)</li>
+                <li><span class="dot">&#9656;</span> QA (regression suite)</li>
+                <li><span class="dot">&#9656;</span> Dev Backend/Frontend</li>
+                <li><span class="dot">&#9656;</span> Architect (fitness)</li>
+              </ul>
+              <div class="uc-badge complete">Completo</div>
+            </div>
+            <div class="tech-card border-pink" style="animation-delay:0.35s">
+              <div class="tc-title pink">Mobile (Parcial)</div>
+              <div class="tc-desc mb-8">React Native / Flutter. iOS/Android nativo requer skill customizada.</div>
+              <ul class="tc-list">
+                <li><span class="dot">&#9656;</span> Dev Frontend (UI)</li>
+                <li><span class="dot">&#9656;</span> QA (device testing)</li>
+              </ul>
+              <div class="uc-badge partial">Parcial</div>
+            </div>
+          </div>
+
+          <div class="key-message">5 de 6 cenarios com cobertura completa. Mobile cross-platform suportado; nativo requer extensao.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- STEP 12: DUE DILIGENCE SUMMARY -->
+      <!-- ============================================================ -->
+      <div class="step" id="step12">
+        <div class="step-inner">
+          <span class="step-badge green">Step 12 / Aprovacao</span>
+          <div class="step-title">Checklist para aprovacao tecnica.</div>
+          <div class="step-subtitle">Due diligence completa. Todos os criterios atendidos.</div>
+
+          <div class="tech-cards cols-2 mb-12">
+            <div class="tech-card border-green" style="animation-delay:0.1s">
+              <div class="checklist-section">
+                <div class="checklist-group-title green">Seguranca</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Execucao 100% local (zero cloud)</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Nenhum dado sensivel transmitido</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Arquivos texto auditaveis (zero binarios)</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Audit trail com SHA-256 em cada decisao</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Compliance BACEN/LGPD/PCI-DSS embarcado</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Integracao com SonarQube/Fortify/Checkmarx</div>
+              </div>
+            </div>
+            <div class="tech-card border-cyan" style="animation-delay:0.15s">
+              <div class="checklist-section">
+                <div class="checklist-group-title cyan">Arquitetura</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Zero dependencias externas</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Desacoplado de vendors (capabilities model)</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Patterns Fowler/DDD/SOLID embarcados</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> 3 camadas: Governance, Squad, Execution</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Metodologias enforced (Scrum/Kanban/Waterfall)</div>
+              </div>
+            </div>
+            <div class="tech-card border-purple" style="animation-delay:0.2s">
+              <div class="checklist-section">
+                <div class="checklist-group-title purple">Operacao</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Instalacao: 1 comando (curl | bash)</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Tamanho: ~2MB de arquivos texto</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> 9 checkpoints de aprovacao humana</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Human-in-the-loop obrigatorio</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Rollback: deletar pasta (zero residuo)</div>
+              </div>
+            </div>
+            <div class="tech-card border-amber" style="animation-delay:0.25s">
+              <div class="checklist-section">
+                <div class="checklist-group-title amber">Risco</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Nao e plataforma — nao requer aprovacao de comite</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Custo: incluso no BAU existente</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Reversivel: remover = deletar arquivos</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Sem vendor lock-in</div>
+                <div class="checklist-item"><span class="check">&#10003;</span> Open source (auditavel)</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="cta-button" onclick="return false;">Aprovar para POC</button>
+          <div class="cta-note">Investimento: zero — incluso no contrato BAU existente</div>
+          <span class="ntt-badge" style="margin-top: 8px;">NTT DATA | Confidencial | Due Diligence v1.0</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+      <button class="nav-btn" id="prevBtn" disabled onclick="navigate(-1)">&#9664; Anterior</button>
+      <div class="timeline-dots" id="timelineDots"></div>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">Proximo &#9654;</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // STATE
+    // ============================================================
+    let currentStep = 1;
+    const totalSteps = 12;
+    let startTime = Date.now();
+    let autoplayTimer = null;
+    let stepAnimated = {};
+
+    // ============================================================
+    // PARTICLES
+    // ============================================================
+    (function startParticles() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resize();
+      window.addEventListener('resize', resize);
+      function createParticle() {
+        return {
+          x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+          size: Math.random() * 1.5 + 0.5, opacity: Math.random() * 0.3 + 0.1,
+          color: ['#00d4ff', '#a855f7', '#22d3ee', '#00ff88'][Math.floor(Math.random() * 4)]
+        };
+      }
+      for (let i = 0; i < 60; i++) particles.push(createParticle());
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color; ctx.globalAlpha = p.opacity; ctx.fill();
+        });
+        ctx.globalAlpha = 0.03; ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 0.5;
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 150) {
+              ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+            }
+          }
+        }
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ============================================================
+    // TIMER
+    // ============================================================
+    setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = m + ':' + s;
+    }, 1000);
+
+    // ============================================================
+    // TIMELINE DOTS
+    // ============================================================
+    (function buildTimeline() {
+      const labels = ['Visao', 'Composicao', 'Agentes', 'Pipeline', 'Execucao', 'Seguranca', 'Metodologias', 'Capabilities', 'Inteligencia', 'Custos', 'Cenarios', 'Aprovacao'];
+      const container = document.getElementById('timelineDots');
+      labels.forEach((l, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'timeline-dot' + (i === 0 ? ' active visited' : '');
+        dot.onclick = () => goToStep(i + 1);
+        dot.innerHTML = '<span class="timeline-dot-label">' + l + '</span>';
+        container.appendChild(dot);
+      });
+    })();
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function navigate(dir) {
+      const next = currentStep + dir;
+      if (next < 1 || next > totalSteps) return;
+      goToStep(next);
+    }
+
+    function goToStep(n) {
+      if (n === currentStep) return;
+      document.getElementById('step' + currentStep).classList.remove('active');
+      currentStep = n;
+      document.getElementById('step' + currentStep).classList.add('active');
+      document.getElementById('stepNum').textContent = currentStep;
+      document.getElementById('progressFill').style.width = (currentStep / totalSteps * 100) + '%';
+      document.getElementById('prevBtn').disabled = currentStep === 1;
+      document.getElementById('nextBtn').disabled = currentStep === totalSteps;
+
+      // Update timeline
+      document.querySelectorAll('.timeline-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentStep - 1);
+        if (i < currentStep) d.classList.add('visited');
+      });
+
+      // Scroll step content to top
+      document.getElementById('step' + currentStep).scrollTop = 0;
+
+      resetAutoplay();
+    }
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') navigate(1);
+      else if (e.key === 'ArrowLeft') navigate(-1);
+      else if (e.key === ' ') {
+        e.preventDefault();
+        const cb = document.getElementById('autoplayCheck');
+        cb.checked = !cb.checked;
+        resetAutoplay();
+      }
+    });
+
+    // Autoplay — 12 seconds per step
+    function resetAutoplay() {
+      clearTimeout(autoplayTimer);
+      if (document.getElementById('autoplayCheck').checked && currentStep < totalSteps) {
+        autoplayTimer = setTimeout(() => navigate(1), 12000);
+      }
+    }
+    document.getElementById('autoplayCheck').addEventListener('change', resetAutoplay);
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    resetAutoplay();
+  </script>
+</body>
+</html>
