@@ -129,24 +129,37 @@ Providers são as ferramentas concretas que implementam as capabilities. O Forge
 
 ## Instalacao
 
+Entre no diretorio do seu projeto e rode:
+
 ```bash
-git clone https://github.com/Brunooacks/ForgeSquadAI-Augmented-byAurora.git forgesquad
-cd forgesquad
+curl -sL https://raw.githubusercontent.com/Brunooacks/forgesquadinovation/main/install.sh | bash
+```
+
+Pronto. Agora:
+
+```bash
 claude
 ```
 
-Pronto. Digite `/forgesquad` e o menu aparece. Sem configuracao, sem dependencias, sem setup.
+Digite `/forgesquad` e o menu aparece. **Um comando. Sem configuracao. Sem dependencias.**
+
+### O que o instalador faz
+
+1. Clona o framework em `.forgesquad-framework/` (oculto)
+2. Copia `CLAUDE.md` e `.claude/commands/` para a raiz do seu projeto
+3. Cria symlinks para `_forgesquad/`, `squads/`, `skills/`
+4. Nada mais. Nenhum binario, nenhuma dependencia, nenhum daemon.
 
 ### Requisitos
 
 - [Claude Code](https://claude.ai/claude-code) instalado (`npm install -g @anthropic-ai/claude-code`)
-- Conta Anthropic com API key configurada
+- Git
 
 ### Tambem funciona com
 
 | IDE / Ferramenta | Como usar |
 |---|---|
-| **Claude Code (CLI)** | `cd forgesquad && claude` → `/forgesquad` |
+| **Claude Code (CLI)** | `claude` → `/forgesquad` |
 | **VS Code + Continue** | Abrir pasta, o CLAUDE.md eh lido automaticamente |
 | **VS Code + Copilot Chat** | Abrir pasta, referenciar CLAUDE.md no chat |
 | **Cursor** | Abrir pasta, agentes leem CLAUDE.md automaticamente |
