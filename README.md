@@ -127,13 +127,41 @@ Providers são as ferramentas concretas que implementam as capabilities. O Forge
 | **SonarQube** | Quality Gates, Security Scanning |
 | **Jira / Linear** | Project Sync |
 
-## Instalação
+## Instalacao
 
-**Pré-requisito:** IDE com suporte a agentes de IA (Claude Code, Cursor, VS Code + Copilot)
+```bash
+git clone https://github.com/Brunooacks/ForgeSquadAI-Augmented-byAurora.git forgesquad
+cd forgesquad
+claude
+```
 
-1. Clone ou copie este repositório para seu projeto
-2. Abra na IDE
-3. Execute `/forgesquad` para iniciar o onboarding
+Pronto. Digite `/forgesquad` e o menu aparece. Sem configuracao, sem dependencias, sem setup.
+
+### Requisitos
+
+- [Claude Code](https://claude.ai/claude-code) instalado (`npm install -g @anthropic-ai/claude-code`)
+- Conta Anthropic com API key configurada
+
+### Tambem funciona com
+
+| IDE / Ferramenta | Como usar |
+|---|---|
+| **Claude Code (CLI)** | `cd forgesquad && claude` → `/forgesquad` |
+| **VS Code + Continue** | Abrir pasta, o CLAUDE.md eh lido automaticamente |
+| **VS Code + Copilot Chat** | Abrir pasta, referenciar CLAUDE.md no chat |
+| **Cursor** | Abrir pasta, agentes leem CLAUDE.md automaticamente |
+| **Windsurf** | Abrir pasta, o CLAUDE.md eh interpretado como instrucoes |
+
+### Comandos disponiveis (digite / no Claude Code)
+
+```
+/forgesquad          Menu principal
+/forgesquad-create   Criar novo squad de engenharia
+/forgesquad-run      Executar pipeline do squad
+/forgesquad-list     Listar squads disponiveis
+/forgesquad-report   Gerar relatorio de status
+/forgesquad-help     Ajuda completa
+```
 
 ## Criando seu Squad
 

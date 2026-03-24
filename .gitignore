@@ -5,7 +5,7 @@ _forgesquad/_memory/preferences.md
 _forgesquad/_browser_profile/
 _forgesquad/_investigations/
 
-# Squad runtime data
+# Squad runtime data (generated during execution)
 squads/*/state.json
 squads/*/output/
 squads/*/reports/
@@ -26,15 +26,14 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
+# IDE (local settings only — keep shared configs)
 .idea/
 *.swp
 *.swo
 
-# Claude Code (local session data — keep commands/)
+# Claude Code (keep commands, ignore session data)
 .claude/*
 !.claude/commands/
 
-# External repos (submodules)
+# External repos
 zynta/
