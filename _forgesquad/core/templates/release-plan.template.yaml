@@ -1,0 +1,40 @@
+# ForgeSquad Release Plan Template
+#
+# Variables in {curly_braces} are replaced at generation time
+# by the Dev Journey Engine.
+
+project: "{project_name}"
+squad: "{squad_code}"
+methodology: "{methodology}"
+generated_at: "{ISO_timestamp}"
+run_id: "{run_id}"
+
+# Release schedule
+releases:
+  - version: "{version}"
+    label: "{label}"
+    target_date: "{calculated_date}"
+    trigger: "{trigger_condition}"
+    scope:
+      - "{scope_item_1}"
+      - "{scope_item_2}"
+    agents_involved:
+      - "{agent_id_1}"
+      - "{agent_id_2}"
+    quality_gates:
+      - typecheck
+      - lint
+      - test
+    deliverables:
+      - "{deliverable_1}"
+      - "{deliverable_2}"
+    risks:
+      - "{risk_1}"
+
+# Summary metrics
+summary:
+  total_releases: "{count}"
+  methodology: "{methodology}"
+  estimated_duration: "{duration}"
+  agents_count: "{agent_count}"
+  steps_count: "{step_count}"
