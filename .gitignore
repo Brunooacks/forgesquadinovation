@@ -37,3 +37,6 @@ Thumbs.db
 
 # External repos
 zynta/
+
+# Squads/outputs arquivados (fora do escopo de runs)
+_archive/

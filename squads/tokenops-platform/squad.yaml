@@ -1,0 +1,157 @@
+name: "TokenOps Platform Engineering Squad"
+code: "tokenops-platform"
+description: >
+  Squad de engenharia para o TokenOps — plataforma SaaS de AI FinOps
+  que monitora consumo de LLMs, estima custos, recomenda modelos,
+  otimiza prompts automaticamente e aplica remediacoes que reduzem custos.
+  Baseado no PRD completo com 6 modulos, 2 plugins (Chrome + VS Code),
+  3 planos de monetizacao e roadmap de 3 fases.
+icon: "🪙"
+version: "2.0.0"
+created: "2026-03-23"
+project_type: "fullstack"
+delivery_model: "greenfield"
+
+tech_stack:
+  backend: "Node.js + NestJS (TypeScript)"
+  frontend: "Next.js + React + Tailwind CSS"
+  database: "PostgreSQL + ClickHouse + Redis"
+  infra: "Cloud (a definir)"
+  ci_cd: "GitHub Actions"
+  observability: "OpenTelemetry + Prometheus + Grafana"
+
+company: "_forgesquad/_memory/company.md"
+preferences: "_forgesquad/_memory/preferences.md"
+memory: "_memory/memories.md"
+
+target_audience: "Empresas que usam LLMs em producao, startups AI-first, fintechs, plataformas SaaS"
+platform: "SaaS — AI FinOps & LLM Optimization"
+performance_mode: "quality-first"
+
+product:
+  name: "TokenOps — AI Cost & Model Optimization Platform"
+  tagline: "Reduza custos de LLM em ate 70% com recomendacoes inteligentes e remediacoes automaticas."
+  modules:
+    - id: ai-gateway
+      name: "AI Gateway"
+      description: "Proxy que intercepta chamadas para LLMs — captura prompts, mede tokens, calcula custo, aplica regras de roteamento"
+      scope: mvp
+    - id: token-estimator
+      name: "Token Estimator"
+      description: "Simulacao de custo antes da execucao — tokens estimados, custo estimado, latencia estimada"
+      scope: mvp
+    - id: model-recommendation
+      name: "Model Recommendation Engine"
+      description: "Sugere qual modelo utilizar baseado em complexidade, contexto, criticidade, latencia e estrutura"
+      scope: mvp
+    - id: prompt-optimization
+      name: "Prompt Optimization Engine"
+      description: "Analisa prompts e detecta ineficiencias — redundancia, historico longo, instrucoes duplicadas, contexto inflado"
+      scope: v2
+    - id: remediation-engine
+      name: "Remediation Engine"
+      description: "Aplica otimizacoes automaticamente — compressao, truncagem, sumarizacao, cache, troca de modelo"
+      scope: v2
+    - id: governance-dashboard
+      name: "Dashboard de Governanca"
+      description: "Painel consolidado — total tokens, custo por modelo/projeto, top prompts caros, economia potencial"
+      scope: mvp
+
+  plugins:
+    - id: chrome-extension
+      name: "Chrome Extension"
+      description: "Captura prompts, estima tokens em tempo real, recomenda modelo"
+      scope: v2
+    - id: vscode-extension
+      name: "VS Code Extension"
+      description: "Analisa prompts no codigo, detecta chamadas de API LLM, sugere modelo"
+      scope: v2
+
+  integrations:
+    - OpenAI
+    - Anthropic
+    - Google Gemini
+    - Azure OpenAI
+    - AWS Bedrock
+    - Groq
+    - DeepSeek
+
+  monetization:
+    - plan: Starter
+      price: "$29/mes"
+      includes: "ate 1M tokens, dashboard basico"
+    - plan: Pro
+      price: "$199/mes"
+      includes: "ate 50M tokens, recomendacao de modelos"
+    - plan: Enterprise
+      price: "$1000+/mes"
+      includes: "governanca, SSO, auditoria, suporte dedicado"
+    - alternative: "2% da economia obtida"
+
+  roadmap:
+    - phase: MVP
+      timeline: "3 meses"
+      features: "Gateway, Dashboard, Token Estimation, Recomendacao de modelo"
+    - phase: V2
+      features: "Remediacao automatica, compressao de contexto, cache inteligente"
+    - phase: V3
+      features: "Copiloto de otimizacao, auto tuning de prompts, benchmarking de modelos"
+
+skills:
+  - web_search
+  - web_fetch
+
+data:
+  - pipeline/data/coding-standards.md
+  - pipeline/data/architecture-guidelines.md
+  - pipeline/data/testing-strategy.md
+  - pipeline/data/definition-of-done.md
+  - pipeline/data/definition-of-ready.md
+  - pipeline/data/deployment-checklist.md
+
+agents:
+  - id: architect
+    name: "Arq. Sofia Sistemas"
+    icon: "🏗️"
+    custom: agents/architect.agent.md
+
+  - id: tech-lead
+    name: "TL Rafael Review"
+    icon: "📋"
+    custom: agents/tech-lead.agent.md
+
+  - id: business-analyst
+    name: "BA Clara Requisitos"
+    icon: "📊"
+    custom: agents/business-analyst.agent.md
+
+  - id: dev-backend
+    name: "Dev Bruno Backend"
+    icon: "🔧"
+    custom: agents/dev-backend.agent.md
+
+  - id: dev-frontend
+    name: "Dev Fernanda Front"
+    icon: "🎨"
+    custom: agents/dev-frontend.agent.md
+
+  - id: qa-engineer
+    name: "QA Quesia Quality"
+    icon: "🔍"
+    custom: agents/qa-engineer.agent.md
+
+  - id: tech-writer
+    name: "TW Daniela Docs"
+    icon: "📝"
+    custom: agents/tech-writer.agent.md
+
+  - id: project-manager
+    name: "PM Pedro Progress"
+    icon: "📈"
+    custom: agents/project-manager.agent.md
+
+pipeline:
+  entry: pipeline/pipeline.yaml
+
+output_dir: output/
+reports_dir: reports/

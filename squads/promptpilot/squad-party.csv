@@ -1,0 +1,10 @@
+id,name,icon,role,execution,custom_file
+architect,"Arq. Helena Sistemas","🏗️",architect,inline,agents/architect.agent.md
+tech-lead,"TL Ricardo Code","📋",tech_lead,inline,agents/tech-lead.agent.md
+business-analyst,"BA Mariana Prompts","📊",business_analyst,subagent,agents/business-analyst.agent.md
+dev-backend,"Dev Lucas Backend","🔧",developer_backend,subagent,agents/dev-backend.agent.md
+dev-frontend,"Dev Ana Frontend","🎨",developer_frontend,subagent,agents/dev-frontend.agent.md
+dev-cli,"Dev Tiago CLI","⌨️",developer_cli,subagent,agents/dev-cli.agent.md
+qa-engineer,"QA Priscila Test","🔍",qa_engineer,subagent,agents/qa-engineer.agent.md
+tech-writer,"TW Diego Docs","📝",tech_writer,inline,agents/tech-writer.agent.md
+project-manager,"PM Camila Status","📈",project_manager,inline,agents/project-manager.agent.md

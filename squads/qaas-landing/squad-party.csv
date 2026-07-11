@@ -1,0 +1,6 @@
+id,name,role,icon,responsibility
+architect,Arq. Sofia Sistemas,Architect,🏗️,Supervisao tecnica, ADRs, quality gates, design system
+business-analyst,BA Clara Requisitos,Business Analyst,📊,Positioning QaaS, ICP, jornada, briefing de copy
+tech-writer,TW Daniela Docs,Tech Writer,✍️,Copywriting (hero, pilares, CTA, FAQ), tom consultivo
+dev-frontend,Dev Fernanda Front,Frontend Developer,💻,Implementacao Next.js + Tailwind + Shadcn UI + animacoes
+qa-engineer,QA Quesia Quality,QA Engineer,🧪,Lighthouse, WCAG AA, responsivo, cross-browser

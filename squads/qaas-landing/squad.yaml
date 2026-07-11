@@ -1,0 +1,100 @@
+name: "QaaS Landing Page Squad"
+code: "qaas-landing"
+description: >
+  Squad enxuto para criar uma landing page institucional/comercial de
+  Quality as a Service (QaaS) — novo modelo de servico de testes em
+  formato de assinatura para consultoria. Entrega: landing page completa
+  em Next.js + Tailwind + Shadcn UI, pronta para deploy na Vercel.
+icon: "🧪"
+version: "1.0.0"
+created: "2026-04-27"
+project_type: "frontend"
+delivery_model: "greenfield"
+
+tech_stack:
+  frontend: "Next.js 14 (App Router) + React + TypeScript"
+  styling: "Tailwind CSS + Shadcn UI"
+  animation: "Framer Motion"
+  deploy: "Vercel-ready"
+  ci_cd: "GitHub Actions (opcional)"
+
+company: "_forgesquad/_memory/company.md"
+preferences: "_forgesquad/_memory/preferences.md"
+memory: "_memory/memories.md"
+
+target_audience: >
+  CTOs, Heads de Engenharia, VPs de Produto e Diretores de QA em
+  empresas medias e grandes (B2B) que buscam terceirizar qualidade
+  com modelo SaaS-like ao inves de body-shop tradicional.
+platform: "Landing Page B2B — Marketing Site"
+performance_mode: "quality-first"
+
+product:
+  name: "QaaS — Quality as a Service"
+  tagline: "Qualidade sob assinatura. SLA garantido. Sem body-shop."
+  pillars:
+    - id: test-automation-factory
+      name: "Test Automation Factory"
+      description: "E2E, API, mobile e performance — automacao as-a-service"
+    - id: quality-coaching
+      name: "Quality Engineering Coaching"
+      description: "Capacita o time interno do cliente (shift-left)"
+    - id: continuous-quality-dashboard
+      name: "Continuous Quality Dashboard"
+      description: "Metricas em tempo real (cobertura, flakiness, MTTR)"
+    - id: compliance-security
+      name: "Compliance & Security Testing"
+      description: "LGPD, OWASP Top 10, ISO 27001"
+    - id: release-quality-gates
+      name: "Release Quality Gates"
+      description: "Bloqueia deploys que nao atingem SLO de qualidade"
+
+  pricing:
+    - plan: Starter
+      includes: "1 squad, 1 produto, dashboard basico, 1 ambiente"
+    - plan: Growth
+      includes: "Multi-produto, automacao completa, coaching mensal"
+    - plan: Enterprise
+      includes: "SLAs custom, security testing, compliance reports, 24/7"
+
+  differentiators:
+    - "Subscription (previsibilidade de custo)"
+    - "SLA-driven (acordo por metrica, nao por hora)"
+    - "Tool-agnostic (Cypress, Playwright, K6, Postman, Selenium...)"
+    - "Dashboard transparente (cliente acompanha em tempo real)"
+    - "Foco em capacitacao (cliente fica autonomo, nao dependente)"
+
+skills:
+  - web_search
+
+agents:
+  - id: architect
+    name: "Arq. Sofia Sistemas"
+    icon: "🏗️"
+    custom: agents/architect.agent.md
+
+  - id: business-analyst
+    name: "BA Clara Requisitos"
+    icon: "📊"
+    custom: agents/business-analyst.agent.md
+
+  - id: tech-writer
+    name: "TW Daniela Docs"
+    icon: "✍️"
+    custom: agents/tech-writer.agent.md
+
+  - id: dev-frontend
+    name: "Dev Fernanda Front"
+    icon: "💻"
+    custom: agents/dev-frontend.agent.md
+
+  - id: qa-engineer
+    name: "QA Quesia Quality"
+    icon: "🧪"
+    custom: agents/qa-engineer.agent.md
+
+pipeline:
+  entry: pipeline/pipeline.yaml
+
+output_dir: output/
+reports_dir: reports/

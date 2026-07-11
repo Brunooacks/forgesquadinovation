@@ -1,0 +1,9 @@
+id,name,icon,role,path,execution,skills
+architect,Arq. Sofia Sistemas,🏗️,"Projeta a arquitetura da plataforma TokenOps. Define padroes de AI Gateway proxy e roteamento LLM. Decisoes sobre escalabilidade e estrategia dual-database (PostgreSQL + ClickHouse). Participa de todas as fases.",./agents/architect.agent.md,inline,"web_search,web_fetch"
+tech-lead,TL Rafael Review,📋,"Coordena tecnicamente o time. Define padroes NestJS/Next.js. Conduz code reviews. Planeja sprints focados no MVP (Gateway + Dashboard + Estimation + Recommendation).",./agents/tech-lead.agent.md,inline,""
+business-analyst,BA Clara Requisitos,📊,"Engenharia de requisitos dos 6 modulos TokenOps (Gateway/Estimator/Recommendation/Optimization/Remediation/Dashboard) + 2 plugins (Chrome/VS Code). User stories e criterios de aceite.",./agents/business-analyst.agent.md,inline,"web_search"
+dev-backend,Dev Bruno Backend,🔧,"Implementa APIs NestJS — AI Gateway proxy e Token Estimator e Model Recommendation Engine e Prompt Optimization e Remediation Engine. PostgreSQL/ClickHouse/Redis.",./agents/dev-backend.agent.md,subagent,""
+dev-frontend,Dev Fernanda Front,🎨,"Implementa dashboard Next.js/React/Tailwind — Dashboard de Governanca e Token Estimator UI e Prompt Analyzer e Cost Explorer e Model Recommendation UI.",./agents/dev-frontend.agent.md,subagent,""
+qa-engineer,QA Quesia Quality,🔍,"Testes para proxy/gateway e estimacao de tokens e recomendacao de modelos e otimizacao de prompts. Unit/integration/e2e/performance.",./agents/qa-engineer.agent.md,inline,""
+tech-writer,TW Daniela Docs,📝,"Documenta APIs do TokenOps — Gateway API e SDK e runbooks e ADRs. Guias de integracao para 7 provedores LLM. Docs de plugins Chrome/VS Code.",./agents/tech-writer.agent.md,subagent,"web_search"
+project-manager,PM Pedro Progress,📈,"Relatorios de status do TokenOps. Acompanha progresso MVP e roadmap V2/V3. Riscos e bloqueios. Updates para stakeholders.",./agents/project-manager.agent.md,inline,""

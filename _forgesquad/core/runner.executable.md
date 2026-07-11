@@ -183,14 +183,20 @@ For EACH step in pipeline.yaml, in order, execute the following sub-phases. DO N
 
 Execute this BEFORE every step, no exceptions.
 
+TOKEN EFFICIENCY (mandatory): state.json and audit-trail.json are WRITE-ONLY
+during a run. NEVER re-read them between steps — keep run state in working
+memory and only write. The audit trail is APPEND-ONLY: append the new entry
+without loading previous entries. Batch the state write + audit append into a
+single moment.
+
 ```
-ACTION: Update state.json:
+ACTION: Update state.json (write-only, never read back):
   step.current = {step_number} (1-indexed)
   step.label = "{step_name}"
   phase = "{step_phase}" (from pipeline.yaml or inferred from step position)
   updatedAt = current ISO timestamp
 
-ACTION: Append audit entry:
+ACTION: Append audit entry (append-only):
   action_type: "step_started"  (use "checkpoint_reached" if type == checkpoint)
   step_id: "{step.id}"
   step_name: "{step.name}"
@@ -198,9 +204,8 @@ ACTION: Append audit entry:
   agent_name: "{agent display name}"
   status: "pending"
 
-ACTION: Announce to user:
-  "Step {current}/{total}: {step_name}"
-  "Agente: {icon} {agent_name}" (or "Checkpoint" if type == checkpoint)
+ACTION: Announce to user (ONE line only):
+  "Step {current}/{total}: {icon} {agent_name} — {step_name}"
 ```
 
 ---
@@ -400,14 +405,21 @@ ACTION: Present completion summary:
 
 Execute this AFTER every step, no exceptions.
 
+TOKEN EFFICIENCY (mandatory): same write-only/append-only discipline as 1.1.
+When a step is heavy (long analysis, code generation, multi-file output),
+PREFER delegating its execution to a background subagent: the subagent gets a
+fresh, minimal context (agent persona + step file + inputs) and returns only
+the artifact + a short summary — the main transcript keeps just the result,
+not the process. This is the single largest token saving available.
+
 ```
-ACTION: Update state.json:
+ACTION: Update state.json (write-only):
   step.current = {step_number} (remains current until next step starts)
   metrics.steps_completed += 1
   metrics.artifacts_generated: append artifact path
   updatedAt = current ISO timestamp
 
-ACTION: Append audit entry:
+ACTION: Append audit entry (append-only):
   action_type: "step_completed" (use "artifact_approved" if coming from review)
   step_id: "{step.id}"
   status: "success"
@@ -750,11 +762,50 @@ IF user chooses to abort at any point:
 
 1. **NEVER skip a checkpoint.** Every checkpoint MUST pause for user input. There are ZERO exceptions.
 2. **NEVER skip a handoff gate.** Every agent-to-agent transition MUST be approved (unless auto-approve is active).
-3. **ALWAYS generate artifacts.** Every step produces a file. No exceptions.
-4. **ALWAYS update state.json.** Before AND after every step.
-5. **ALWAYS append to audit trail.** Every action gets logged. Append-only. Never modify existing entries.
+3. **Generate artifacts on DELIVERABLE steps.** Steps whose purpose is producing an output (docs, code, reports) always write a file. Ceremony steps (checkpoints, handoffs, go/no-go) log a short entry in the audit trail instead of writing a separate report file.
+4. **ALWAYS update state.json — write-only.** Before AND after every step. Never read it back mid-run; run state lives in working memory.
+5. **ALWAYS append to audit trail — append-only.** Every action gets logged. Never re-read or modify existing entries mid-run.
 6. **ALWAYS compute artifact hashes.** Every artifact gets a SHA-256 hash in the audit trail.
 7. **NEVER proceed on error without user decision.** Errors always pause for user input.
 8. **NEVER modify the pipeline order.** Steps execute in the order defined in pipeline.yaml.
 9. **NEVER impersonate multiple agents simultaneously.** One agent at a time. Switch fully.
-10. **ALWAYS present output summaries.** The user must see what each step produced before continuing.
+10. **Present output summaries in ONE short block per step.** The user sees what was produced (artifact path + 2-3 bullet summary), never the full artifact content unless asked.
+11. **TOKEN DISCIPLINE.** Load framework files ONCE per run (Phase 0), not per step. Delegate heavy steps to background subagents with minimal context (persona + step file + inputs), receiving back only artifact + summary. Never scan `squads/` beyond the active squad; never load another squad's files or outputs.
+
+---
+
+## AUTO-EXECUTE POLICY — ZERO FRICTION ON IO OPERATIONS
+
+The following operations MUST be executed automatically WITHOUT asking the user for permission.
+The pipeline should flow continuously, only pausing at the defined gates (checkpoints and handoffs).
+
+### Operations that execute WITHOUT permission:
+- **File operations**: Create, read, write, edit, delete files and directories
+- **Directory operations**: mkdir, copy, move directories
+- **Git operations**: git add, git commit, git tag, git push (within the squad's scope)
+- **Repository operations**: Create output folders, report folders, run folders
+- **Artifact generation**: Write all output files (markdown, JSON, YAML, code, HTML)
+- **State management**: Write/update state.json, audit-trail.json
+- **Hash computation**: Run shasum commands
+- **Shell commands**: npm install, pip install, test runners, linters, build commands
+- **Preview/server**: Start dev servers, take screenshots, run preview tools
+- **Agent background tasks**: Launch subagents without confirmation
+
+### Operations that REQUIRE permission (the ONLY pause points):
+- **Checkpoints** (type: checkpoint in pipeline.yaml) — formal decision gates
+- **Handoff gates** — agent-to-agent transitions (unless auto-approve active)
+- **Architectural decisions** (type: architectural_review) — ADR approvals
+- **Go/No-Go** — deployment decisions
+- **Veto escalations** — after 2 failed retries
+
+### Implementation:
+When executing the pipeline, the runner MUST:
+1. Pre-create ALL necessary directories at initialization (Phase 0)
+2. Write files directly without "May I create this file?" prompts
+3. Run git commands in sequence without asking
+4. Execute test suites, builds, and linters automatically
+5. Generate screenshots and evidence files without confirmation
+6. Only present the OUTPUT (summary) to the user, not ask permission to produce it
+
+This policy ensures demos flow smoothly and the pipeline executes at maximum speed,
+pausing ONLY at the human-in-the-loop gates that matter for governance.

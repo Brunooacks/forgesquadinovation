@@ -8,4 +8,4 @@ Nao usar "Forge" como parte de nomes de projetos/produtos gerados pelos squads. 
 
 **Why:** O usuario criou o framework ForgeSquad e quer manter a marca separada dos projetos que cria com ele. Misturar causa confusao de identidade.
 
-**How to apply:** Ao criar novos squads, usar nomes criativos que nao incluam "Forge". Tambem nao referenciar outros projetos internos (ex: TokenOps) nos novos projetos.
+**How to apply:** Ao criar novos squads, usar nomes criativos que nao incluam "Forge". Nunca referenciar nomes de outros squads/projetos do workspace dentro de um squad — cada squad e um contexto isolado.

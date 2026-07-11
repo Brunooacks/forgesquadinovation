@@ -1,0 +1,41 @@
+name: "QaaS Landing Page Pipeline"
+methodology: "scrum-lite"
+description: "Pipeline enxuto de 6 steps para entregar a landing page QaaS."
+
+steps:
+  - id: step-01-discovery
+    name: "Discovery & Positioning"
+    agents: [architect, business-analyst]
+    file: step-01-discovery.md
+    checkpoint: true
+
+  - id: step-02-content
+    name: "Content Strategy & Copy"
+    agents: [tech-writer]
+    file: step-02-content.md
+    checkpoint: true
+
+  - id: step-03-design
+    name: "Design System + Wireframe"
+    agents: [architect, dev-frontend]
+    file: step-03-design.md
+    checkpoint: true
+
+  - id: step-04-implementation
+    name: "Implementation (Next.js + Tailwind)"
+    agents: [dev-frontend]
+    execution_mode: "ralph-loop"
+    file: step-04-implementation.md
+    checkpoint: true
+
+  - id: step-05-qa
+    name: "QA + Performance Audit"
+    agents: [qa-engineer]
+    file: step-05-qa.md
+    checkpoint: true
+
+  - id: step-06-delivery
+    name: "Delivery + README + Deploy Guide"
+    agents: [tech-writer, dev-frontend]
+    file: step-06-delivery.md
+    checkpoint: false
